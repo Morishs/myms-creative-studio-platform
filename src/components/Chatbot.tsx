@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageCircle, X, Send, User, Sparkles, 
-  ChevronDown, ExternalLink, Smile, Paperclip
+  ChevronDown, ExternalLink, Paperclip
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { companyInfo } from '../data';
@@ -464,15 +464,8 @@ export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Emojis populaires pour la sélection rapide
-  const popularEmojis = ['😊', '😄', '👍', '❤️', '🎉', '✨', '🚀', '💡', '🙌', '😍', '🔥', '💯', '👏', '🎨', '⭐', '💪'];
-
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -507,63 +500,25 @@ export function Chatbot() {
   };
 
   const handleSend = () => {
-    if (!inputValue.trim() && !selectedFile) return;
+    if (!inputValue.trim()) return;
 
-    // Créer les pièces jointes
-    const attachments: FileAttachment[] = [];
-    if (selectedFile) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const fileContent = e.target?.result;
-        const attachment: FileAttachment = {
-          id: `file-${Date.now()}`,
-          name: selectedFile.name,
-          size: selectedFile.size,
-          type: selectedFile.type,
-          url: fileContent as string,
-        };
-        attachments.push(attachment);
+    const userMsg: Message = {
+      id: `user-${Date.now()}`,
+      type: 'user',
+      content: inputValue.trim(),
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
 
-        const userMsg: Message = {
-          id: `user-${Date.now()}`,
-          type: 'user',
-          content: inputValue.trim() || `📎 ${selectedFile.name}`,
-          timestamp: new Date(),
-          attachments: attachments,
-        };
-        setMessages(prev => [...prev, userMsg]);
+    const intent = detectIntent(inputValue);
+    setInputValue('');
+    setIsTyping(true);
 
-        const intent = detectIntent(inputValue);
-        setInputValue('');
-        setSelectedFile(null);
-        setIsTyping(true);
-
-        const delay = 800 + Math.random() * 1200;
-        setTimeout(() => {
-          setIsTyping(false);
-          addBotMessage(intent);
-        }, delay);
-      };
-      reader.readAsDataURL(selectedFile);
-    } else {
-      const userMsg: Message = {
-        id: `user-${Date.now()}`,
-        type: 'user',
-        content: inputValue.trim(),
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, userMsg]);
-
-      const intent = detectIntent(inputValue);
-      setInputValue('');
-      setIsTyping(true);
-
-      const delay = 800 + Math.random() * 1200;
-      setTimeout(() => {
-        setIsTyping(false);
-        addBotMessage(intent);
-      }, delay);
-    }
+    const delay = 800 + Math.random() * 1200;
+    setTimeout(() => {
+      setIsTyping(false);
+      addBotMessage(intent);
+    }, delay);
   };
 
   const handleQuickOption = (value: string) => {
@@ -596,20 +551,6 @@ export function Chatbot() {
     }
   };
 
-  const addEmoji = (emoji: string) => {
-    setInputValue(prev => prev + emoji);
-    setShowEmojiPicker(false);
-    inputRef.current?.focus();
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.currentTarget.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      setSelectedFile(file);
-      inputRef.current?.focus();
-    }
-  };
 
   return (
     <>
@@ -779,80 +720,7 @@ export function Chatbot() {
 
             {/* Zone de saisie */}
             <div className="p-3 bg-[#111111] border-t border-[#2A2A2A]">
-              {/* Affichage du fichier sélectionné */}
-              {selectedFile && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="mb-2 flex items-center gap-2 px-3 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg"
-                >
-                  <Paperclip className="w-4 h-4 text-[#6C3CE1] flex-shrink-0" />
-                  <span className="text-sm text-white flex-1 truncate">{selectedFile.name}</span>
-                  <span className="text-xs text-[#6B7280]">({(selectedFile.size / 1024).toFixed(1)} KB)</span>
-                  <button
-                    onClick={() => setSelectedFile(null)}
-                    className="text-[#6B7280] hover:text-white transition-colors flex-shrink-0"
-                  >
-                    ✕
-                  </button>
-                </motion.div>
-              )}
-
               <div className="flex gap-2 items-end">
-                {/* Bouton Emoji */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="w-10 h-10 rounded-full bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-white hover:bg-[#2A2A2A] hover:border-[#6C3CE1] transition-colors"
-                    title="Ajouter un emoji"
-                  >
-                    <Smile className="w-5 h-5" />
-                  </button>
-                  
-                  {/* Sélecteur d'émojis */}
-                  <AnimatePresence>
-                    {showEmojiPicker && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: -10 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                        className="absolute bottom-12 left-0 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-3 grid grid-cols-4 gap-2 w-max shadow-lg z-10"
-                      >
-                        {popularEmojis.map((emoji, i) => (
-                          <button
-                            key={i}
-                            onClick={() => addEmoji(emoji)}
-                            className="text-xl hover:scale-125 transition-transform cursor-pointer"
-                            title={emoji}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Bouton Fichier */}
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    accept=".pdf,.jpg,.jpeg,.png,.xls,.xlsx,.doc,.docx,.psd,.ai,.gif,.svg,.webp,.zip,.rar"
-                  />
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-10 h-10 rounded-full bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-white hover:bg-[#2A2A2A] hover:border-[#6C3CE1] transition-colors"
-                    title="Joindre un fichier"
-                  >
-                    <Paperclip className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Champ de saisie */}
                 <input
                   ref={inputRef}
                   type="text"
@@ -866,7 +734,7 @@ export function Chatbot() {
                 {/* Bouton Envoi */}
                 <button
                   onClick={handleSend}
-                  disabled={!inputValue.trim() && !selectedFile}
+                  disabled={!inputValue.trim()}
                   className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[#6C3CE1]/30 transition-all"
                 >
                   <Send className="w-4 h-4" />
