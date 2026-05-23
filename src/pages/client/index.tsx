@@ -12,14 +12,21 @@ import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { useAuth } from '../../contexts/AuthContext';
 import { appStore } from '../../stores/appStore';
+import { dashboardStore } from '../../stores/dashboardStore';
 import { messageStore, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
 import { MessageStatusIcon, OnlineBadge, OfflineBadge } from '../../components/ui/MessageStatus';
 import { NotificationBell } from '../../components/NotificationPanel';
 import { 
-  mockClientProjects, mockClientQuotes, mockClientInvoices, mockClientFiles,
-  mockClientPurchases, mockClientMessages, formatCurrency, formatDate, 
+  formatCurrency, formatDate, 
   formatDateTime, getStatusConfig
 } from '../../data/mockData';
+
+const mockClientProjects = dashboardStore.getProjects();
+const mockClientQuotes = dashboardStore.getQuotes();
+const mockClientInvoices = dashboardStore.getInvoices();
+const mockClientFiles: any[] = [];
+const mockClientPurchases: any[] = [];
+const mockClientMessages: any[] = [];
 
 // ===== CLIENT LAYOUT =====
 const clientNavItems = [
@@ -163,13 +170,30 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 // ===== CLIENT DASHBOARD =====
 export function ClientDashboard() {
   const { user } = useAuth();
-  const activeProjects = mockClientProjects.filter(p => p.status !== 'COMPLETED' && p.status !== 'DELIVERED');
-  const pendingQuotes = mockClientQuotes.filter(q => q.status === 'SENT');
-  const unpaidInvoices = mockClientInvoices.filter(i => i.status !== 'PAID');
-  const totalDue = unpaidInvoices.reduce((sum, i) => sum + i.amountDue, 0);
-  const recentMessages = [...mockClientMessages]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3);
+  const [, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const unsubscribeMessages = messageStore.subscribe(() => setRefreshKey((value) => value + 1));
+    const unsubscribeDashboard = dashboardStore.subscribe(() => setRefreshKey((value) => value + 1));
+    return () => {
+      unsubscribeMessages();
+      unsubscribeDashboard();
+    };
+  }, []);
+
+  const allProjects = dashboardStore.getProjects();
+  const allQuotes = dashboardStore.getQuotes();
+  const allInvoices = dashboardStore.getInvoices();
+
+  const userProjects = allProjects.filter((project) => project.clientId === user?.id);
+  const userQuotes = allQuotes.filter((quote) => quote.clientId === user?.id);
+  const userInvoices = allInvoices.filter((invoice) => invoice.clientId === user?.id);
+
+  const activeProjects = userProjects.filter((project) => project.status !== 'COMPLETED' && project.status !== 'DELIVERED');
+  const pendingQuotes = userQuotes.filter((quote) => quote.status === 'SENT');
+  const unpaidInvoices = userInvoices.filter((invoice) => invoice.status !== 'PAID');
+  const totalDue = unpaidInvoices.reduce((sum, invoice) => sum + invoice.amountDue, 0);
+  const recentMessages = messageStore.getUserRecentMessages(user?.id || '').slice(0, 3);
 
   return (
     <div className="p-6 lg:p-8">
@@ -280,7 +304,7 @@ export function ClientDashboard() {
                 recentMessages.map((message) => (
                   <Link key={message.id} to="/client/messages" className="block p-3 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A] hover:border-[#6C3CE1]/50 transition-colors">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium text-white truncate">{message.subject}</p>
+                      <p className="text-sm font-medium text-white truncate">{message.senderName}</p>
                       <span className="text-[10px] text-[#6B7280]">{formatDateTime(message.createdAt)}</span>
                     </div>
                     <p className="text-sm text-[#A0A0A0] truncate">{message.content}</p>

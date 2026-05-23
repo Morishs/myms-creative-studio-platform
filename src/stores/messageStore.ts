@@ -305,6 +305,12 @@ export const messageStore = {
       .filter(c => c.participantIds.includes(userId))
       .reduce((sum, c) => sum + (c.unread[userId] || 0), 0),
 
+  getUserRecentMessages: (userId: string) => {
+    const userConversations = state.conversations.filter((conversation) => conversation.participantIds.includes(userId));
+    const messages = state.messages.filter((message) => userConversations.some((conversation) => conversation.id === message.conversationId));
+    return messages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  },
+
   // Envoyer un message
   sendMessage: (opts: {
     conversationId: string;

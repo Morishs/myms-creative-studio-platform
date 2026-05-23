@@ -17,13 +17,12 @@ import { Textarea } from '../../components/ui/Textarea';
 import { useAuth, ROLE_LABELS, type User, type UserRole } from '../../contexts/AuthContext';
 import { appStore } from '../../stores/appStore';
 import { addClient, deleteClient, getClients, isEmailRegistered, subscribe, updateClient } from '../../stores/clientStore';
+import { dashboardStore } from '../../stores/dashboardStore';
 import { messageStore, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
 import { MessageStatusIcon, OnlineBadge, OfflineBadge } from '../../components/ui/MessageStatus';
 import { NotificationBell } from '../../components/NotificationPanel';
 import { 
-  mockAdminClients, mockAdminQuoteRequests, 
-  mockAdminProjects, mockAdminQuotes, mockAdminInvoices,
-  mockNewsletterSubscribers, mockTeamMembers,
+  mockAdminQuoteRequests, mockAdminProjects, mockAdminQuotes, mockAdminInvoices,
   formatCurrency, formatDate, formatDateTime, getStatusConfig
 } from '../../data/mockData';
 import { services, portfolioProjects, resources, blogPosts, testimonials } from '../../data';
@@ -178,30 +177,47 @@ export function AdminDashboard() {
   const [, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = appStore.subscribe(() => {
+    const unsubscribeApp = appStore.subscribe(() => {
       setRefreshKey((value) => value + 1);
     });
-    return unsubscribe;
+    const unsubscribeClients = subscribe(() => {
+      setRefreshKey((value) => value + 1);
+    });
+    const unsubscribeDashboard = dashboardStore.subscribe(() => {
+      setRefreshKey((value) => value + 1);
+    });
+    return () => {
+      unsubscribeApp();
+      unsubscribeClients();
+      unsubscribeDashboard();
+    };
   }, []);
 
-  const totalRevenue = mockAdminInvoices.reduce((sum, invoice) => sum + invoice.total, 0);
+  const clients = getClients();
+  const quoteRequests = appStore.getState().quoteRequests;
+  const projects = dashboardStore.getProjects();
+  const quotes = dashboardStore.getQuotes();
+  const invoices = dashboardStore.getInvoices();
+
+  const totalRevenue = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
-  const monthlyRevenue = mockAdminInvoices
+  const monthlyRevenue = invoices
     .filter((invoice) => {
       const date = new Date(invoice.issuedAt);
       return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     })
     .reduce((sum, invoice) => sum + invoice.total, 0);
-  const activeProjectsCount = mockAdminProjects.filter((project) => !['COMPLETED', 'CANCELLED'].includes(project.status)).length;
-  const pendingQuotesCount = mockAdminQuotes.filter((quote) => quote.status === 'SENT').length;
-  const unpaidInvoicesCount = mockAdminInvoices.filter((invoice) => invoice.status !== 'PAID').length;
-  const totalClientsCount = mockAdminClients.length;
-  const newClientsThisMonth = mockAdminClients.filter((client) => {
+  const activeProjectsCount = projects.filter((project) => !['COMPLETED', 'CANCELLED'].includes(project.status)).length;
+  const pendingQuotesCount = quotes.filter((quote) => quote.status === 'SENT').length;
+  const unpaidInvoicesCount = invoices.filter((invoice) => invoice.status !== 'PAID').length;
+  const totalClientsCount = clients.length;
+  const newClientsThisMonth = clients.filter((client) => {
+    if (!client.joinedAt) return false;
     const joined = new Date(client.joinedAt);
     return joined.getMonth() === currentMonth && joined.getFullYear() === currentYear;
   }).length;
-  const pendingQuoteRequestsCount = mockAdminQuoteRequests.filter((request) => request.status === 'NEW').length;
+  const pendingQuoteRequestsCount = quoteRequests.length;
 
   return (
     <div className="p-6 lg:p-8">

@@ -1,5 +1,4 @@
 import type { User } from '../contexts/AuthContext';
-import { mockAdminClients } from '../data/mockData';
 import { registerKnownUser, removeKnownUser } from './messageStore';
 
 type Listener = () => void;
@@ -28,12 +27,12 @@ function saveClients(clients: User[]) {
 }
 
 function loadClients(): User[] {
-  if (typeof window === 'undefined') return [...mockAdminClients];
+  if (typeof window === 'undefined') return [];
   const raw = localStorage.getItem(CLIENTS_KEY);
   if (raw) {
-    return parseStored<User[]>(raw, [...mockAdminClients]);
+    return parseStored<User[]>(raw, []);
   }
-  const initialClients = [...mockAdminClients];
+  const initialClients: User[] = [];
   saveClients(initialClients);
   return initialClients;
 }
