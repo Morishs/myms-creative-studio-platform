@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ChangeEvent } from 'react';
+import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from 'react';
 import { Link, useParams, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -14,8 +14,9 @@ import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Textarea } from '../../components/ui/Textarea';
-import { useAuth, ROLE_LABELS, type UserRole } from '../../contexts/AuthContext';
+import { useAuth, ROLE_LABELS, type User, type UserRole } from '../../contexts/AuthContext';
 import { appStore } from '../../stores/appStore';
+import { addClient, deleteClient, getClients, isEmailRegistered, subscribe, updateClient } from '../../stores/clientStore';
 import { messageStore, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
 import { MessageStatusIcon, OnlineBadge, OfflineBadge } from '../../components/ui/MessageStatus';
 import { NotificationBell } from '../../components/NotificationPanel';
@@ -356,26 +357,231 @@ export function AdminDashboard() {
 // ===== ADMIN CLIENTS =====
 export function AdminClients() {
   const [search, setSearch] = useState('');
-  
-  const filteredClients = mockAdminClients.filter(c => 
+  const [clients, setClients] = useState<User[]>([]);
+  const [showClientForm, setShowClientForm] = useState(false);
+  const [editingClient, setEditingClient] = useState<User | null>(null);
+  const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newClient, setNewClient] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    password: ''
+  });
+
+  useEffect(() => {
+    const updateClients = () => setClients(getClients());
+    const unsub = subscribe(updateClients);
+    updateClients();
+    return unsub;
+  }, []);
+
+
+  const filteredClients = clients.filter((c) =>
     c.firstName.toLowerCase().includes(search.toLowerCase()) ||
     c.lastName.toLowerCase().includes(search.toLowerCase()) ||
     c.email.toLowerCase().includes(search.toLowerCase()) ||
-    c.company?.toLowerCase().includes(search.toLowerCase())
+    (c.company?.toLowerCase().includes(search.toLowerCase()) ?? false)
   );
+
+  const totalClientsCount = clients.length;
+  const newClientsThisMonth = clients.filter((client) => {
+    if (!client.joinedAt) return false;
+    const joined = new Date(client.joinedAt);
+    const now = new Date();
+    return joined.getFullYear() === now.getFullYear() && joined.getMonth() === now.getMonth();
+  }).length;
+
+  const handleClientFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setNewClient((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const resetClientForm = () => {
+    setEditingClient(null);
+    setNewClient({ firstName: '', lastName: '', email: '', phone: '', company: '', password: '' });
+    setFormError('');
+  };
+
+  const handleEditClient = (client: User) => {
+    setEditingClient(client);
+    setShowClientForm(true);
+    setNewClient({
+      firstName: client.firstName,
+      lastName: client.lastName,
+      email: client.email,
+      phone: client.phone ?? '',
+      company: client.company ?? '',
+      password: ''
+    });
+  };
+
+  const handleDeleteClient = (clientId: string) => {
+    if (!window.confirm('Voulez-vous vraiment supprimer ce client ? Cette action est irréversible.')) {
+      return;
+    }
+    const deleted = deleteClient(clientId);
+    if (deleted) {
+      appStore.addToast({ type: 'success', title: 'Client supprimé', message: 'Le client a été retiré de la liste.' });
+    } else {
+      appStore.addToast({ type: 'error', title: 'Erreur', message: 'Impossible de supprimer le client.' });
+    }
+  };
+
+  const handleSaveClient = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFormError('');
+
+    const email = newClient.email.trim().toLowerCase();
+    if (!newClient.firstName || !newClient.lastName || !email || (!editingClient && !newClient.password)) {
+      setFormError('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setFormError('Veuillez saisir une adresse email valide.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const basicClientData = {
+      firstName: newClient.firstName.trim(),
+      lastName: newClient.lastName.trim(),
+      email,
+      phone: newClient.phone.trim(),
+      company: newClient.company.trim(),
+    };
+
+    if (editingClient) {
+      const updated = updateClient(editingClient.id, {
+        ...basicClientData,
+        accountType: editingClient.accountType,
+        role: editingClient.role,
+        projectsCount: editingClient.projectsCount ?? 0,
+        messagesCount: editingClient.messagesCount ?? 0,
+        quotesCount: editingClient.quotesCount ?? 0,
+        notificationsCount: editingClient.notificationsCount ?? 0,
+        invoicesCount: editingClient.invoicesCount ?? 0,
+        devisCount: editingClient.devisCount ?? 0,
+        totalSpent: editingClient.totalSpent ?? 0,
+        joinedAt: editingClient.joinedAt ?? new Date().toISOString(),
+        isActive: editingClient.isActive ?? true,
+      }, newClient.password || undefined);
+      setIsSubmitting(false);
+
+      if (!updated) {
+        setFormError('Échec de la mise à jour. Vérifiez que l’email est unique.');
+        return;
+      }
+      appStore.addToast({ type: 'success', title: 'Client modifié', message: 'Les informations du client ont bien été mises à jour.' });
+    } else {
+      if (isEmailRegistered(email)) {
+        setFormError('Cet email est déjà utilisé par un autre compte.');
+        setIsSubmitting(false);
+        return;
+      }
+      const client = {
+        id: `client-${Date.now()}`,
+        email,
+        firstName: basicClientData.firstName,
+        lastName: basicClientData.lastName,
+        phone: basicClientData.phone,
+        company: basicClientData.company,
+        role: 'CLIENT' as UserRole,
+        accountType: 'INDIVIDUAL' as const,
+        projectsCount: 0,
+        messagesCount: 0,
+        quotesCount: 0,
+        notificationsCount: 0,
+        invoicesCount: 0,
+        devisCount: 0,
+        totalSpent: 0,
+        joinedAt: new Date().toISOString(),
+        isActive: true
+      };
+
+      const added = addClient(client, newClient.password);
+      setIsSubmitting(false);
+
+      if (!added) {
+        setFormError('Échec de la création du client. Vérifiez que l’email est unique.');
+        return;
+      }
+      appStore.addToast({ type: 'success', title: 'Client ajouté', message: 'Le client a bien été créé et apparaît dans la liste.' });
+    }
+
+    resetClientForm();
+    setShowClientForm(false);
+  };
 
   return (
     <div className="p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Clients</h1>
-          <p className="text-[#A0A0A0]">{mockAdminClients.length} clients au total</p>
+          <p className="text-[#A0A0A0]">{totalClientsCount} clients au total</p>
+          <p className="text-[#6B7280] text-sm">{newClientsThisMonth} nouveaux clients ce mois-ci</p>
         </div>
-        <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Formulaire client', message: 'Remplissez les informations du nouveau client.' })}>
+        <Button variant="primary" onClick={() => {
+          resetClientForm();
+          setShowClientForm((open) => !open);
+        }}>
           <Plus className="w-4 h-4 mr-2" />
-          Nouveau client
+          {showClientForm ? 'Annuler' : 'Nouveau client'}
         </Button>
       </div>
+
+      {showClientForm && (
+        <Card className="mb-6 p-6 border border-[#2A2A2A] bg-[#0F0F0F]">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-white">{editingClient ? 'Modifier un client' : 'Créer un nouveau client'}</h2>
+            <p className="text-sm text-[#A0A0A0]">{editingClient ? 'Mettez à jour les informations du client.' : 'Remplissez les informations obligatoires et confirmez pour ajouter le client.'}</p>
+          </div>
+          <form onSubmit={handleSaveClient} className="grid gap-4 lg:grid-cols-2">
+            <div>
+              <label className="block text-sm text-[#A0A0A0] mb-2">Prénom *</label>
+              <Input name="firstName" value={newClient.firstName} onChange={handleClientFieldChange} placeholder="Ex: Sophie" />
+            </div>
+            <div>
+              <label className="block text-sm text-[#A0A0A0] mb-2">Nom *</label>
+              <Input name="lastName" value={newClient.lastName} onChange={handleClientFieldChange} placeholder="Ex: Martin" />
+            </div>
+            <div>
+              <label className="block text-sm text-[#A0A0A0] mb-2">Email *</label>
+              <Input name="email" value={newClient.email} onChange={handleClientFieldChange} placeholder="client@example.com" type="email" />
+            </div>
+            <div>
+              <label className="block text-sm text-[#A0A0A0] mb-2">Mot de passe *</label>
+              <Input name="password" value={newClient.password} onChange={handleClientFieldChange} placeholder="Mot de passe temporaire" type="password" />
+            </div>
+            <div>
+              <label className="block text-sm text-[#A0A0A0] mb-2">Téléphone</label>
+              <Input name="phone" value={newClient.phone} onChange={handleClientFieldChange} placeholder="+221 77 123 45 67" />
+            </div>
+            <div>
+              <label className="block text-sm text-[#A0A0A0] mb-2">Entreprise</label>
+              <Input name="company" value={newClient.company} onChange={handleClientFieldChange} placeholder="Ex: Café Lumière" />
+            </div>
+            {formError && (
+              <div className="lg:col-span-2 text-sm text-[#F87171]">{formError}</div>
+            )}
+            <div className="lg:col-span-2 flex flex-wrap items-center gap-3">
+              <Button type="submit" variant="primary" disabled={isSubmitting}>
+                {isSubmitting ? (editingClient ? 'Enregistrement…' : 'Création en cours…') : (editingClient ? 'Enregistrer les modifications' : 'Créer le client')}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => {
+                resetClientForm();
+                setShowClientForm(false);
+              }}>
+                Fermer
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
 
       <div className="mb-6">
         <div className="relative">
@@ -407,7 +613,7 @@ export function AdminClients() {
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white font-semibold">
-                        {client.firstName[0]}{client.lastName[0]}
+                        {client.firstName?.[0] ?? '-'}{client.lastName?.[0] ?? '-'}
                       </div>
                       <div>
                         <p className="font-medium text-white">{client.firstName} {client.lastName}</p>
@@ -416,17 +622,20 @@ export function AdminClients() {
                     </div>
                   </td>
                   <td className="p-4 text-[#A0A0A0]">{client.company || '-'}</td>
-                  <td className="p-4 text-[#A0A0A0]">{client.projectsCount}</td>
+                  <td className="p-4 text-[#A0A0A0]">{client.projectsCount ?? 0}</td>
                   <td className="p-4 text-right font-medium text-white">
-                    {formatCurrency(client.totalSpent)}
+                    {formatCurrency(client.totalSpent ?? 0)}
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-2">
                       <button className="p-2 text-[#6B7280] hover:text-[#6C3CE1]">
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-[#6B7280] hover:text-[#6C3CE1]">
+                      <button className="p-2 text-[#6B7280] hover:text-[#6C3CE1]" onClick={() => handleEditClient(client)}>
                         <Edit className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 text-[#EF4444] hover:text-[#F87171]" onClick={() => handleDeleteClient(client.id)}>
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>

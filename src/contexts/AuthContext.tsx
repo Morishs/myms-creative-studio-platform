@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { registerKnownUser } from '../stores/messageStore';
+import { addClient, isEmailRegistered } from '../stores/clientStore';
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'PROJECT_MANAGER' | 'SALES_MANAGER' | 'CONTENT_MANAGER' | 'SUPPORT' | 'CLIENT';
 export type AccountType = 'INDIVIDUAL' | 'COMPANY';
@@ -126,6 +127,15 @@ export interface User {
   role: UserRole;
   avatar?: string;
   accountType?: AccountType;
+  projectsCount?: number;
+  messagesCount?: number;
+  quotesCount?: number;
+  notificationsCount?: number;
+  invoicesCount?: number;
+  devisCount?: number;
+  totalSpent?: number;
+  joinedAt?: string;
+  isActive?: boolean;
   // Company specific fields
   companyName?: string;
   companySector?: string;
@@ -257,19 +267,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await new Promise(r => setTimeout(r, 800));
     const emailLower = data.email.toLowerCase().trim();
     
-    // Check if email already taken (demo accounts)
-    if (DEMO_ACCOUNTS[emailLower]) {
-      return false;
-    }
-    
-    // Check if email already registered
-    const registeredUsers: User[] = JSON.parse(localStorage.getItem('myms_registered_users') || '[]');
-    if (registeredUsers.find(u => u.email === emailLower)) {
+    // Check if email already taken (demo accounts or persistent storage)
+    if (DEMO_ACCOUNTS[emailLower] || isEmailRegistered(emailLower)) {
       return false;
     }
     
     const newUser: User = {
-      id: `user-${Date.now()}`,
+      id: `client-${Date.now()}`,
       email: emailLower,
       firstName: data.firstName,
       lastName: data.lastName,
@@ -283,29 +287,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       companyAddress: data.companyAddress,
       companyCity: data.companyCity,
       companyCountry: data.companyCountry,
-      position: data.position
+      position: data.position,
+      projectsCount: 0,
+      messagesCount: 0,
+      quotesCount: 0,
+      notificationsCount: 0,
+      invoicesCount: 0,
+      devisCount: 0,
+      totalSpent: 0,
+      joinedAt: new Date().toISOString(),
+      isActive: true
     };
     
-    // Save user in registered users list
-    registeredUsers.push(newUser);
-    localStorage.setItem('myms_registered_users', JSON.stringify(registeredUsers));
-    
-    // Save password separately
-    const passwords: Record<string, string> = JSON.parse(localStorage.getItem('myms_user_passwords') || '{}');
-    passwords[emailLower] = data.password;
-    localStorage.setItem('myms_user_passwords', JSON.stringify(passwords));
-    
+    const added = addClient(newUser, data.password);
+    if (!added) {
+      return false;
+    }
+
     // Log in the new user
     setUser(newUser);
     localStorage.setItem('myms_user', JSON.stringify(newUser));
-    
-    // Register in messaging directory
-    registerKnownUser({
-      id: newUser.id,
-      name: `${newUser.firstName} ${newUser.lastName}`.trim(),
-      email: newUser.email,
-      role: newUser.role
-    });
     return true;
   };
 

@@ -11,12 +11,37 @@ export interface KnownUser {
   role: string;
 }
 
-export const KNOWN_USERS: KnownUser[] = [
+const KNOWN_USERS_KEY = 'myms_known_users';
+
+const DEFAULT_KNOWN_USERS: KnownUser[] = [
   { id: 'admin-1', name: 'Admin Myms', email: 'admin@myms.com', role: 'SUPER_ADMIN' },
   { id: 'admin-2', name: 'Marie Diallo', email: 'manager@myms.com', role: 'PROJECT_MANAGER' },
   { id: 'admin-3', name: 'Amadou Ba', email: 'sales@myms.com', role: 'SALES_MANAGER' },
   { id: 'client-1', name: 'Sophie Martin', email: 'client@demo.com', role: 'CLIENT' },
 ];
+
+function loadKnownUsers(): KnownUser[] {
+  if (typeof window === 'undefined') {
+    return DEFAULT_KNOWN_USERS;
+  }
+  const raw = localStorage.getItem(KNOWN_USERS_KEY);
+  if (!raw) {
+    localStorage.setItem(KNOWN_USERS_KEY, JSON.stringify(DEFAULT_KNOWN_USERS));
+    return [...DEFAULT_KNOWN_USERS];
+  }
+  try {
+    return JSON.parse(raw) as KnownUser[];
+  } catch {
+    localStorage.setItem(KNOWN_USERS_KEY, JSON.stringify(DEFAULT_KNOWN_USERS));
+    return [...DEFAULT_KNOWN_USERS];
+  }
+}
+
+function saveKnownUsers(users: KnownUser[]) {
+  localStorage.setItem(KNOWN_USERS_KEY, JSON.stringify(users));
+}
+
+export const KNOWN_USERS: KnownUser[] = loadKnownUsers();
 
 // Retrouver un utilisateur connu par son ID ; sinon on fabrique un placeholder
 export function getKnownUser(id: string): KnownUser {
@@ -25,9 +50,29 @@ export function getKnownUser(id: string): KnownUser {
 
 // Ajouter dynamiquement un utilisateur à l'annuaire (lors de l'inscription par ex.)
 export function registerKnownUser(u: KnownUser) {
-  if (!KNOWN_USERS.find(x => x.id === u.id)) {
-    KNOWN_USERS.push(u);
+  const existing = KNOWN_USERS.find(x => x.id === u.id);
+  if (existing) {
+    if (existing.name !== u.name || existing.email !== u.email || existing.role !== u.role) {
+      existing.name = u.name;
+      existing.email = u.email;
+      existing.role = u.role;
+      saveKnownUsers(KNOWN_USERS);
+    }
+    return;
   }
+  KNOWN_USERS.push(u);
+  saveKnownUsers(KNOWN_USERS);
+}
+
+export function removeKnownUser(id: string) {
+  const index = KNOWN_USERS.findIndex((user) => user.id === id);
+  if (index !== -1) {
+    KNOWN_USERS.splice(index, 1);
+    saveKnownUsers(KNOWN_USERS);
+    notify();
+    return true;
+  }
+  return false;
 }
 
 export type MessageStatus = 'sent' | 'delivered' | 'read';
@@ -296,15 +341,15 @@ export const messageStore = {
       content: opts.content,
       createdAt: new Date().toISOString(),
       isRead: true,
-      status: 'read',
+      status: 'sent',
       attachments: opts.attachments,
     };
 
-    // After a short delay, mark as delivered
+    // After a short delay, mark as delivered for the sender's sent message state
     setTimeout(() => {
       state = {
         ...state,
-        messages: state.messages.map(m => m.id === msg.id && m.status === 'sent' ? { ...m, status: 'delivered' } : m),
+        messages: state.messages.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m),
       };
       persist();
       notify();
