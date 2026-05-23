@@ -389,27 +389,35 @@ export function ClientProjects() {
 function ProjectMessages({ userId, userName }: { userId: string; userName: string }) {
   const [msg, setMsg] = useState('');
   const [convos, setConvos] = useState(messageStore.getUserConversations(userId));
-  const activeConv = convos[0]?.id || '';
-  const [messages, setMessages] = useState(activeConv ? messageStore.getMessages(activeConv) : []);
+  const [activeConvId, setActiveConvId] = useState<string | null>(convos[0]?.id || null);
+  const [messages, setMessages] = useState<ReturnType<typeof messageStore.getMessages>>(() =>
+    activeConvId ? messageStore.getMessages(activeConvId) : []
+  );
 
   useEffect(() => {
     const unsub = messageStore.subscribe(() => {
-      setConvos(messageStore.getUserConversations(userId));
-      if (activeConv) setMessages(messageStore.getMessages(activeConv));
+      const nextConvos = messageStore.getUserConversations(userId);
+      setConvos(nextConvos);
+      if (!activeConvId && nextConvos.length > 0) {
+        setActiveConvId(nextConvos[0].id);
+        setMessages(messageStore.getMessages(nextConvos[0].id));
+      } else if (activeConvId) {
+        setMessages(messageStore.getMessages(activeConvId));
+      }
     });
     return () => { unsub(); };
-  }, [userId, activeConv]);
+  }, [userId, activeConvId]);
 
   useEffect(() => {
-    if (activeConv) {
-      setMessages(messageStore.getMessages(activeConv));
-      messageStore.markAsRead(activeConv, userId);
+    if (activeConvId) {
+      setMessages(messageStore.getMessages(activeConvId));
+      messageStore.markAsRead(activeConvId, userId);
     }
-  }, [activeConv, userId]);
+  }, [activeConvId, userId]);
 
   const handleSend = () => {
-    if (!msg.trim() || !activeConv) return;
-    messageStore.sendMessage({ conversationId: activeConv, senderId: userId, senderName: userName, content: msg.trim() });
+    if (!msg.trim() || !activeConvId) return;
+    messageStore.sendMessage({ conversationId: activeConvId, senderId: userId, senderName: userName, content: msg.trim() });
     setMsg('');
   };
 
@@ -1026,13 +1034,11 @@ export function ClientMessages() {
       try {
         const initialConvos = messageStore.getUserConversations(uid);
         setConvos(initialConvos);
-        if (initialConvos.length > 0) {
+        if (initialConvos.length > 0 && !activeConvId) {
           const firstConv = initialConvos[0];
-          setActiveConvId((current) => current ?? firstConv.id);
-          if (!activeConvId) {
-            setMsgs(messageStore.getMessages(firstConv.id));
-            messageStore.markAsRead(firstConv.id, uid);
-          }
+          setActiveConvId(firstConv.id);
+          setMsgs(messageStore.getMessages(firstConv.id));
+          messageStore.markAsRead(firstConv.id, uid);
         }
         setMessageError(null);
       } catch (error) {
@@ -1044,7 +1050,7 @@ export function ClientMessages() {
     };
 
     loadMessages();
-  }, [uid]);
+  }, [uid, activeConvId]);
 
   useEffect(() => {
     const unsub = messageStore.subscribe(() => {

@@ -1378,8 +1378,14 @@ export function AdminMessages() {
 
   useEffect(() => {
     const unsub = messageStore.subscribe(() => {
-      setConvos(messageStore.getUserConversations(uid));
-      if (activeConvId) setMsgs(messageStore.getMessages(activeConvId));
+      const nextConvos = messageStore.getUserConversations(uid);
+      setConvos(nextConvos);
+      if (!activeConvId && nextConvos.length > 0) {
+        setActiveConvId(nextConvos[0].id);
+        setMsgs(messageStore.getMessages(nextConvos[0].id));
+      } else if (activeConvId) {
+        setMsgs(messageStore.getMessages(activeConvId));
+      }
     });
     return () => { unsub(); };
   }, [uid, activeConvId]);
