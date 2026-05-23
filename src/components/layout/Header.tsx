@@ -47,10 +47,10 @@ export function Header() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled 
+        'fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300',
+        isScrolled
           ? 'bg-[#0A0A0A]/90 backdrop-blur-md border-b border-[#2A2A2A]' 
-          : 'bg-transparent'
+          : 'bg-[#0A0A0A]/60 backdrop-blur-md'
       )}
     >
       <div className="max-w-7xl mx-auto px-6">
@@ -160,9 +160,9 @@ export function Header() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             className="lg:hidden bg-[#0A0A0A] border-t border-[#2A2A2A] overflow-hidden"
           >
             <div className="px-6 py-6 space-y-4">
