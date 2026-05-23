@@ -931,6 +931,7 @@ export function ClientMessages() {
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<ReturnType<typeof messageStore.getMessages>>([]);
   const [input, setInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [newSubject, setNewSubject] = useState('');
   const [newRecipientId, setNewRecipientId] = useState('');
   const [showNew, setShowNew] = useState(false);
@@ -967,6 +968,7 @@ export function ClientMessages() {
 
   const openConversation = (id: string) => {
     setActiveConvId(id);
+    setSearchTerm('');
     setMsgs(messageStore.getMessages(id));
     messageStore.markAsRead(id, uid);
     setShowNew(false);
@@ -1004,6 +1006,13 @@ export function ClientMessages() {
       messageStore.setTyping(activeConvId, user.id, false);
     };
   }, [activeConvId, user]);
+
+  const visibleMessages = searchTerm.trim()
+    ? msgs.filter((m) =>
+        m.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        m.senderName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : msgs;
 
   const handleSend = () => {
     if ((!input.trim() && attachmentFiles.length === 0) || !activeConvId || !user) return;
@@ -1170,7 +1179,7 @@ export function ClientMessages() {
     return (
       <div className="flex flex-col h-[calc(100vh-6rem)]">
         {/* Header */}
-        <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] flex items-center justify-between">
+        <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] space-y-3">
           <div className="flex items-center gap-3">
             <button onClick={() => { setActiveConvId(null); }} className="text-[#A0A0A0] hover:text-white transition-colors">
               <ArrowRight className="w-5 h-5 transform rotate-180" />
@@ -1180,11 +1189,19 @@ export function ClientMessages() {
               <p className="text-xs text-[#6B7280]">{currentConv ? getOtherParticipants(currentConv) : ''}</p>
             </div>
           </div>
+          <Input
+            placeholder="Rechercher dans la conversation…"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-[#131313]"
+          />
         </div>
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-          {msgs.map(m => (
+          {visibleMessages.length === 0 ? (
+            <div className="py-12 text-center text-sm text-[#A0A0A0]">Aucun message trouvé pour «{searchTerm}».</div>
+          ) : visibleMessages.map(m => (
             <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
                 m.senderId === uid ? 'bg-[#6C3CE1] text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
@@ -1231,10 +1248,10 @@ export function ClientMessages() {
             ))}
           </div>
         )}
-        <div className="p-3 border-t border-[#2A2A2A] flex items-center gap-2">
-          <div className="flex items-center gap-2">
+        <div className="p-3 border-t border-[#2A2A2A] flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div className="relative">
-              <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center">
+              <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                 <Smile className="w-5 h-5" />
               </button>
               {showEmojiPicker && (
@@ -1256,7 +1273,7 @@ export function ClientMessages() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder="Écrivez un message…"
-            className="flex-1 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1]"
+            className="flex-1 min-w-0 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1]"
           />
           <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white disabled:opacity-50 transition-all flex-shrink-0">
             <Send className="w-4 h-4" />
@@ -1387,12 +1404,22 @@ export function ClientMessages() {
               </div>
             ) : activeConvId ? (
               <>
-                <div className="p-4 border-b border-[#2A2A2A] bg-[#111111]">
-                  <h3 className="font-semibold text-white">{convos.find(c => c.id === activeConvId)?.subject}</h3>
-                  <p className="text-xs text-[#6B7280]">Avec {convos.find(c => c.id === activeConvId) ? getOtherParticipants(convos.find(c => c.id === activeConvId)!) : ''}</p>
+                <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-white">{convos.find(c => c.id === activeConvId)?.subject}</h3>
+                    <p className="text-xs text-[#6B7280]">Avec {convos.find(c => c.id === activeConvId) ? getOtherParticipants(convos.find(c => c.id === activeConvId)!) : ''}</p>
+                  </div>
+                  <Input
+                    placeholder="Rechercher dans la conversation…"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="bg-[#131313]"
+                  />
                 </div>
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-                  {msgs.map(m => (
+                  {visibleMessages.length === 0 ? (
+                    <div className="py-12 text-center text-sm text-[#A0A0A0]">Aucun message trouvé pour «{searchTerm}».</div>
+                  ) : visibleMessages.map(m => (
                     <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
                         m.senderId === uid ? 'bg-[#6C3CE1] text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'

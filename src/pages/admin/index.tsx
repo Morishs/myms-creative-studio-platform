@@ -904,10 +904,10 @@ export function AdminMessages() {
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<ReturnType<typeof messageStore.getMessages>>([]);
   const [input, setInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [newRecipientId, setNewRecipientId] = useState('');
   const [newSubject, setNewSubject] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -1140,13 +1140,6 @@ export function AdminMessages() {
     ? Object.entries(typingUsers).some(([id, typing]) => id !== uid && typing)
     : false;
 
-  const visibleMessages = searchTerm.trim()
-    ? msgs.filter((m) =>
-        m.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.senderName.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : msgs;
-
   const renderMobileListView = () => (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
       <div className="overflow-y-auto flex-1 space-y-1 px-2 py-3">
@@ -1199,15 +1192,13 @@ export function AdminMessages() {
     return (
       <div className="flex flex-col h-[calc(100vh-6rem)]">
         <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button onClick={() => { setActiveConvId(null); }} className="text-[#A0A0A0] hover:text-white transition-colors">
-                <ArrowRight className="w-5 h-5 transform rotate-180" />
-              </button>
-              <div>
-                <h3 className="font-semibold text-white text-sm">{currentConv?.subject}</h3>
-                <p className="text-xs text-[#6B7280]">{currentConv ? getOtherParticipants(currentConv) : ''}</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => { setActiveConvId(null); }} className="text-[#A0A0A0] hover:text-white transition-colors">
+              <ArrowRight className="w-5 h-5 transform rotate-180" />
+            </button>
+            <div>
+              <h3 className="font-semibold text-white text-sm">{currentConv?.subject}</h3>
+              <p className="text-xs text-[#6B7280]">{currentConv ? getOtherParticipants(currentConv) : ''}</p>
             </div>
           </div>
           <Input
@@ -1243,10 +1234,10 @@ export function AdminMessages() {
             {attachmentFiles.map(renderAttachmentPreview)}
           </div>
         )}
-        <div className="p-3 border-t border-[#2A2A2A] flex items-center gap-2">
-          <div className="flex items-center gap-2">
+        <div className="p-3 border-t border-[#2A2A2A] flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div className="relative">
-              <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center">
+              <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                 <Smile className="w-5 h-5" />
               </button>
               {showEmojiPicker && (
@@ -1420,7 +1411,7 @@ export function AdminMessages() {
                   className="bg-[#131313]"
                 />
                 {otherParticipantTyping && (
-                  <div className="inline-flex items-center gap-3 rounded-2xl bg-[#111111] px-4 py-3 border border-[#2A2A2A]">
+                  <div className="mt-3 inline-flex items-center gap-3 rounded-2xl bg-[#111111] px-4 py-3 border border-[#2A2A2A]">
                     <div className="flex items-center gap-1">
                       <span className="typing-dot bg-[#6C3CE1]" />
                       <span className="typing-dot bg-[#6C3CE1]" />
@@ -1458,10 +1449,10 @@ export function AdminMessages() {
                   {attachmentFiles.map(renderAttachmentPreview)}
                 </div>
               )}
-              <div className="p-3 border-t border-[#2A2A2A] flex items-center gap-2">
-                <div className="flex items-center gap-2">
+              <div className="p-3 border-t border-[#2A2A2A] flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="relative">
-                    <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center">
+                    <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                       <Smile className="w-5 h-5" />
                     </button>
                     {showEmojiPicker && (
@@ -1474,7 +1465,7 @@ export function AdminMessages() {
                       </div>
                     )}
                   </div>
-                  <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center">
+                  <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                     <Paperclip className="w-5 h-5" />
                   </button>
                 </div>
@@ -1483,7 +1474,7 @@ export function AdminMessages() {
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                   placeholder="Répondre…"
-                  className="flex-1 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1]"
+                  className="flex-1 min-w-0 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1]"
                 />
                 <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white disabled:opacity-50 transition-all">
                   <Send className="w-4 h-4" />
