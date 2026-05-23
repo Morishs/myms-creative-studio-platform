@@ -127,6 +127,9 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal overflow on small screens (mobile) */
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 h1, h2, h3, h4, h5, h6 {

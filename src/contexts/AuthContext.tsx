@@ -182,43 +182,6 @@ const DEMO_ACCOUNTS: Record<string, { password: string; user: User }> = {
       company: 'Myms Studio',
       phone: '+221 77 000 00 00'
     }
-  },
-  'manager@myms.com': {
-    password: 'manager123',
-    user: {
-      id: 'admin-2',
-      email: 'manager@myms.com',
-      firstName: 'Marie',
-      lastName: 'Diallo',
-      role: 'PROJECT_MANAGER',
-      company: 'Myms Studio',
-      phone: '+221 77 111 11 11'
-    }
-  },
-  'sales@myms.com': {
-    password: 'sales123',
-    user: {
-      id: 'admin-3',
-      email: 'sales@myms.com',
-      firstName: 'Amadou',
-      lastName: 'Ba',
-      role: 'SALES_MANAGER',
-      company: 'Myms Studio',
-      phone: '+221 77 222 22 22'
-    }
-  },
-  'client@demo.com': {
-    password: 'client123',
-    user: {
-      id: 'client-1',
-      email: 'client@demo.com',
-      firstName: 'Sophie',
-      lastName: 'Martin',
-      role: 'CLIENT',
-      company: 'Café Lumière',
-      phone: '+221 77 123 45 67',
-      accountType: 'INDIVIDUAL'
-    }
   }
 };
 

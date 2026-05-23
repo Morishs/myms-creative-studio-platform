@@ -51,8 +51,8 @@ export function Home() {
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A]">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzLTItMi0yLTQgMi00IDItNCAyIDIgMiA0LTIgNC0yIDQtMi0yLTItNCAyLTQgMi00IDIgMiAyIDQtMiA0LTIgNHoiIHN0cm9rZT0iIzJBMkEyQSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjwvZz48L3N2Zz4=')] opacity-30"></div>
-          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#6C3CE1]/20 rounded-full blur-[128px]"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-[#F59E0B]/10 rounded-full blur-[128px]"></div>
+          <div className="absolute top-10 md:top-1/4 right-0 md:right-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#6C3CE1]/20 rounded-full blur-[128px] pointer-events-none"></div>
+          <div className="absolute bottom-10 md:bottom-1/4 left-0 md:left-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#F59E0B]/10 rounded-full blur-[128px] pointer-events-none"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 py-20">

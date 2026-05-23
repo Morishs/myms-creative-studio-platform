@@ -60,8 +60,8 @@ export function Login() {
 
   return (
     <div className="min-h-screen pt-20 flex items-center justify-center px-6 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A] relative overflow-hidden">
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#6C3CE1]/10 rounded-full blur-[128px]"></div>
-      <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-[#F59E0B]/5 rounded-full blur-[128px]"></div>
+      <div className="absolute top-10 md:top-1/4 right-0 md:right-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#6C3CE1]/10 rounded-full blur-[128px] pointer-events-none"></div>
+      <div className="absolute bottom-10 md:bottom-1/4 left-0 md:left-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#F59E0B]/5 rounded-full blur-[128px] pointer-events-none"></div>
 
       {/* Bouton retour */}
       <button
@@ -142,36 +142,6 @@ export function Login() {
             </Link>
           </div>
         </Card>
-
-        <div className="mt-6 p-4 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg">
-          <p className="text-xs text-[#6B7280] mb-3 font-semibold">🔐 Comptes de démonstration :</p>
-          <div className="space-y-2 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[#A0A0A0]">
-                <span className="inline-block w-20 px-2 py-0.5 rounded text-center bg-gradient-to-r from-[#EF4444] to-[#F59E0B] text-white mr-2">Super Admin</span>
-              </span>
-              <span className="text-[#6B7280]">admin@myms.com / admin123</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[#A0A0A0]">
-                <span className="inline-block w-20 px-2 py-0.5 rounded text-center bg-[#3B82F6] text-white mr-2">Chef projet</span>
-              </span>
-              <span className="text-[#6B7280]">manager@myms.com / manager123</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[#A0A0A0]">
-                <span className="inline-block w-20 px-2 py-0.5 rounded text-center bg-[#10B981] text-white mr-2">Commercial</span>
-              </span>
-              <span className="text-[#6B7280]">sales@myms.com / sales123</span>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-[#2A2A2A]">
-              <span className="text-[#A0A0A0]">
-                <span className="inline-block w-20 px-2 py-0.5 rounded text-center bg-[#6B7280] text-white mr-2">Client</span>
-              </span>
-              <span className="text-[#6B7280]">client@demo.com / client123</span>
-            </div>
-          </div>
-        </div>
       </motion.div>
     </div>
   );

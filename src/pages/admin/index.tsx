@@ -689,7 +689,7 @@ export function AdminPortfolio() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {portfolioProjects.map((project) => (
           <Card key={project.id} hover>
-            <div className="aspect-video overflow-hidden rounded-lg mb-4 -mx-6 -mt-6">
+            <div className="aspect-video overflow-hidden rounded-lg mb-4 mx-0 mt-0 md:-mx-6 md:-mt-6">
               <img src={project.coverImage} alt={project.title} className="w-full h-full object-cover" />
             </div>
             <div className="flex items-start justify-between mb-2">
@@ -775,7 +775,7 @@ export function AdminResources() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {resources.map((resource) => (
           <Card key={resource.id}>
-            <div className="aspect-video overflow-hidden rounded-lg mb-4 -mx-6 -mt-6">
+            <div className="aspect-video overflow-hidden rounded-lg mb-4 mx-0 mt-0 md:-mx-6 md:-mt-6">
               <img src={resource.coverImage} alt={resource.title} className="w-full h-full object-cover" />
             </div>
             <div className="flex items-start justify-between mb-2">
