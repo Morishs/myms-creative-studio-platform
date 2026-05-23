@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Select } from '../components/ui/Select';
+import { useAuth } from '../contexts/AuthContext';
 import { Card } from '../components/ui/Card';
 import { serviceOptions, budgetOptions, deadlineOptions, sourceOptions } from '../data';
 import { appStore } from '../stores/appStore';
@@ -49,10 +51,35 @@ const benefits = [
 export function Quote() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const { register, handleSubmit, formState: { errors } } = useForm<QuoteFormData>({
     resolver: zodResolver(quoteSchema),
   });
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen pt-20 flex items-center justify-center bg-[#0A0A0A] px-6">
+        <div className="max-w-xl w-full text-center">
+          <div className="mb-6 rounded-3xl border border-[#2A2A2A] bg-[#111111] p-10">
+            <h1 className="text-3xl font-bold text-white mb-4">Connexion requise</h1>
+            <p className="text-[#A0A0A0] mb-8">
+              Vous devez être connecté pour demander un devis et suivre votre demande depuis votre espace client.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
+              <Button type="button" onClick={() => navigate('/auth/connexion', { state: { from: '/devis' } })}>
+                Se connecter
+              </Button>
+              <Button variant="outline" type="button" onClick={() => navigate('/auth/inscription', { state: { from: '/devis' } })}>
+                Créer un compte
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const onSubmit = async (data: QuoteFormData) => {
     setIsSubmitting(true);

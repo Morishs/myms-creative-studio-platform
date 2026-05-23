@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,7 +23,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { login, isAuthenticated, isLoading, user } = useAuth();
 
   const handleGoBack = () => {
     if (window.history.length > 1) {
@@ -34,21 +35,36 @@ export function Login() {
   };
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      const isAdminUser = ['SUPER_ADMIN', 'ADMIN', 'PROJECT_MANAGER', 'SALES_MANAGER', 'CONTENT_MANAGER', 'SUPPORT'].includes(user.role);
+      const fromPath = (location.state as { from?: string })?.from;
+      if (!isAdminUser && fromPath) {
+        navigate(fromPath, { replace: true });
+      } else {
+        navigate(isAdminUser ? '/admin/dashboard' : '/client/dashboard', { replace: true });
+      }
+    }
+  }, [isLoading, isAuthenticated, user, navigate, location.state]);
+
   const onSubmit = async (data: LoginFormData) => {
     setError('');
-    setIsLoading(true);
+    setIsSubmitting(true);
     const success = await login(data.email, data.password);
-    setIsLoading(false);
+    setIsSubmitting(false);
     if (success) {
       const storedUser = JSON.parse(localStorage.getItem('myms_user') || '{}');
       const adminRoles = ['SUPER_ADMIN', 'ADMIN', 'PROJECT_MANAGER', 'SALES_MANAGER', 'CONTENT_MANAGER', 'SUPPORT'];
-      if (adminRoles.includes(storedUser.role)) {
+      const fromPath = (location.state as { from?: string })?.from;
+      if (!adminRoles.includes(storedUser.role) && fromPath) {
+        navigate(fromPath, { replace: true });
+      } else if (adminRoles.includes(storedUser.role)) {
         navigate('/admin/dashboard');
       } else {
         navigate('/client/dashboard');
@@ -129,7 +145,7 @@ export function Login() {
               </Link>
             </div>
 
-            <Button type="submit" variant="primary" className="w-full" size="lg" isLoading={isLoading}>
+            <Button type="submit" variant="primary" className="w-full" size="lg" isLoading={isSubmitting}>
               <LogIn className="w-5 h-5 mr-2" />
               Se connecter
             </Button>
@@ -207,6 +223,7 @@ const sectorOptions = [
 
 export function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register: registerUser } = useAuth();
   const [accountType, setAccountType] = useState<AccountType>('INDIVIDUAL');
 
@@ -245,7 +262,12 @@ export function Register() {
     });
     setIsLoading(false);
     if (success) {
-      navigate('/client/dashboard');
+      const fromPath = (location.state as { from?: string })?.from;
+      if (fromPath) {
+        navigate(fromPath, { replace: true });
+      } else {
+        navigate('/client/dashboard');
+      }
     } else {
       setError('Cet email est déjà utilisé');
     }
@@ -271,7 +293,12 @@ export function Register() {
     });
     setIsLoading(false);
     if (success) {
-      navigate('/client/dashboard');
+      const fromPath = (location.state as { from?: string })?.from;
+      if (fromPath) {
+        navigate(fromPath, { replace: true });
+      } else {
+        navigate('/client/dashboard');
+      }
     } else {
       setError('Cet email est déjà utilisé');
     }

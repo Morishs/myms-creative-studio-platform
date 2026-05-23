@@ -47,7 +47,7 @@ const adminNavItems = [
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isLoading, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,8 +70,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     return unsub;
   }, [user]);
 
+  if (isLoading) {
+    return <div className="min-h-screen pt-16 bg-[#0A0A0A]" />;
+  }
+
   if (!isAuthenticated || !isAdmin) {
-    return <Navigate to="/auth/connexion" replace />;
+    return <Navigate to="/auth/connexion" replace state={{ from: location.pathname }} />;
   }
 
   const handleLogout = () => { logout(); navigate('/'); };
@@ -912,6 +916,8 @@ export function AdminMessages() {
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [attachmentFiles, setAttachmentFiles] = useState<Array<{ id: string; file: File; name: string; type: string; size: number; url: string }>>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+  const [messageError, setMessageError] = useState<string | null>(null);
   const unreadCount = messageStore.getUnreadCount(uid);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -920,6 +926,89 @@ export function AdminMessages() {
 
   // Tous les utilisateurs sauf moi
   const recipientOptions = KNOWN_USERS.filter(u => u.id !== uid);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
+        <p className="text-sm text-[#A0A0A0]">Chargement de la messagerie...</p>
+      </div>
+    );
+  }
+
+  if (isLoadingMessages) {
+    return (
+      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-[#6C3CE1]/20 border-t-[#6C3CE1] animate-spin" />
+          <p className="text-sm text-[#A0A0A0]">Chargement de vos conversations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (messageError) {
+    return (
+      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
+        <div className="max-w-lg rounded-3xl border border-[#2A2A2A] bg-[#111111] p-8 text-center">
+          <h2 className="text-xl font-semibold text-white mb-3">Erreur de messagerie</h2>
+          <p className="text-sm text-[#A0A0A0] mb-6">{messageError}</p>
+          <Button variant="primary" onClick={() => {
+            setIsLoadingMessages(true);
+            setMessageError(null);
+            const initialConvos = messageStore.getUserConversations(uid);
+            setConvos(initialConvos);
+            if (initialConvos.length > 0) {
+              const firstConv = initialConvos[0];
+              setActiveConvId(firstConv.id);
+              setMsgs(messageStore.getMessages(firstConv.id));
+              messageStore.markAsRead(firstConv.id, uid);
+            }
+            setIsLoadingMessages(false);
+          }}>
+            Réessayer
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  useEffect(() => {
+    const loadMessages = () => {
+      try {
+        const initialConvos = messageStore.getUserConversations(uid);
+        setConvos(initialConvos);
+        if (!activeConvId && initialConvos.length > 0) {
+          const firstConv = initialConvos[0];
+          setActiveConvId(firstConv.id);
+          setMsgs(messageStore.getMessages(firstConv.id));
+          messageStore.markAsRead(firstConv.id, uid);
+        }
+        setMessageError(null);
+      } catch (error) {
+        console.error('Erreur lors du chargement des conversations admin :', error);
+        setMessageError('Impossible de charger la messagerie. Veuillez réessayer.');
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+
+    loadMessages();
+  }, [uid, activeConvId]);
+
+  useEffect(() => {
+    const unsub = messageStore.subscribe(() => {
+      try {
+        setConvos(messageStore.getUserConversations(uid));
+        if (activeConvId) {
+          setMsgs(messageStore.getMessages(activeConvId));
+        }
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour des conversations admin :', error);
+        setMessageError('Erreur de synchronisation des messages.');
+      }
+    });
+    return () => { unsub(); };
+  }, [uid, activeConvId]);
 
   useEffect(() => {
     if (!activeConvId || !user) {

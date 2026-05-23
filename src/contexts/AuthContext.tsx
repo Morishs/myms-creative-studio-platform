@@ -140,6 +140,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isLoading: boolean;
   login: (email: string, password: string, role?: UserRole) => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => void;
@@ -186,18 +187,21 @@ const DEMO_ACCOUNTS: Record<string, { password: string; user: User }> = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const stored = localStorage.getItem('myms_user');
+    if (!stored) return null;
+    try {
+      return JSON.parse(stored) as User;
+    } catch (e) {
+      localStorage.removeItem('myms_user');
+      return null;
+    }
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load user from localStorage on init
-    const stored = localStorage.getItem('myms_user');
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch (e) {
-        localStorage.removeItem('myms_user');
-      }
-    }
+    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string, _role?: UserRole): Promise<boolean> => {
@@ -334,6 +338,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isAuthenticated: !!user,
       isAdmin,
+      isLoading,
       login,
       register,
       logout,
