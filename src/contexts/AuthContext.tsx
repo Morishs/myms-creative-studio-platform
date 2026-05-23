@@ -1,0 +1,392 @@
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { registerKnownUser } from '../stores/messageStore';
+
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'PROJECT_MANAGER' | 'SALES_MANAGER' | 'CONTENT_MANAGER' | 'SUPPORT' | 'CLIENT';
+export type AccountType = 'INDIVIDUAL' | 'COMPANY';
+
+// Permissions système
+export type Permission = 
+  | 'dashboard.view'
+  | 'clients.view' | 'clients.create' | 'clients.edit' | 'clients.delete'
+  | 'projects.view' | 'projects.create' | 'projects.edit' | 'projects.delete'
+  | 'quotes.view' | 'quotes.create' | 'quotes.edit' | 'quotes.delete' | 'quotes.send'
+  | 'invoices.view' | 'invoices.create' | 'invoices.edit' | 'invoices.delete' | 'invoices.send'
+  | 'quote_requests.view' | 'quote_requests.respond' | 'quote_requests.convert'
+  | 'portfolio.view' | 'portfolio.create' | 'portfolio.edit' | 'portfolio.delete'
+  | 'services.view' | 'services.create' | 'services.edit' | 'services.delete'
+  | 'resources.view' | 'resources.create' | 'resources.edit' | 'resources.delete'
+  | 'blog.view' | 'blog.create' | 'blog.edit' | 'blog.delete'
+  | 'testimonials.view' | 'testimonials.create' | 'testimonials.edit' | 'testimonials.delete'
+  | 'messages.view' | 'messages.respond' | 'messages.archive'
+  | 'newsletter.view' | 'newsletter.export'
+  | 'team.view' | 'team.create' | 'team.edit' | 'team.delete'
+  | 'settings.view' | 'settings.edit';
+
+// Définition des rôles avec leurs permissions
+export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  SUPER_ADMIN: [
+    'dashboard.view',
+    'clients.view', 'clients.create', 'clients.edit', 'clients.delete',
+    'projects.view', 'projects.create', 'projects.edit', 'projects.delete',
+    'quotes.view', 'quotes.create', 'quotes.edit', 'quotes.delete', 'quotes.send',
+    'invoices.view', 'invoices.create', 'invoices.edit', 'invoices.delete', 'invoices.send',
+    'quote_requests.view', 'quote_requests.respond', 'quote_requests.convert',
+    'portfolio.view', 'portfolio.create', 'portfolio.edit', 'portfolio.delete',
+    'services.view', 'services.create', 'services.edit', 'services.delete',
+    'resources.view', 'resources.create', 'resources.edit', 'resources.delete',
+    'blog.view', 'blog.create', 'blog.edit', 'blog.delete',
+    'testimonials.view', 'testimonials.create', 'testimonials.edit', 'testimonials.delete',
+    'messages.view', 'messages.respond', 'messages.archive',
+    'newsletter.view', 'newsletter.export',
+    'team.view', 'team.create', 'team.edit', 'team.delete',
+    'settings.view', 'settings.edit'
+  ],
+  ADMIN: [
+    'dashboard.view',
+    'clients.view', 'clients.create', 'clients.edit',
+    'projects.view', 'projects.create', 'projects.edit', 'projects.delete',
+    'quotes.view', 'quotes.create', 'quotes.edit', 'quotes.delete', 'quotes.send',
+    'invoices.view', 'invoices.create', 'invoices.edit', 'invoices.delete', 'invoices.send',
+    'quote_requests.view', 'quote_requests.respond', 'quote_requests.convert',
+    'portfolio.view', 'portfolio.create', 'portfolio.edit', 'portfolio.delete',
+    'services.view', 'services.create', 'services.edit', 'services.delete',
+    'resources.view', 'resources.create', 'resources.edit', 'resources.delete',
+    'blog.view', 'blog.create', 'blog.edit', 'blog.delete',
+    'testimonials.view', 'testimonials.create', 'testimonials.edit', 'testimonials.delete',
+    'messages.view', 'messages.respond', 'messages.archive',
+    'newsletter.view', 'newsletter.export',
+    'team.view',
+    'settings.view'
+  ],
+  PROJECT_MANAGER: [
+    'dashboard.view',
+    'clients.view', 'clients.create', 'clients.edit',
+    'projects.view', 'projects.create', 'projects.edit',
+    'quotes.view',
+    'invoices.view',
+    'quote_requests.view', 'quote_requests.respond',
+    'messages.view', 'messages.respond'
+  ],
+  SALES_MANAGER: [
+    'dashboard.view',
+    'clients.view', 'clients.create', 'clients.edit',
+    'projects.view',
+    'quotes.view', 'quotes.create', 'quotes.edit', 'quotes.send',
+    'invoices.view', 'invoices.create', 'invoices.edit', 'invoices.send',
+    'quote_requests.view', 'quote_requests.respond', 'quote_requests.convert',
+    'messages.view', 'messages.respond'
+  ],
+  CONTENT_MANAGER: [
+    'dashboard.view',
+    'portfolio.view', 'portfolio.create', 'portfolio.edit', 'portfolio.delete',
+    'services.view', 'services.edit',
+    'resources.view', 'resources.create', 'resources.edit', 'resources.delete',
+    'blog.view', 'blog.create', 'blog.edit', 'blog.delete',
+    'testimonials.view', 'testimonials.create', 'testimonials.edit'
+  ],
+  SUPPORT: [
+    'dashboard.view',
+    'clients.view',
+    'projects.view',
+    'quote_requests.view', 'quote_requests.respond',
+    'messages.view', 'messages.respond', 'messages.archive'
+  ],
+  CLIENT: []
+};
+
+// Labels des rôles
+export const ROLE_LABELS: Record<UserRole, string> = {
+  SUPER_ADMIN: 'Super Administrateur',
+  ADMIN: 'Administrateur',
+  PROJECT_MANAGER: 'Chef de projet',
+  SALES_MANAGER: 'Responsable commercial',
+  CONTENT_MANAGER: 'Gestionnaire de contenu',
+  SUPPORT: 'Support client',
+  CLIENT: 'Client'
+};
+
+// Couleurs des badges par rôle
+export const ROLE_COLORS: Record<UserRole, string> = {
+  SUPER_ADMIN: 'bg-gradient-to-r from-[#EF4444] to-[#F59E0B] text-white',
+  ADMIN: 'bg-[#6C3CE1] text-white',
+  PROJECT_MANAGER: 'bg-[#3B82F6] text-white',
+  SALES_MANAGER: 'bg-[#10B981] text-white',
+  CONTENT_MANAGER: 'bg-[#F59E0B] text-white',
+  SUPPORT: 'bg-[#6B7280] text-white',
+  CLIENT: 'bg-[#2A2A2A] text-white'
+};
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  company?: string;
+  role: UserRole;
+  avatar?: string;
+  accountType?: AccountType;
+  // Company specific fields
+  companyName?: string;
+  companySector?: string;
+  companyRegistration?: string; // SIRET, RCCM, etc.
+  companyAddress?: string;
+  companyCity?: string;
+  companyCountry?: string;
+  position?: string; // Position in company
+}
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  login: (email: string, password: string, role?: UserRole) => Promise<boolean>;
+  register: (data: RegisterData) => Promise<boolean>;
+  logout: () => void;
+  updateProfile: (data: Partial<User>) => void;
+  hasPermission: (permission: Permission) => boolean;
+  hasAnyPermission: (permissions: Permission[]) => boolean;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  accountType: AccountType;
+  // Individual specific
+  company?: string; // Optional for individuals
+  // Company specific
+  companyName?: string;
+  companySector?: string;
+  companyRegistration?: string;
+  companyAddress?: string;
+  companyCity?: string;
+  companyCountry?: string;
+  position?: string;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Demo accounts
+const DEMO_ACCOUNTS: Record<string, { password: string; user: User }> = {
+  'admin@myms.com': {
+    password: 'admin123',
+    user: {
+      id: 'admin-1',
+      email: 'admin@myms.com',
+      firstName: 'Admin',
+      lastName: 'Myms',
+      role: 'SUPER_ADMIN',
+      company: 'Myms Studio',
+      phone: '+221 77 000 00 00'
+    }
+  },
+  'manager@myms.com': {
+    password: 'manager123',
+    user: {
+      id: 'admin-2',
+      email: 'manager@myms.com',
+      firstName: 'Marie',
+      lastName: 'Diallo',
+      role: 'PROJECT_MANAGER',
+      company: 'Myms Studio',
+      phone: '+221 77 111 11 11'
+    }
+  },
+  'sales@myms.com': {
+    password: 'sales123',
+    user: {
+      id: 'admin-3',
+      email: 'sales@myms.com',
+      firstName: 'Amadou',
+      lastName: 'Ba',
+      role: 'SALES_MANAGER',
+      company: 'Myms Studio',
+      phone: '+221 77 222 22 22'
+    }
+  },
+  'client@demo.com': {
+    password: 'client123',
+    user: {
+      id: 'client-1',
+      email: 'client@demo.com',
+      firstName: 'Sophie',
+      lastName: 'Martin',
+      role: 'CLIENT',
+      company: 'Café Lumière',
+      phone: '+221 77 123 45 67',
+      accountType: 'INDIVIDUAL'
+    }
+  }
+};
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Load user from localStorage on init
+    const stored = localStorage.getItem('myms_user');
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch (e) {
+        localStorage.removeItem('myms_user');
+      }
+    }
+  }, []);
+
+  const login = async (email: string, password: string, _role?: UserRole): Promise<boolean> => {
+    await new Promise(r => setTimeout(r, 800)); // Simulate API call
+    const emailLower = email.toLowerCase().trim();
+    
+    // Check demo accounts — email + password must match exactly
+    const demo = DEMO_ACCOUNTS[emailLower];
+    if (demo) {
+      if (demo.password === password) {
+        setUser(demo.user);
+        localStorage.setItem('myms_user', JSON.stringify(demo.user));
+        // Ensure demo user is in messaging directory
+        registerKnownUser({
+          id: demo.user.id,
+          name: `${demo.user.firstName} ${demo.user.lastName}`.trim(),
+          email: demo.user.email,
+          role: demo.user.role
+        });
+        return true;
+      }
+      // Demo account exists but wrong password → reject
+      return false;
+    }
+    
+    // For non-demo emails: check registered users in localStorage
+    const registeredUsers: User[] = JSON.parse(localStorage.getItem('myms_registered_users') || '[]');
+    const found = registeredUsers.find(u => u.email === emailLower);
+    if (found) {
+      // Check password from stored passwords
+      const passwords: Record<string, string> = JSON.parse(localStorage.getItem('myms_user_passwords') || '{}');
+      if (passwords[emailLower] === password) {
+        setUser(found);
+        localStorage.setItem('myms_user', JSON.stringify(found));
+        // Ensure user is in messaging directory
+        registerKnownUser({
+          id: found.id,
+          name: `${found.firstName} ${found.lastName}`.trim(),
+          email: found.email,
+          role: found.role
+        });
+        return true;
+      }
+      // Registered user but wrong password → reject
+      return false;
+    }
+    
+    // Email not found at all → reject
+    return false;
+  };
+
+  const register = async (data: RegisterData): Promise<boolean> => {
+    await new Promise(r => setTimeout(r, 800));
+    const emailLower = data.email.toLowerCase().trim();
+    
+    // Check if email already taken (demo accounts)
+    if (DEMO_ACCOUNTS[emailLower]) {
+      return false;
+    }
+    
+    // Check if email already registered
+    const registeredUsers: User[] = JSON.parse(localStorage.getItem('myms_registered_users') || '[]');
+    if (registeredUsers.find(u => u.email === emailLower)) {
+      return false;
+    }
+    
+    const newUser: User = {
+      id: `user-${Date.now()}`,
+      email: emailLower,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
+      company: data.company,
+      role: 'CLIENT',
+      accountType: data.accountType || 'INDIVIDUAL',
+      companyName: data.companyName,
+      companySector: data.companySector,
+      companyRegistration: data.companyRegistration,
+      companyAddress: data.companyAddress,
+      companyCity: data.companyCity,
+      companyCountry: data.companyCountry,
+      position: data.position
+    };
+    
+    // Save user in registered users list
+    registeredUsers.push(newUser);
+    localStorage.setItem('myms_registered_users', JSON.stringify(registeredUsers));
+    
+    // Save password separately
+    const passwords: Record<string, string> = JSON.parse(localStorage.getItem('myms_user_passwords') || '{}');
+    passwords[emailLower] = data.password;
+    localStorage.setItem('myms_user_passwords', JSON.stringify(passwords));
+    
+    // Log in the new user
+    setUser(newUser);
+    localStorage.setItem('myms_user', JSON.stringify(newUser));
+    
+    // Register in messaging directory
+    registerKnownUser({
+      id: newUser.id,
+      name: `${newUser.firstName} ${newUser.lastName}`.trim(),
+      email: newUser.email,
+      role: newUser.role
+    });
+    return true;
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('myms_user');
+  };
+
+  const updateProfile = (data: Partial<User>) => {
+    if (!user) return;
+    const updated = { ...user, ...data };
+    setUser(updated);
+    localStorage.setItem('myms_user', JSON.stringify(updated));
+  };
+
+  const isAdmin = !!user && ['SUPER_ADMIN', 'ADMIN', 'PROJECT_MANAGER', 'SALES_MANAGER', 'CONTENT_MANAGER', 'SUPPORT'].includes(user.role);
+
+  const hasPermission = (permission: Permission): boolean => {
+    if (!user) return false;
+    const permissions = ROLE_PERMISSIONS[user.role] || [];
+    return permissions.includes(permission);
+  };
+
+  const hasAnyPermission = (permissions: Permission[]): boolean => {
+    return permissions.some(p => hasPermission(p));
+  };
+
+  return (
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated: !!user,
+      isAdmin,
+      login,
+      register,
+      logout,
+      updateProfile,
+      hasPermission,
+      hasAnyPermission
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
