@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin } from 'lucide-react';
+import { Logo } from '../Logo';
 import { companyInfo } from '../../data';
 
 const footerLinks = {
@@ -37,11 +38,9 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link to="/" className="inline-block mb-6">
-              <span className="text-2xl font-bold text-white font-['Sora']">
-                Myms<span className="text-[#6C3CE1]">.</span>
-              </span>
-            </Link>
+            <div className="mb-6">
+              <Logo logoClassName="h-10 w-auto sm:h-12" />
+            </div>
             <p className="text-[#A0A0A0] mb-6 max-w-sm">
               Studio créatif spécialisé en design graphique, infographie et community management. 
               Nous créons des identités visuelles fortes pour les marques ambitieuses.

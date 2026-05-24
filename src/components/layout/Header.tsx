@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
+import { Logo } from '../Logo';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../utils/cn';
 
@@ -56,11 +57,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6">
         <nav className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-white font-['Sora']">
-              Myms<span className="text-[#6C3CE1]">.</span>
-            </span>
-          </Link>
+          <Logo containerClassName="flex items-center" logoClassName="h-10 w-auto sm:h-12" />
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">

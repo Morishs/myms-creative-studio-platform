@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
+import { Logo } from '../../components/Logo';
 import { useAuth } from '../../contexts/AuthContext';
 import { appStore } from '../../stores/appStore';
 import { dashboardStore } from '../../stores/dashboardStore';
@@ -81,9 +82,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <Link to="/" className="text-xl font-bold text-white font-['Sora']">
-            Myms<span className="text-[#6C3CE1]">.</span>
-          </Link>
+          <Logo logoClassName="h-8 w-auto md:h-10" />
           <span className="hidden sm:inline text-[#6B7280]">/</span>
           <span className="hidden sm:inline text-[#A0A0A0] text-sm">Espace Client</span>
         </div>

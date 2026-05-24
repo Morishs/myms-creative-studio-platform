@@ -12,6 +12,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Card } from '../../components/ui/Card';
+import { Logo } from '../../components/Logo';
 import { useAuth, type AccountType } from '../../contexts/AuthContext';
 
 // ===== LOGIN =====
@@ -94,11 +95,9 @@ export function Login() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-6">
-            <span className="text-3xl font-bold text-white font-['Sora']">
-              Myms<span className="text-[#6C3CE1]">.</span>
-            </span>
-          </Link>
+          <div className="inline-block mb-6">
+            <Logo logoClassName="h-12 w-auto sm:h-14" />
+          </div>
           <h1 className="text-3xl font-bold text-white mb-2">Bon retour !</h1>
           <p className="text-[#A0A0A0]">Connectez-vous à votre espace</p>
         </div>
@@ -327,11 +326,9 @@ export function Register() {
         className="w-full max-w-xl relative z-10"
       >
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-6">
-            <span className="text-3xl font-bold text-white font-['Sora']">
-              Myms<span className="text-[#6C3CE1]">.</span>
-            </span>
-          </Link>
+          <div className="inline-block mb-6">
+            <Logo logoClassName="h-12 w-auto sm:h-14" />
+          </div>
           <h1 className="text-3xl font-bold text-white mb-2">Créer un compte</h1>
           <p className="text-[#A0A0A0]">Rejoignez Myms et suivez vos projets</p>
         </div>
@@ -772,11 +769,9 @@ export function ForgotPassword() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-6">
-            <span className="text-3xl font-bold text-white font-['Sora']">
-              Myms<span className="text-[#6C3CE1]">.</span>
-            </span>
-          </Link>
+          <div className="inline-block mb-6">
+            <Logo logoClassName="h-12 w-auto sm:h-14" />
+          </div>
 
           {isSubmitted ? (
             <>

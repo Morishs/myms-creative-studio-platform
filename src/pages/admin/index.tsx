@@ -9,6 +9,7 @@ import {
   DollarSign, Search, Smile, Paperclip
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { Logo } from '../../components/Logo';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
@@ -106,9 +107,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <Link to="/" className="text-xl font-bold text-white font-['Sora']">
-            Myms<span className="text-[#6C3CE1]">.</span>
-          </Link>
+          <Logo logoClassName="h-8 w-auto md:h-10" />
           <span className="hidden sm:inline text-[#6B7280]">/</span>
           <span className="hidden sm:inline text-[#EF4444] text-sm font-medium">Administration</span>
         </div>
