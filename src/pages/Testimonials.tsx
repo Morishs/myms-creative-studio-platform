@@ -17,12 +17,12 @@ export function Testimonials() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               Témoignages
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Ce que nos clients{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 disent de nous
               </span>
             </h1>
@@ -48,7 +48,7 @@ export function Testimonials() {
               >
                 <Card className="h-full relative">
                   {/* Quote icon */}
-                  <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-[#6C3CE1] flex items-center justify-center">
+                  <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-brand flex items-center justify-center">
                     <Quote className="w-6 h-6 text-white" />
                   </div>
 
@@ -80,7 +80,7 @@ export function Testimonials() {
                       <img 
                         src={testimonial.avatar || 'https://via.placeholder.com/48'} 
                         alt={testimonial.clientName}
-                        className="w-14 h-14 rounded-full object-cover border-2 border-[#6C3CE1]"
+                        className="w-14 h-14 rounded-full object-cover border-2 border-brand"
                       />
                       <div>
                         <div className="font-semibold text-white text-lg">
@@ -101,7 +101,7 @@ export function Testimonials() {
       </section>
 
       {/* Stats */}
-      <section className="py-16 bg-gradient-to-r from-[#6C3CE1]/10 to-[#F59E0B]/10 border-y border-[#2A2A2A]">
+      <section className="py-16 bg-gradient-to-r from-brand/10 to-[#F59E0B]/10 border-y border-[#2A2A2A]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>

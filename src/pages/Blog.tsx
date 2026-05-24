@@ -29,12 +29,12 @@ export function Blog() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               Blog
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Conseils &{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 Inspirations
               </span>
             </h1>
@@ -75,7 +75,7 @@ export function Blog() {
                           {post.readTime} min
                         </span>
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-[#6C3CE1] transition-colors line-clamp-2">
+                      <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-brand transition-colors line-clamp-2">
                         {post.title}
                       </h3>
                       <p className="text-[#A0A0A0] text-sm mb-4 line-clamp-2">
@@ -90,7 +90,7 @@ export function Blog() {
                             year: 'numeric'
                           })}
                         </span>
-                        <span className="text-sm font-medium text-[#6C3CE1] flex items-center gap-1">
+                        <span className="text-sm font-medium text-brand flex items-center gap-1">
                           Lire
                           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </span>
@@ -131,7 +131,7 @@ export function Blog() {
                   value={blogNlEmail}
                   onChange={e => setBlogNlEmail(e.target.value)}
                   placeholder="Votre adresse email"
-                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#6C3CE1] focus:border-transparent"
+                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 />
                 <Button type="submit" variant="primary">
                   S'inscrire
@@ -171,7 +171,7 @@ export function BlogDetail() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Link to="/blog" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:text-[#7C4CF1] transition-colors">
+            <Link to="/blog" className="inline-flex items-center gap-2 text-brand mb-6 hover:text-brand-light transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Retour au blog
             </Link>
@@ -197,8 +197,8 @@ export function BlogDetail() {
             </h1>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#6C3CE1]/20 flex items-center justify-center">
-                <User className="w-5 h-5 text-[#6C3CE1]" />
+              <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center">
+                <User className="w-5 h-5 text-brand" />
               </div>
               <div>
                 <span className="text-white font-medium">{post.author}</span>

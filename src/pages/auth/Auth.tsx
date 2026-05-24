@@ -309,12 +309,12 @@ export function Register() {
 
   return (
     <div className="min-h-screen pt-20 pb-12 flex items-center justify-center px-6 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A] relative overflow-hidden">
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#6C3CE1]/10 rounded-full blur-[128px]"></div>
+      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-[128px]"></div>
 
       {/* Bouton retour */}
       <button
         onClick={handleGoBack}
-        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-[#A0A0A0] hover:text-white hover:border-[#6C3CE1] transition-all"
+        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-[#A0A0A0] hover:text-white hover:border-brand transition-all"
       >
         <ArrowRight className="w-4 h-4 rotate-180" />
         <span className="text-sm">Retour</span>
@@ -340,12 +340,12 @@ export function Register() {
             onClick={() => { setAccountType('INDIVIDUAL'); setStep(1); }}
             className={`p-6 rounded-xl border-2 transition-all ${
               accountType === 'INDIVIDUAL'
-                ? 'border-[#6C3CE1] bg-[#6C3CE1]/10'
+                ? 'border-brand bg-brand/10'
                 : 'border-[#2A2A2A] bg-[#1A1A1A] hover:border-[#3A3A3A]'
             }`}
           >
             <User className={`w-10 h-10 mx-auto mb-3 ${
-              accountType === 'INDIVIDUAL' ? 'text-[#6C3CE1]' : 'text-[#6B7280]'
+              accountType === 'INDIVIDUAL' ? 'text-brand' : 'text-[#6B7280]'
             }`} />
             <h3 className={`font-semibold mb-1 ${
               accountType === 'INDIVIDUAL' ? 'text-white' : 'text-[#A0A0A0]'
@@ -358,12 +358,12 @@ export function Register() {
             onClick={() => { setAccountType('COMPANY'); setStep(1); }}
             className={`p-6 rounded-xl border-2 transition-all ${
               accountType === 'COMPANY'
-                ? 'border-[#6C3CE1] bg-[#6C3CE1]/10'
+                ? 'border-brand bg-brand/10'
                 : 'border-[#2A2A2A] bg-[#1A1A1A] hover:border-[#3A3A3A]'
             }`}
           >
             <Building2 className={`w-10 h-10 mx-auto mb-3 ${
-              accountType === 'COMPANY' ? 'text-[#6C3CE1]' : 'text-[#6B7280]'
+              accountType === 'COMPANY' ? 'text-brand' : 'text-[#6B7280]'
             }`} />
             <h3 className={`font-semibold mb-1 ${
               accountType === 'COMPANY' ? 'text-white' : 'text-[#A0A0A0]'
@@ -382,8 +382,8 @@ export function Register() {
                 exit={{ opacity: 0, x: 20 }}
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-full bg-[#6C3CE1]/10 flex items-center justify-center">
-                    <User className="w-5 h-5 text-[#6C3CE1]" />
+                  <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center">
+                    <User className="w-5 h-5 text-brand" />
                   </div>
                   <div>
                     <h2 className="font-semibold text-white">Compte Particulier</h2>
@@ -464,15 +464,15 @@ export function Register() {
                     <input
                       type="checkbox"
                       {...individualForm.register('acceptTerms')}
-                      className="mt-1 w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-[#6C3CE1] focus:ring-[#6C3CE1]"
+                      className="mt-1 w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-brand focus:ring-brand"
                     />
                     <span className="text-sm text-[#A0A0A0]">
                       J'accepte les{' '}
-                      <Link to="/conditions-generales-de-vente" className="text-[#6C3CE1] hover:underline">
+                      <Link to="/conditions-generales-de-vente" className="text-brand hover:underline">
                         conditions générales
                       </Link>{' '}
                       et la{' '}
-                      <Link to="/politique-de-confidentialite" className="text-[#6C3CE1] hover:underline">
+                      <Link to="/politique-de-confidentialite" className="text-brand hover:underline">
                         politique de confidentialité
                       </Link>
                     </span>
@@ -497,11 +497,11 @@ export function Register() {
                 {/* Company Registration - Step Indicator */}
                 <div className="flex items-center justify-center gap-2 mb-6">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    step >= 1 ? 'bg-[#6C3CE1] text-white' : 'bg-[#2A2A2A] text-[#6B7280]'
+                    step >= 1 ? 'bg-brand text-white' : 'bg-[#2A2A2A] text-[#6B7280]'
                   }`}>1</div>
-                  <div className={`w-16 h-1 rounded ${step >= 2 ? 'bg-[#6C3CE1]' : 'bg-[#2A2A2A]'}`} />
+                  <div className={`w-16 h-1 rounded ${step >= 2 ? 'bg-brand' : 'bg-[#2A2A2A]'}`} />
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    step >= 2 ? 'bg-[#6C3CE1] text-white' : 'bg-[#2A2A2A] text-[#6B7280]'
+                    step >= 2 ? 'bg-brand text-white' : 'bg-[#2A2A2A] text-[#6B7280]'
                   }`}>2</div>
                 </div>
 
@@ -520,8 +520,8 @@ export function Register() {
                       className="space-y-4"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-[#6C3CE1]/10 flex items-center justify-center">
-                          <Building2 className="w-5 h-5 text-[#6C3CE1]" />
+                        <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center">
+                          <Building2 className="w-5 h-5 text-brand" />
                         </div>
                         <div>
                           <h2 className="font-semibold text-white">Informations de l'entreprise</h2>
@@ -592,8 +592,8 @@ export function Register() {
                       className="space-y-4"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-[#6C3CE1]/10 flex items-center justify-center">
-                          <Briefcase className="w-5 h-5 text-[#6C3CE1]" />
+                        <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center">
+                          <Briefcase className="w-5 h-5 text-brand" />
                         </div>
                         <div>
                           <h2 className="font-semibold text-white">Responsable du compte</h2>
@@ -664,15 +664,15 @@ export function Register() {
                         <input
                           type="checkbox"
                           {...companyForm.register('acceptTerms')}
-                          className="mt-1 w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-[#6C3CE1] focus:ring-[#6C3CE1]"
+                          className="mt-1 w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-brand focus:ring-brand"
                         />
                         <span className="text-sm text-[#A0A0A0]">
                           J'accepte les{' '}
-                          <Link to="/conditions-generales-de-vente" className="text-[#6C3CE1] hover:underline">
+                          <Link to="/conditions-generales-de-vente" className="text-brand hover:underline">
                             conditions générales
                           </Link>{' '}
                           et la{' '}
-                          <Link to="/politique-de-confidentialite" className="text-[#6C3CE1] hover:underline">
+                          <Link to="/politique-de-confidentialite" className="text-brand hover:underline">
                             politique de confidentialité
                           </Link>
                         </span>
@@ -708,7 +708,7 @@ export function Register() {
             <Link
               to="/auth/connexion"
               state={location.state}
-              className="text-[#6C3CE1] hover:underline font-medium"
+              className="text-brand hover:underline font-medium"
             >
               Se connecter
             </Link>
@@ -752,12 +752,12 @@ export function ForgotPassword() {
 
   return (
     <div className="min-h-screen pt-20 flex items-center justify-center px-6 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A] relative overflow-hidden">
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#6C3CE1]/10 rounded-full blur-[128px]"></div>
+      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-[128px]"></div>
 
       {/* Bouton retour */}
       <button
         onClick={handleGoBack}
-        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-[#A0A0A0] hover:text-white hover:border-[#6C3CE1] transition-all"
+        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-[#A0A0A0] hover:text-white hover:border-brand transition-all"
       >
         <ArrowRight className="w-4 h-4 rotate-180" />
         <span className="text-sm">Retour</span>
@@ -796,7 +796,7 @@ export function ForgotPassword() {
         {!isSubmitted && (
           <Card className="p-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              <div className="w-14 h-14 mx-auto rounded-full bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1]">
+              <div className="w-14 h-14 mx-auto rounded-full bg-brand/10 flex items-center justify-center text-brand">
                 <Mail className="w-7 h-7" />
               </div>
 
@@ -820,7 +820,7 @@ export function ForgotPassword() {
         <div className="mt-6 text-center">
           <Link 
             to="/auth/connexion" 
-            className="inline-flex items-center gap-2 text-[#6C3CE1] hover:underline"
+            className="inline-flex items-center gap-2 text-brand hover:underline"
           >
             <ArrowRight className="w-4 h-4 rotate-180" />
             Retour à la connexion

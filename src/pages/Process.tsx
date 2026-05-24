@@ -26,12 +26,12 @@ export function Process() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               Notre méthode
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Processus de{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 travail
               </span>
             </h1>
@@ -48,7 +48,7 @@ export function Process() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-[#6C3CE1] via-[#6C3CE1]/50 to-[#6C3CE1]/10"></div>
+            <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-brand via-[#6C3CE1]/50 to-[#6C3CE1]/10"></div>
 
             {/* Steps */}
             <div className="space-y-16">
@@ -64,7 +64,7 @@ export function Process() {
                   }`}
                 >
                   {/* Number circle */}
-                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[#6C3CE1]/30 z-10">
+                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[#6C3CE1]/30 z-10">
                     {step.number}
                   </div>
 
@@ -72,8 +72,8 @@ export function Process() {
                   <div className={`ml-24 md:ml-0 md:w-[calc(50%-4rem)] ${
                     index % 2 === 0 ? 'md:pr-16' : 'md:pl-16'
                   }`}>
-                    <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-6 hover:border-[#6C3CE1]/50 transition-colors">
-                      <div className="w-12 h-12 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1] mb-4">
+                    <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-6 hover:border-brand/20 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-brand/10 flex items-center justify-center text-brand mb-4">
                         {iconMap[step.icon] || <CheckCircle className="w-6 h-6" />}
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-2">
@@ -92,7 +92,7 @@ export function Process() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1]">
+      <section className="py-20 bg-gradient-to-br from-brand to-accent">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

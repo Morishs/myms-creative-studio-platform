@@ -106,12 +106,12 @@ export function Contact() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               Contact
             </span>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Restons en{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 contact
               </span>
             </h1>
@@ -133,7 +133,7 @@ export function Contact() {
               
               {contactInfo.map((item) => (
                 <Card key={item.label} className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1] flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-brand/10 flex items-center justify-center text-brand flex-shrink-0">
                     {item.icon}
                   </div>
                   <div>
@@ -141,7 +141,7 @@ export function Contact() {
                     {item.href ? (
                       <a 
                         href={item.href}
-                        className="text-white hover:text-[#6C3CE1] transition-colors"
+                        className="text-white hover:text-brand transition-colors"
                       >
                         {item.value}
                       </a>
@@ -160,7 +160,7 @@ export function Contact() {
                     href={companyInfo.socialLinks.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-[#6C3CE1] hover:text-[#6C3CE1] transition-all"
+                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
                   >
                     📸
                   </a>
@@ -168,7 +168,7 @@ export function Contact() {
                     href={companyInfo.socialLinks.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-[#6C3CE1] hover:text-[#6C3CE1] transition-all"
+                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
                   >
                     💼
                   </a>
@@ -176,7 +176,7 @@ export function Contact() {
                     href={companyInfo.socialLinks.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-[#6C3CE1] hover:text-[#6C3CE1] transition-all"
+                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
                   >
                     👍
                   </a>

@@ -51,7 +51,7 @@ export function Home() {
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A]">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzLTItMi0yLTQgMi00IDItNCAyIDIgMiA0LTIgNC0yIDQtMi0yLTItNCAyLTQgMi00IDIgMiAyIDQtMiA0LTIgNHoiIHN0cm9rZT0iIzJBMkEyQSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjwvZz48L3N2Zz4=')] opacity-30"></div>
-          <div className="absolute top-10 md:top-1/4 right-0 md:right-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#6C3CE1]/20 rounded-full blur-[128px] pointer-events-none"></div>
+          <div className="absolute top-10 md:top-1/4 right-0 md:right-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-brand/10 rounded-full blur-[128px] pointer-events-none"></div>
           <div className="absolute bottom-10 md:bottom-1/4 left-0 md:left-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#F59E0B]/10 rounded-full blur-[128px] pointer-events-none"></div>
         </div>
 
@@ -64,7 +64,7 @@ export function Home() {
           >
             <motion.span 
               variants={fadeInUp}
-              className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6"
+              className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6"
             >
               ✨ Studio Créatif
             </motion.span>
@@ -74,7 +74,7 @@ export function Home() {
               className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight mb-6"
             >
               Créons des{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 identités visuelles
               </span>{' '}
               qui marquent les esprits
@@ -128,16 +128,16 @@ export function Home() {
               <motion.div key={service.id} variants={fadeInUp}>
                 <Link to={`/services/${service.slug}`}>
                   <Card hover className="h-full group">
-                    <div className="w-14 h-14 rounded-xl bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1] mb-6 group-hover:bg-[#6C3CE1] group-hover:text-white transition-all">
+                    <div className="w-14 h-14 rounded-xl bg-brand/10 flex items-center justify-center text-brand mb-6 group-hover:bg-brand group-hover:text-white transition-all">
                       {iconMap[service.icon]}
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-[#6C3CE1] transition-colors">
+                    <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-brand transition-colors">
                       {service.title}
                     </h3>
                     <p className="text-[#A0A0A0] mb-4">
                       {service.shortDescription}
                     </p>
-                    <span className="inline-flex items-center text-[#6C3CE1] text-sm font-medium">
+                    <span className="inline-flex items-center text-brand text-sm font-medium">
                       En savoir plus
                       <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>
@@ -176,7 +176,7 @@ export function Home() {
             {featuredProjects.map((project) => (
               <motion.div key={project.id} variants={fadeInUp}>
                 <Link to={`/portfolio/${project.slug}`}>
-                  <div className="group relative overflow-hidden rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#6C3CE1]/50 transition-all">
+                  <div className="group relative overflow-hidden rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:border-brand/20 transition-all">
                     <div className="aspect-[4/3] overflow-hidden">
                       <img 
                         src={project.coverImage} 
@@ -186,10 +186,10 @@ export function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A]/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <div className="p-6">
-                      <span className="text-xs font-medium text-[#6C3CE1] uppercase tracking-wider">
+                      <span className="text-xs font-medium text-brand uppercase tracking-wider">
                         {project.category}
                       </span>
-                      <h3 className="text-lg font-semibold text-white mt-2 group-hover:text-[#6C3CE1] transition-colors">
+                      <h3 className="text-lg font-semibold text-white mt-2 group-hover:text-brand transition-colors">
                         {project.title}
                       </h3>
                     </div>
@@ -229,7 +229,7 @@ export function Home() {
                 className="relative"
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white font-bold text-lg">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white font-bold text-lg">
                     {step.number}
                   </div>
                   <div>
@@ -242,7 +242,7 @@ export function Home() {
                   </div>
                 </div>
                 {index < 3 && (
-                  <div className="hidden lg:block absolute top-6 left-[calc(100%-20px)] w-full h-px bg-gradient-to-r from-[#6C3CE1]/50 to-transparent"></div>
+                  <div className="hidden lg:block absolute top-6 left-[calc(100%-20px)] w-full h-px bg-gradient-to-r from-brand/50 to-transparent"></div>
                 )}
               </motion.div>
             ))}
@@ -259,7 +259,7 @@ export function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-[#6C3CE1]/10 to-[#F59E0B]/10 border-y border-[#2A2A2A]">
+      <section className="py-20 bg-gradient-to-r from-brand/10 to-[#F59E0B]/10 border-y border-[#2A2A2A]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -369,7 +369,7 @@ export function Home() {
                   value={nlEmail}
                   onChange={e => setNlEmail(e.target.value)}
                   placeholder="Votre adresse email"
-                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#6C3CE1] focus:border-transparent"
+                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 />
                 <Button type="submit" variant="primary">
                   S'inscrire
@@ -381,7 +381,7 @@ export function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 md:py-32 bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] relative overflow-hidden">
+      <section className="py-20 md:py-32 bg-gradient-to-br from-brand to-accent relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzLTItMi0yLTQgMi00IDItNCAyIDIgMiA0LTIgNC0yIDQtMi0yLTItNCAyLTQgMi00IDIgMiAyIDQtMiA0LTIgNHoiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9Ii41Ii8+PC9nPjwvc3ZnPg==')] opacity-30"></div>
         
         <div className="relative max-w-4xl mx-auto px-6 text-center">

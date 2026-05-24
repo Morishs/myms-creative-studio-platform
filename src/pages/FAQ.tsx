@@ -27,12 +27,12 @@ export function FAQ() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               FAQ
             </span>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Questions{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 fréquentes
               </span>
             </h1>
@@ -52,8 +52,8 @@ export function FAQ() {
               onClick={() => setActiveCategory(null)}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                 activeCategory === null
-                  ? 'bg-[#6C3CE1] text-white'
-                  : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-[#6C3CE1]'
+                  ? 'bg-brand text-white'
+                  : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-brand'
               }`}
             >
               Tout
@@ -64,8 +64,8 @@ export function FAQ() {
                 onClick={() => setActiveCategory(category)}
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                   activeCategory === category
-                    ? 'bg-[#6C3CE1] text-white'
-                    : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-[#6C3CE1]'
+                    ? 'bg-brand text-white'
+                    : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-brand'
                 }`}
               >
                 {category}
@@ -103,8 +103,8 @@ export function FAQ() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#6C3CE1]/10 flex items-center justify-center">
-              <HelpCircle className="w-8 h-8 text-[#6C3CE1]" />
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-brand/10 flex items-center justify-center">
+              <HelpCircle className="w-8 h-8 text-brand" />
             </div>
             <h2 className="text-3xl font-bold text-white mb-4">
               Vous n'avez pas trouvé votre réponse ?

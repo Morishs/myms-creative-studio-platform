@@ -89,7 +89,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-3">
           <NotificationBell userId={user?.id || ''} />
           <div className="hidden md:flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-sm font-semibold">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-sm font-semibold">
               {user?.firstName?.[0]}{user?.lastName?.[0]}
             </div>
             <span className="text-sm text-white">{user?.firstName} {user?.lastName}</span>
@@ -120,13 +120,13 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                    isActive ? 'bg-[#6C3CE1]/10 text-[#6C3CE1] font-medium' : 'text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A]'
+                    isActive ? 'bg-brand/10 text-brand font-medium' : 'text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A]'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="flex-1">{item.label}</span>
                   {item.href === '/client/messages' && unreadTotal > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[#6C3CE1] text-white text-[10px] flex items-center justify-center font-bold">
+                    <span className="w-5 h-5 rounded-full bg-brand text-white text-[10px] flex items-center justify-center font-bold">
                       {unreadTotal > 99 ? '99+' : unreadTotal}
                     </span>
                   )}
@@ -207,7 +207,7 @@ export function ClientDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1]">
+            <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
               <FolderKanban className="w-5 h-5" />
             </div>
             <TrendingUp className="w-4 h-4 text-[#10B981]" />
@@ -255,7 +255,7 @@ export function ClientDashboard() {
           <Card>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-white">Projets en cours</h2>
-              <Link to="/client/projets" className="text-sm text-[#6C3CE1] hover:underline">
+              <Link to="/client/projets" className="text-sm text-brand hover:underline">
                 Voir tout
               </Link>
             </div>
@@ -266,7 +266,7 @@ export function ClientDashboard() {
                   <Link
                     key={project.id}
                     to={`/client/projets/${project.id}`}
-                    className="block p-4 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A] hover:border-[#6C3CE1]/50 transition-colors"
+                    className="block p-4 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A] hover:border-brand/20 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-medium text-white">{project.name}</h3>
@@ -276,7 +276,7 @@ export function ClientDashboard() {
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] rounded-full"
+                          className="h-full bg-gradient-to-r from-brand to-accent rounded-full"
                           style={{ width: `${project.progress}%` }}
                         />
                       </div>
@@ -297,7 +297,7 @@ export function ClientDashboard() {
                 <p className="text-[#6B7280] text-sm">Aucun nouveau message pour le moment.</p>
               ) : (
                 recentMessages.map((message) => (
-                  <Link key={message.id} to="/client/messages" className="block p-3 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A] hover:border-[#6C3CE1]/50 transition-colors">
+                  <Link key={message.id} to="/client/messages" className="block p-3 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A] hover:border-brand/20 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-white truncate">{message.senderName}</p>
                       <span className="text-[10px] text-[#6B7280]">{formatDateTime(message.createdAt)}</span>
@@ -378,7 +378,7 @@ export function ClientProjects() {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] rounded-full transition-all"
+                        className="h-full bg-gradient-to-r from-brand to-accent rounded-full transition-all"
                         style={{ width: `${project.progress}%` }}
                       />
                     </div>
@@ -440,7 +440,7 @@ function ProjectMessages({ userId, userName }: { userId: string; userName: strin
       <div className="space-y-3 mb-4 max-h-80 overflow-y-auto">
         {messages.map(m => (
           <div key={m.id} className={`flex ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${m.senderId === userId ? 'bg-[#6C3CE1] text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'}`}>
+            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${m.senderId === userId ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'}`}>
               <p className="text-sm">{m.content}</p>
               <p className="text-[10px] mt-1 opacity-60">{formatDateTime(m.createdAt)}</p>
             </div>
@@ -486,7 +486,7 @@ export function ClientProjectDetail() {
 
   return (
     <div className="p-6 lg:p-8">
-      <Link to="/client/projets" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:underline">
+      <Link to="/client/projets" className="inline-flex items-center gap-2 text-brand mb-6 hover:underline">
         <ArrowRight className="w-4 h-4 rotate-180" />
         Retour aux projets
       </Link>
@@ -505,11 +505,11 @@ export function ClientProjectDetail() {
         <div className="flex items-center gap-4 mb-4">
           <div className="flex-1 h-3 bg-[#2A2A2A] rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] rounded-full"
+              className="h-full bg-gradient-to-r from-brand to-accent rounded-full"
               style={{ width: `${project.progress}%` }}
             />
           </div>
-          <span className="text-lg font-bold text-[#6C3CE1]">{project.progress}%</span>
+          <span className="text-lg font-bold text-brand">{project.progress}%</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
@@ -551,14 +551,14 @@ export function ClientProjectDetail() {
               <div className="space-y-2">
                 {projectFiles.map((file) => (
                   <div key={file.id} className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A]">
-                    <div className="w-10 h-10 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1]">
+                    <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                       <File className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">{file.fileName}</p>
                       <p className="text-xs text-[#6B7280]">{(file.fileSize / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
-                    <button className="text-[#6C3CE1] hover:text-[#7C4CF1]" onClick={() => {
+                    <button className="text-brand hover:text-brand-light" onClick={() => {
                       appStore.addToast({ type: 'success', title: 'Téléchargement', message: `${file.fileName} — Lancé.` });
                     }}>
                       <DownloadIcon className="w-4 h-4" />
@@ -655,7 +655,7 @@ export function ClientQuoteDetail() {
 
   return (
     <div className="p-6 lg:p-8">
-      <Link to="/client/devis" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:underline">
+      <Link to="/client/devis" className="inline-flex items-center gap-2 text-brand mb-6 hover:underline">
         <ArrowRight className="w-4 h-4 rotate-180" />
         Retour aux devis
       </Link>
@@ -858,7 +858,7 @@ export function ClientInvoiceDetail() {
 
   return (
     <div className="p-6 lg:p-8">
-      <Link to="/client/factures" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:underline">
+      <Link to="/client/factures" className="inline-flex items-center gap-2 text-brand mb-6 hover:underline">
         <ArrowRight className="w-4 h-4 rotate-180" />
         Retour aux factures
       </Link>
@@ -955,7 +955,7 @@ export function ClientFiles() {
         {emptyClientFiles.map((file) => (
           <Card key={file.id} hover>
             <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1]">
+              <div className="w-12 h-12 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                 <File className="w-6 h-6" />
               </div>
               <div className="flex-1 min-w-0">
@@ -1062,7 +1062,7 @@ export function ClientMessages() {
     return (
       <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-[#6C3CE1]/20 border-t-[#6C3CE1] animate-spin" />
+          <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-brand/20 border-t-[#6C3CE1] animate-spin" />
           <p className="text-sm text-[#A0A0A0]">Chargement de vos conversations...</p>
         </div>
       </div>
@@ -1257,7 +1257,7 @@ export function ClientMessages() {
               key={attachment.id}
               href={attachment.url}
               download={attachment.name}
-              className="block rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 text-[#E5E7EB] hover:border-[#6C3CE1] transition"
+              className="block rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 text-[#E5E7EB] hover:border-brand transition"
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-[#0E0E0E] border border-[#2A2A2A] flex items-center justify-center overflow-hidden">
@@ -1325,11 +1325,11 @@ export function ClientMessages() {
           <button
             key={conv.id}
             onClick={() => openConversation(conv.id)}
-            className="w-full text-left p-3 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all active:bg-[#6C3CE1]/10"
+            className="w-full text-left p-3 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all active:bg-brand/10"
           >
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-xs font-bold">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">
                   {conv.participants.filter(p => p.id !== uid)[0]?.name.split(' ').map((n: string) => n[0]).join('') || 'U'}
                 </div>
                 {conv.participants.filter(p => p.id !== uid).some(p => isUserOnline(p.id)) && (
@@ -1340,11 +1340,11 @@ export function ClientMessages() {
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-semibold text-white text-sm truncate">{conv.subject}</h3>
                   {(conv.unread[uid] || 0) > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[#6C3CE1] text-white text-xs flex items-center justify-center flex-shrink-0">{conv.unread[uid]}</span>
+                    <span className="w-5 h-5 rounded-full bg-brand text-white text-xs flex items-center justify-center flex-shrink-0">{conv.unread[uid]}</span>
                   )}
                 </div>
                 {isConversationTyping(conv) ? (
-                  <p className="text-xs text-[#6C3CE1] truncate">En train d'écrire…</p>
+                  <p className="text-xs text-brand truncate">En train d'écrire…</p>
                 ) : (
                   <p className="text-xs text-[#A0A0A0] truncate">{conv.lastMessage}</p>
                 )}
@@ -1388,7 +1388,7 @@ export function ClientMessages() {
           ) : visibleMessages.map(m => (
             <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                m.senderId === uid ? 'bg-[#6C3CE1] text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
+                m.senderId === uid ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
               }`}>
                 {m.senderId !== uid && <p className="text-xs font-medium mb-1 opacity-70">{m.senderName}</p>}
                 <p className="text-sm whitespace-pre-line">{m.content}</p>
@@ -1406,9 +1406,9 @@ export function ClientMessages() {
           <div className="px-4 pb-2">
             <div className="inline-flex items-center gap-3 rounded-2xl bg-[#111111] px-4 py-3 border border-[#2A2A2A]">
               <div className="flex items-center gap-1">
-                <span className="typing-dot bg-[#6C3CE1]" />
-                <span className="typing-dot bg-[#6C3CE1]" />
-                <span className="typing-dot bg-[#6C3CE1]" />
+                <span className="typing-dot bg-brand" />
+                <span className="typing-dot bg-brand" />
+                <span className="typing-dot bg-brand" />
               </div>
               <span className="text-xs text-[#A0A0A0]">{convos.find(c => c.id === activeConvId)?.participants.find(p => p.id !== uid)?.name} écrit...</span>
             </div>
@@ -1457,9 +1457,9 @@ export function ClientMessages() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder="Écrivez un message…"
-            className="flex-1 min-w-0 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1]"
+            className="flex-1 min-w-0 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
-          <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white disabled:opacity-50 transition-all flex-shrink-0">
+          <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 transition-all flex-shrink-0">
             <Send className="w-4 h-4" />
           </button>
         </div>
@@ -1482,9 +1482,9 @@ export function ClientMessages() {
           <div className="space-y-2">
             {recipientOptions.map(r => (
               <button key={r.id} type="button" onClick={() => setNewRecipientId(r.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-[#6C3CE1] bg-[#6C3CE1]/10' : 'border-[#2A2A2A] bg-[#0A0A0A] active:border-[#3A3A3A]'}`}>
+                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-[#2A2A2A] bg-[#0A0A0A] active:border-[#3A3A3A]'}`}>
                 <div className="relative flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
                   {isUserOnline(r.id) && <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#10B981] rounded-full border border-[#0A0A0A]"></span>}
                 </div>
                 <div>
@@ -1498,7 +1498,7 @@ export function ClientMessages() {
         <Input label="Sujet" required placeholder="Ex: Question sur mon projet…" value={newSubject} onChange={e => setNewSubject(e.target.value)} />
         <div>
           <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Message <span className="text-[#EF4444]">*</span></label>
-          <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#6C3CE1] resize-none" />
+          <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand resize-none" />
         </div>
       </div>
       <div className="p-4 border-t border-[#2A2A2A] flex gap-2">
@@ -1533,16 +1533,16 @@ export function ClientMessages() {
                 key={conv.id}
                 onClick={() => { setActiveConvId(conv.id); setMsgs(messageStore.getMessages(conv.id)); messageStore.markAsRead(conv.id, uid); setShowNew(false); }}
                 className={`w-full text-left p-4 rounded-xl border transition-all ${
-                  activeConvId === conv.id ? 'bg-[#6C3CE1]/10 border-[#6C3CE1]/50' : 'bg-[#1A1A1A] border-[#2A2A2A] hover:border-[#3A3A3A]'
+                  activeConvId === conv.id ? 'bg-brand/10 border-brand/20' : 'bg-[#1A1A1A] border-[#2A2A2A] hover:border-[#3A3A3A]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="font-semibold text-white text-sm truncate pr-2">{conv.subject}</h3>
                   {(conv.unread[uid] || 0) > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[#6C3CE1] text-white text-xs flex items-center justify-center flex-shrink-0">{conv.unread[uid]}</span>
+                    <span className="w-5 h-5 rounded-full bg-brand text-white text-xs flex items-center justify-center flex-shrink-0">{conv.unread[uid]}</span>
                   )}
                 </div>
-                <p className="text-[10px] text-[#6C3CE1] mb-1 flex items-center gap-1">
+                <p className="text-[10px] text-brand mb-1 flex items-center gap-1">
                   {conv.participants.filter(p => p.id !== uid).map(p => isUserOnline(p.id) ? <OnlineBadge key={p.id} /> : <OfflineBadge key={p.id} />)}
                   {getOtherParticipants(conv)}
                 </p>
@@ -1563,9 +1563,9 @@ export function ClientMessages() {
                   <div className="grid grid-cols-1 gap-2">
                     {recipientOptions.map(r => (
                       <button key={r.id} type="button" onClick={() => setNewRecipientId(r.id)}
-                        className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-[#6C3CE1] bg-[#6C3CE1]/10' : 'border-[#2A2A2A] bg-[#0A0A0A] hover:border-[#3A3A3A]'}`}>
+                        className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-[#2A2A2A] bg-[#0A0A0A] hover:border-[#3A3A3A]'}`}>
                         <div className="relative">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
                           <span className="absolute -bottom-0.5 -right-0.5">{isUserOnline(r.id) ? <OnlineBadge /> : <OfflineBadge />}</span>
                         </div>
                         <div>
@@ -1578,7 +1578,7 @@ export function ClientMessages() {
                 </div>
                 <Input label="Sujet" required placeholder="Ex: Question sur mon projet…" value={newSubject} onChange={e => setNewSubject(e.target.value)} className="mb-4" />
                 <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Message <span className="text-[#EF4444]">*</span></label>
-                <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#6C3CE1] resize-none mb-4" />
+                <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand resize-none mb-4" />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }}>Annuler</Button>
                   <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId}>
@@ -1606,7 +1606,7 @@ export function ClientMessages() {
                   ) : visibleMessages.map(m => (
                     <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                        m.senderId === uid ? 'bg-[#6C3CE1] text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
+                        m.senderId === uid ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
                       }`}>
                         {m.senderId !== uid && <p className="text-xs font-medium mb-1 opacity-70">{m.senderName}</p>}
                         <p className="text-sm whitespace-pre-line">{m.content}</p>
@@ -1660,9 +1660,9 @@ export function ClientMessages() {
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                     placeholder="Écrivez un message…"
-                    className="flex-1 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1]"
+                    className="flex-1 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                   />
-                  <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white disabled:opacity-50 transition-all">
+                  <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 transition-all">
                     <Send className="w-4 h-4" />
                   </button>
                 </div>
@@ -1690,7 +1690,7 @@ export function ClientMessages() {
           type="button"
           aria-label="Nouveau message"
           onClick={() => { setShowNew(true); setActiveConvId(null); }}
-          className="fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#6C3CE1] text-white shadow-[0_18px_32px_-20px_rgba(108,60,225,0.9)] transition hover:bg-[#7C4CF1]"
+          className="fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-[0_18px_32px_-20px_rgba(13,110,253,0.9)] transition hover:bg-[#7C4CF1]"
         >
           <Send className="w-6 h-6" />
         </button>
@@ -1729,7 +1729,7 @@ export function ClientProfile() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
         <Card className="lg:col-span-1 text-center">
-          <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-3xl font-bold mb-4">
+          <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-3xl font-bold mb-4">
             {user.firstName?.[0]}{user.lastName?.[0]}
           </div>
           <h2 className="text-xl font-semibold text-white mb-1">
@@ -1756,7 +1756,7 @@ export function ClientProfile() {
             {/* Personal Info */}
             <div>
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <User className="w-5 h-5 text-[#6C3CE1]" />
+                <User className="w-5 h-5 text-brand" />
                 Informations personnelles
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1776,7 +1776,7 @@ export function ClientProfile() {
             {isCompany && (
               <div className="pt-6 border-t border-[#2A2A2A]">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <FolderKanban className="w-5 h-5 text-[#6C3CE1]" />
+                  <FolderKanban className="w-5 h-5 text-brand" />
                   Informations de l'entreprise
                 </h3>
                 <div className="space-y-4">
@@ -1798,7 +1798,7 @@ export function ClientProfile() {
             {!isCompany && (
               <div className="pt-6 border-t border-[#2A2A2A]">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <FolderKanban className="w-5 h-5 text-[#6C3CE1]" />
+                  <FolderKanban className="w-5 h-5 text-brand" />
                   Informations professionnelles
                 </h3>
                 <Input label="Entreprise (optionnel)" defaultValue={user.company || ''} placeholder="Votre entreprise" />

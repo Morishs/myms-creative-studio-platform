@@ -60,12 +60,12 @@ export function About() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               À propos
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Le studio créatif qui donne vie à vos{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 ambitions
               </span>
             </h1>
@@ -117,14 +117,14 @@ export function About() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-[#6C3CE1]/20 to-[#F59E0B]/20 p-8 flex items-center justify-center">
+              <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-brand/20 to-[#F59E0B]/20 p-8 flex items-center justify-center">
                 <div className="text-center">
                   <span className="text-8xl">🎨</span>
                   <p className="mt-6 text-2xl font-bold text-white">Myms Studio</p>
                   <p className="text-[#A0A0A0]">Design & Communication</p>
                 </div>
               </div>
-              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#6C3CE1] rounded-2xl -z-10"></div>
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-brand rounded-2xl -z-10"></div>
             </motion.div>
           </div>
         </div>
@@ -139,8 +139,8 @@ export function About() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <Card className="h-full border-[#6C3CE1]/30">
-                <div className="w-14 h-14 rounded-xl bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1] mb-6">
+              <Card className="h-full border-brand/20">
+                <div className="w-14 h-14 rounded-xl bg-brand/10 flex items-center justify-center text-brand mb-6">
                   <Target className="w-7 h-7" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Notre mission</h3>
@@ -193,7 +193,7 @@ export function About() {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card hover className="h-full">
-                  <div className="w-12 h-12 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1] mb-4">
+                  <div className="w-12 h-12 rounded-lg bg-brand/10 flex items-center justify-center text-brand mb-4">
                     {value.icon}
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">{value.title}</h3>
@@ -225,11 +225,11 @@ export function About() {
               >
                 <div className="flex justify-between mb-2">
                   <span className="text-white font-medium">{skill.name}</span>
-                  <span className="text-[#6C3CE1]">{skill.level}%</span>
+                  <span className="text-brand">{skill.level}%</span>
                 </div>
                 <div className="h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] rounded-full"
+                    className="h-full bg-gradient-to-r from-brand to-accent rounded-full"
                     initial={{ width: 0 }}
                     whileInView={{ width: `${skill.level}%` }}
                     viewport={{ once: true }}

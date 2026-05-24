@@ -145,13 +145,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                    isActive ? 'bg-[#6C3CE1]/10 text-[#6C3CE1] font-medium' : 'text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A]'
+                    isActive ? 'bg-brand/10 text-brand font-medium' : 'text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A]'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="flex-1">{item.label}</span>
                   {item.href === '/admin/messages' && unreadTotal > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[#6C3CE1] text-white text-[10px] flex items-center justify-center font-bold">
+                    <span className="w-5 h-5 rounded-full bg-brand text-white text-[10px] flex items-center justify-center font-bold">
                       {unreadTotal > 99 ? '99+' : unreadTotal}
                     </span>
                   )}
@@ -260,7 +260,7 @@ export function AdminDashboard() {
 
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1]">
+            <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
               <FolderKanban className="w-5 h-5" />
             </div>
           </div>
@@ -297,7 +297,7 @@ export function AdminDashboard() {
               <p className="text-sm text-[#A0A0A0]">Total clients</p>
               <p className="text-2xl font-bold text-white">{totalClientsCount}</p>
             </div>
-            <Users className="w-8 h-8 text-[#6C3CE1]" />
+            <Users className="w-8 h-8 text-brand" />
           </div>
         </Card>
 
@@ -343,7 +343,7 @@ export function AdminDashboard() {
               </Link>
             ))}
           </div>
-          <Link to="/admin/demandes" className="block text-center mt-4 text-sm text-[#6C3CE1] hover:underline">
+          <Link to="/admin/demandes" className="block text-center mt-4 text-sm text-brand hover:underline">
             Voir toutes les demandes
           </Link>
         </Card>
@@ -366,7 +366,7 @@ export function AdminDashboard() {
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1]"
+                      className="h-full bg-gradient-to-r from-brand to-accent"
                       style={{ width: `${project.progress}%` }}
                     />
                   </div>
@@ -375,7 +375,7 @@ export function AdminDashboard() {
               </Link>
             ))}
           </div>
-          <Link to="/admin/projets" className="block text-center mt-4 text-sm text-[#6C3CE1] hover:underline">
+          <Link to="/admin/projets" className="block text-center mt-4 text-sm text-brand hover:underline">
             Voir tous les projets
           </Link>
         </Card>
@@ -642,7 +642,7 @@ export function AdminClients() {
                 <tr key={client.id} className="border-b border-[#2A2A2A] hover:bg-[#1A1A1A]">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white font-semibold">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white font-semibold">
                         {client.firstName?.[0] ?? '-'}{client.lastName?.[0] ?? '-'}
                       </div>
                       <div>
@@ -658,10 +658,10 @@ export function AdminClients() {
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <button className="p-2 text-[#6B7280] hover:text-[#6C3CE1]">
+                      <button className="p-2 text-[#6B7280] hover:text-brand">
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-[#6B7280] hover:text-[#6C3CE1]" onClick={() => handleEditClient(client)}>
+                      <button className="p-2 text-[#6B7280] hover:text-brand" onClick={() => handleEditClient(client)}>
                         <Edit className="w-4 h-4" />
                       </button>
                       <button className="p-2 text-[#EF4444] hover:text-[#F87171]" onClick={() => handleDeleteClient(client.id)}>
@@ -870,7 +870,7 @@ export function AdminProjects() {
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1]"
+                        className="h-full bg-gradient-to-r from-brand to-accent"
                         style={{ width: `${project.progress}%` }}
                       />
                     </div>
@@ -938,7 +938,7 @@ export function AdminProjectCreate() {
 
   return (
     <div className="p-6 lg:p-8">
-      <Link to="/admin/projets" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:underline">
+      <Link to="/admin/projets" className="inline-flex items-center gap-2 text-brand mb-6 hover:underline">
         <ArrowRight className="w-4 h-4 rotate-180" />
         Retour aux projets
       </Link>
@@ -954,7 +954,7 @@ export function AdminProjectCreate() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   to="/admin/clients"
-                  className="inline-flex items-center justify-center px-4 py-3 bg-[#6C3CE1] text-white rounded-lg hover:bg-[#7C4CF1] transition"
+                  className="inline-flex items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-[#7C4CF1] transition"
                 >
                   Aller aux clients
                 </Link>
@@ -1007,7 +1007,7 @@ export function AdminProjectCreate() {
                   max="100"
                   value={progress}
                   onChange={(e) => setProgress(Number(e.target.value))}
-                  className="w-full accent-[#6C3CE1]"
+                  className="w-full accent-brand"
                 />
                 <div className="text-sm text-[#A0A0A0]">{progress}%</div>
               </div>
@@ -1016,7 +1016,7 @@ export function AdminProjectCreate() {
                 <Button variant="primary" onClick={handleCreateProject} disabled={noClients}>
                   Créer le projet
                 </Button>
-                <Link to="/admin/projets" className="inline-flex items-center justify-center px-4 py-3 border border-[#2A2A2A] text-[#A0A0A0] rounded-lg hover:border-[#6C3CE1]">
+                <Link to="/admin/projets" className="inline-flex items-center justify-center px-4 py-3 border border-[#2A2A2A] text-[#A0A0A0] rounded-lg hover:border-brand">
                   Annuler
                 </Link>
               </div>
@@ -1097,7 +1097,7 @@ export function AdminServices() {
               </div>
               <Badge variant="success">Actif</Badge>
             </div>
-            <p className="text-sm text-[#6C3CE1] font-medium mb-4">{service.pricing}</p>
+            <p className="text-sm text-brand font-medium mb-4">{service.pricing}</p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1">
                 <Edit className="w-4 h-4 mr-1" />
@@ -1292,7 +1292,7 @@ export function AdminMessages() {
     return (
       <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-[#6C3CE1]/20 border-t-[#6C3CE1] animate-spin" />
+          <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-brand/20 border-t-[#6C3CE1] animate-spin" />
           <p className="text-sm text-[#A0A0A0]">Chargement de vos conversations...</p>
         </div>
       </div>
@@ -1481,7 +1481,7 @@ export function AdminMessages() {
               key={attachment.id}
               href={attachment.url}
               download={attachment.name}
-              className="block rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 text-[#E5E7EB] hover:border-[#6C3CE1] transition"
+              className="block rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 text-[#E5E7EB] hover:border-brand transition"
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-[#0E0E0E] border border-[#2A2A2A] flex items-center justify-center overflow-hidden">
@@ -1596,11 +1596,11 @@ export function AdminMessages() {
           <button
             key={conv.id}
             onClick={() => openConversation(conv.id)}
-            className="w-full text-left p-3 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all active:bg-[#6C3CE1]/10"
+            className="w-full text-left p-3 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all active:bg-brand/10"
           >
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-xs font-bold">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">
                   {conv.participants.filter((p: { id: string }) => p.id !== uid)[0]?.name.split(' ').map((n: string) => n[0]).join('') || 'U'}
                 </div>
                 {conv.participants.filter((p: { id: string }) => p.id !== uid).some((p: { id: string }) => isUserOnline(p.id)) && (
@@ -1611,17 +1611,17 @@ export function AdminMessages() {
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-semibold text-white text-sm truncate">{conv.subject}</h3>
                   {(conv.unread[uid] || 0) > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[#6C3CE1] text-white text-xs flex items-center justify-center flex-shrink-0">{conv.unread[uid]}</span>
+                    <span className="w-5 h-5 rounded-full bg-brand text-white text-xs flex items-center justify-center flex-shrink-0">{conv.unread[uid]}</span>
                   )}
                 </div>
                 {isConversationTyping(conv) ? (
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
-                      <span className="typing-dot bg-[#6C3CE1]" />
-                      <span className="typing-dot bg-[#6C3CE1]" />
-                      <span className="typing-dot bg-[#6C3CE1]" />
+                      <span className="typing-dot bg-brand" />
+                      <span className="typing-dot bg-brand" />
+                      <span className="typing-dot bg-brand" />
                     </div>
-                    <span className="text-xs text-[#6C3CE1] truncate">Écrit...</span>
+                    <span className="text-xs text-brand truncate">Écrit...</span>
                   </div>
                 ) : (
                   <p className="text-xs text-[#A0A0A0] truncate">{conv.lastMessage}</p>
@@ -1663,7 +1663,7 @@ export function AdminMessages() {
           ) : visibleMessages.map((m) => (
             <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                m.senderId === uid ? 'bg-[#6C3CE1] text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
+                m.senderId === uid ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
               }`}>
                 {m.senderId !== uid && <p className="text-xs font-medium mb-1 opacity-70">{m.senderName}</p>}
                 <p className="text-sm whitespace-pre-line">{m.content}</p>
@@ -1707,9 +1707,9 @@ export function AdminMessages() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder="Répondre…"
-            className="flex-1 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1]"
+            className="flex-1 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
-          <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white disabled:opacity-50 transition-all flex-shrink-0">
+          <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 transition-all flex-shrink-0">
             <Send className="w-4 h-4" />
           </button>
         </div>
@@ -1731,9 +1731,9 @@ export function AdminMessages() {
           <div className="space-y-2">
             {recipientOptions.map((r) => (
               <button key={r.id} type="button" onClick={() => setNewRecipientId(r.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-[#6C3CE1] bg-[#6C3CE1]/10' : 'border-[#2A2A2A] bg-[#0A0A0A] active:border-[#3A3A3A]'}`}>
+                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-[#2A2A2A] bg-[#0A0A0A] active:border-[#3A3A3A]'}`}>
                 <div className="relative flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map((n) => n[0]).join('')}</div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map((n) => n[0]).join('')}</div>
                   {isUserOnline(r.id) && <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#10B981] rounded-full border border-[#0A0A0A]"></span>}
                 </div>
                 <div>
@@ -1747,7 +1747,7 @@ export function AdminMessages() {
         <Input label="Sujet" required placeholder="Ex: Question sur mon projet…" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} />
         <div>
           <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Message <span className="text-[#EF4444]">*</span></label>
-          <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#6C3CE1] resize-none" />
+          <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand resize-none" />
         </div>
       </div>
       <div className="p-4 border-t border-[#2A2A2A] flex gap-2">
@@ -1781,25 +1781,25 @@ export function AdminMessages() {
               key={conv.id}
               onClick={() => openConversation(conv.id)}
               className={`w-full text-left p-4 rounded-xl border transition-all ${
-                activeConvId === conv.id ? 'bg-[#6C3CE1]/10 border-[#6C3CE1]/50' : 'bg-[#1A1A1A] border-[#2A2A2A] hover:border-[#3A3A3A]'
+                activeConvId === conv.id ? 'bg-brand/10 border-brand/20' : 'bg-[#1A1A1A] border-[#2A2A2A] hover:border-[#3A3A3A]'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
                 <h3 className="font-semibold text-white text-sm truncate pr-2">{getOtherParticipants(conv)}</h3>
                 {(conv.unread[uid] || 0) > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-[#6C3CE1] text-white text-xs flex items-center justify-center flex-shrink-0">{conv.unread[uid]}</span>
+                  <span className="w-5 h-5 rounded-full bg-brand text-white text-xs flex items-center justify-center flex-shrink-0">{conv.unread[uid]}</span>
                 )}
               </div>
-              <p className="text-xs text-[#6C3CE1] mb-1 flex items-center gap-1">
+              <p className="text-xs text-brand mb-1 flex items-center gap-1">
                 {conv.participants.filter((p: {id: string}) => p.id !== uid).map((p: {id: string}) => isUserOnline(p.id) ? <OnlineBadge key={p.id} /> : <OfflineBadge key={p.id} />)}
                 {conv.subject}
               </p>
               {isConversationTyping(conv) ? (
-                <p className="text-xs text-[#6C3CE1] truncate flex items-center gap-2">
+                <p className="text-xs text-brand truncate flex items-center gap-2">
                   <span className="flex items-center gap-1">
-                    <span className="typing-dot bg-[#6C3CE1]" />
-                    <span className="typing-dot bg-[#6C3CE1]" />
-                    <span className="typing-dot bg-[#6C3CE1]" />
+                    <span className="typing-dot bg-brand" />
+                    <span className="typing-dot bg-brand" />
+                    <span className="typing-dot bg-brand" />
                   </span>
                   <span>Écrit...</span>
                 </p>
@@ -1821,9 +1821,9 @@ export function AdminMessages() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                   {recipientOptions.map(r => (
                     <button key={r.id} type="button" onClick={() => setNewRecipientId(r.id)}
-                      className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-[#6C3CE1] bg-[#6C3CE1]/10' : 'border-[#2A2A2A] bg-[#111111] hover:border-[#3A3A3A]'}`}>
+                      className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-[#2A2A2A] bg-[#111111] hover:border-[#3A3A3A]'}`}>
                       <div className="relative flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
                         <span className="absolute -bottom-0.5 -right-0.5">{isUserOnline(r.id) ? <OnlineBadge /> : <OfflineBadge />}</span>
                       </div>
                       <div className="min-w-0">
@@ -1836,7 +1836,7 @@ export function AdminMessages() {
               </div>
               <Input label="Sujet" required placeholder="Sujet du message…" value={newSubject} onChange={e => setNewSubject(e.target.value)} className="mb-4" />
               <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Message <span className="text-[#EF4444]">*</span></label>
-              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#6C3CE1] resize-none mb-4" />
+              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand resize-none mb-4" />
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }}>Annuler</Button>
                 <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId}>
@@ -1861,9 +1861,9 @@ export function AdminMessages() {
                 {otherParticipantTyping && (
                   <div className="mt-3 inline-flex items-center gap-3 rounded-2xl bg-[#111111] px-4 py-3 border border-[#2A2A2A]">
                     <div className="flex items-center gap-1">
-                      <span className="typing-dot bg-[#6C3CE1]" />
-                      <span className="typing-dot bg-[#6C3CE1]" />
-                      <span className="typing-dot bg-[#6C3CE1]" />
+                      <span className="typing-dot bg-brand" />
+                      <span className="typing-dot bg-brand" />
+                      <span className="typing-dot bg-brand" />
                     </div>
                     <span className="text-xs text-[#A0A0A0]">{convos.find(c => c.id === activeConvId)?.participants.find(p => p.id !== uid)?.name} écrit...</span>
                   </div>
@@ -1877,7 +1877,7 @@ export function AdminMessages() {
                 ) : visibleMessages.map(m => (
                   <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                      m.senderId === uid ? 'bg-[#6C3CE1] text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
+                      m.senderId === uid ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
                     }`}>
                       {m.senderId !== uid && <p className="text-xs font-medium mb-1 opacity-70">{m.senderName}</p>}
                       <p className="text-sm whitespace-pre-line">{m.content}</p>
@@ -1922,9 +1922,9 @@ export function AdminMessages() {
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                   placeholder="Répondre…"
-                  className="flex-1 min-w-0 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1]"
+                  className="flex-1 min-w-0 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
-                <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white disabled:opacity-50 transition-all">
+                <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 transition-all">
                   <Send className="w-4 h-4" />
                 </button>
               </div>
@@ -1949,7 +1949,7 @@ export function AdminMessages() {
           type="button"
           aria-label="Nouveau message"
           onClick={() => { setShowNew(true); setActiveConvId(null); }}
-          className="fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#6C3CE1] text-white shadow-[0_18px_32px_-20px_rgba(108,60,225,0.9)] transition hover:bg-[#7C4CF1]"
+          className="fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-[0_18px_32px_-20px_rgba(13,110,253,0.9)] transition hover:bg-[#7C4CF1]"
         >
           <Plus className="w-6 h-6" />
         </button>
@@ -2090,7 +2090,7 @@ export function AdminQuoteRequestDetail() {
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl">
-      <Link to="/admin/demandes" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:underline">
+      <Link to="/admin/demandes" className="inline-flex items-center gap-2 text-brand mb-6 hover:underline">
         <ArrowRight className="w-4 h-4 rotate-180" />
         Retour
       </Link>
@@ -2227,7 +2227,7 @@ export function AdminProjectDetail() {
 
   return (
     <div className="p-6 lg:p-8">
-      <Link to="/admin/projets" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:underline">
+      <Link to="/admin/projets" className="inline-flex items-center gap-2 text-brand mb-6 hover:underline">
         <ArrowRight className="w-4 h-4 rotate-180" />
         Retour
       </Link>
@@ -2286,7 +2286,7 @@ export function AdminProjectDetail() {
                   max="100"
                   value={progress}
                   onChange={(e) => setProgress(Number(e.target.value))}
-                  className="w-full accent-[#6C3CE1]"
+                  className="w-full accent-brand"
                 />
                 <div className="text-sm text-[#A0A0A0]">{progress}%</div>
               </div>
@@ -2355,7 +2355,7 @@ export function AdminQuoteDetail() {
 
   return (
     <div className="p-6 lg:p-8">
-      <Link to="/admin/devis" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:underline">
+      <Link to="/admin/devis" className="inline-flex items-center gap-2 text-brand mb-6 hover:underline">
         <ArrowRight className="w-4 h-4 rotate-180" />
         Retour
       </Link>
@@ -2410,7 +2410,7 @@ export function AdminInvoiceDetail() {
 
   return (
     <div className="p-6 lg:p-8">
-      <Link to="/admin/factures" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:underline">
+      <Link to="/admin/factures" className="inline-flex items-center gap-2 text-brand mb-6 hover:underline">
         <ArrowRight className="w-4 h-4 rotate-180" />
         Retour
       </Link>
@@ -2486,7 +2486,7 @@ export function AdminTeam() {
   const getRoleBadge = (role: string) => {
     const colors: Record<string, string> = {
       SUPER_ADMIN: 'bg-gradient-to-r from-[#EF4444] to-[#F59E0B] text-white',
-      ADMIN: 'bg-[#6C3CE1] text-white',
+      ADMIN: 'bg-brand text-white',
       PROJECT_MANAGER: 'bg-[#3B82F6] text-white',
       SALES_MANAGER: 'bg-[#10B981] text-white',
       CONTENT_MANAGER: 'bg-[#F59E0B] text-white',
@@ -2588,7 +2588,7 @@ export function AdminTeam() {
               <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold ${
                 member.role === 'SUPER_ADMIN' 
                   ? 'bg-gradient-to-br from-[#EF4444] to-[#F59E0B]' 
-                  : 'bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1]'
+                  : 'bg-gradient-to-br from-brand to-accent'
               }`}>
                 {member.firstName[0]}{member.lastName[0]}
               </div>
@@ -2749,7 +2749,7 @@ export function AdminTeam() {
                 <input 
                   type="checkbox" 
                   defaultChecked={selectedMember.isActive}
-                  className="w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-[#6C3CE1] focus:ring-[#6C3CE1]"
+                  className="w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-brand focus:ring-brand"
                 />
                 <div>
                   <p className="text-sm font-medium text-white">Compte actif</p>

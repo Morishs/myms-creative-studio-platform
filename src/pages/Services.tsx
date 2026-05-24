@@ -26,12 +26,12 @@ export function Services() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               Nos services
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Des solutions créatives pour{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 chaque besoin
               </span>
             </h1>
@@ -60,7 +60,7 @@ export function Services() {
               >
                 <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-xl bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1]">
+                    <div className="w-14 h-14 rounded-xl bg-brand/10 flex items-center justify-center text-brand">
                       {iconMap[service.icon]}
                     </div>
                     <Badge variant="primary">{service.pricing}</Badge>
@@ -95,9 +95,9 @@ export function Services() {
                 </div>
                 
                 <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
-                  <Card className="aspect-square flex items-center justify-center bg-gradient-to-br from-[#6C3CE1]/10 to-[#F59E0B]/10 border-[#6C3CE1]/20">
+                  <Card className="aspect-square flex items-center justify-center bg-gradient-to-br from-brand/10 to-[#F59E0B]/10 border-brand/20">
                     <div className="text-center p-8">
-                      <div className="w-24 h-24 mx-auto rounded-2xl bg-[#6C3CE1]/20 flex items-center justify-center text-[#6C3CE1] mb-6">
+                      <div className="w-24 h-24 mx-auto rounded-2xl bg-brand/10 flex items-center justify-center text-brand mb-6">
                         {iconMap[service.icon]}
                       </div>
                       <h3 className="text-2xl font-bold text-white mb-2">{service.title}</h3>
@@ -112,7 +112,7 @@ export function Services() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1]">
+      <section className="py-20 bg-gradient-to-br from-brand to-accent">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -176,13 +176,13 @@ export function ServiceDetail() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
           >
-            <Link to="/services" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:text-[#7C4CF1] transition-colors">
+            <Link to="/services" className="inline-flex items-center gap-2 text-brand mb-6 hover:text-brand-light transition-colors">
               <ArrowRight className="w-4 h-4 rotate-180" />
               Tous les services
             </Link>
             
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-xl bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1]">
+              <div className="w-16 h-16 rounded-xl bg-brand/10 flex items-center justify-center text-brand">
                 {iconMap[service.icon]}
               </div>
             </div>

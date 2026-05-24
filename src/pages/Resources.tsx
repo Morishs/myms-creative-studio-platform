@@ -31,12 +31,12 @@ export function Resources() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               Ressources
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Templates &{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
                 Ressources
               </span>
             </h1>
@@ -58,8 +58,8 @@ export function Resources() {
                 onClick={() => setActiveFilter(filter)}
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                   activeFilter === filter
-                    ? 'bg-[#6C3CE1] text-white'
-                    : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-[#6C3CE1]'
+                    ? 'bg-brand text-white'
+                    : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-brand'
                 }`}
               >
                 {filter}
@@ -107,7 +107,7 @@ export function Resources() {
                             {resource.downloads}
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-[#6C3CE1] transition-colors">
+                        <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-brand transition-colors">
                           {resource.title}
                         </h3>
                         <p className="text-[#A0A0A0] text-sm mb-4">
@@ -115,7 +115,7 @@ export function Resources() {
                         </p>
                         <div className="flex items-center justify-between pt-4 border-t border-[#2A2A2A]">
                           <span className="text-xs text-[#6B7280]">{resource.fileFormat}</span>
-                          <span className="text-sm font-medium text-[#6C3CE1] flex items-center gap-1">
+                          <span className="text-sm font-medium text-brand flex items-center gap-1">
                             {resource.isFree ? 'Télécharger' : 'Acheter'}
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                           </span>
@@ -223,7 +223,7 @@ export function ResourceDetail() {
       <section className="py-20 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Link to="/ressources" className="inline-flex items-center gap-2 text-[#6C3CE1] mb-6 hover:text-[#7C4CF1] transition-colors">
+            <Link to="/ressources" className="inline-flex items-center gap-2 text-brand mb-6 hover:text-brand-light transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Retour aux ressources
             </Link>
@@ -249,7 +249,7 @@ export function ResourceDetail() {
               {/* Details card */}
               <Card className="mb-8">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-[#6C3CE1]" />
+                  <Package className="w-5 h-5 text-brand" />
                   Détails du fichier
                 </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -294,10 +294,10 @@ export function ResourceDetail() {
                       </Button>
                     </div>
                   ) : downloadStep === 'email' ? (
-                    <Card className="border-[#6C3CE1]/30">
+                    <Card className="border-brand/20">
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-[#6C3CE1]/10 flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-[#6C3CE1]" />
+                        <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center">
+                          <Mail className="w-5 h-5 text-brand" />
                         </div>
                         <div>
                           <p className="font-semibold text-white">Entrez votre email</p>
@@ -352,15 +352,15 @@ export function ResourceDetail() {
                     </div>
                   ) : purchaseStep === 'processing' ? (
                     <div className="p-8 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl text-center">
-                      <div className="w-12 h-12 mx-auto mb-4 rounded-full border-4 border-[#6C3CE1] border-t-transparent animate-spin" />
+                      <div className="w-12 h-12 mx-auto mb-4 rounded-full border-4 border-brand border-t-transparent animate-spin" />
                       <p className="font-semibold text-white mb-1">Traitement du paiement…</p>
                       <p className="text-sm text-[#A0A0A0]">Veuillez patienter quelques instants.</p>
                     </div>
                   ) : purchaseStep === 'form' ? (
-                    <Card className="border-[#6C3CE1]/30">
+                    <Card className="border-brand/20">
                       <h3 className="font-semibold text-white mb-1">Finaliser l'achat</h3>
                       <p className="text-sm text-[#6B7280] mb-4">
-                        {resource.title} — <span className="text-[#6C3CE1] font-semibold">{resource.price?.toLocaleString()} {resource.currency}</span>
+                        {resource.title} — <span className="text-brand font-semibold">{resource.price?.toLocaleString()} {resource.currency}</span>
                       </p>
                       <div className="space-y-3">
                         <Input
@@ -393,7 +393,7 @@ export function ResourceDetail() {
                                 onClick={() => setPayMethod(m.id)}
                                 className={`p-3 rounded-lg border text-left transition-all ${
                                   payMethod === m.id
-                                    ? 'border-[#6C3CE1] bg-[#6C3CE1]/10'
+                                    ? 'border-brand bg-brand/10'
                                     : 'border-[#2A2A2A] bg-[#0A0A0A] hover:border-[#3A3A3A]'
                                 }`}
                               >
