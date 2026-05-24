@@ -1112,7 +1112,7 @@ export function AdminInvoices() {
             <h2 className="text-2xl font-bold text-white">{editingInvoiceId ? 'Modifier la facture' : 'Nouvelle facture'}</h2>
             <p className="text-text-muted">Créez ou mettez à jour une facture connectée au reste du tableau de bord.</p>
           </div>
-          <Button variant="secondary" onClick={() => { resetForm(); setShowForm(false); }}>
+          <Button variant="primary" onClick={() => { resetForm(); setShowForm(false); }}>
             Annuler
           </Button>
         </div>
@@ -1168,7 +1168,7 @@ export function AdminInvoices() {
         <div className="space-y-3 mb-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold text-white">Lignes de facture</h3>
-            <Button variant="secondary" onClick={addLineItem}>Ajouter une ligne</Button>
+            <Button variant="primary" onClick={addLineItem}>Ajouter une ligne</Button>
           </div>
           {formState.lineItems.map((item, index) => (
             <div key={item.id} className="grid gap-3 md:grid-cols-4 items-end bg-surface-alt rounded-xl p-4">
@@ -1210,7 +1210,7 @@ export function AdminInvoices() {
         />
 
         <div className="flex flex-wrap gap-3 justify-end mt-6">
-          <Button variant="secondary" onClick={() => { resetForm(); setShowForm(false); }}>Annuler</Button>
+          <Button variant="primary" onClick={() => { resetForm(); setShowForm(false); }}>Annuler</Button>
           <Button variant="primary" onClick={saveInvoice} isLoading={isSubmitting}>
             Enregistrer la facture
           </Button>
@@ -1227,7 +1227,7 @@ export function AdminInvoices() {
           <p className="text-text-muted">{invoices.length} factures au total, dont {outstandingInvoices.length} impayées</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button variant="secondary" onClick={() => setShowForm(true)}>
+          <Button variant="primary" onClick={() => setShowForm(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Nouvelle facture
           </Button>
@@ -1271,9 +1271,9 @@ export function AdminInvoices() {
                   <td className="py-4 px-3 align-top text-text-muted">{invoice.paymentMethod || '—'}</td>
                   <td className="py-4 px-3 align-top text-text-muted">{invoice.quoteNumber || '—'}</td>
                   <td className="py-4 px-3 align-top space-y-2">
-                    <Button variant="ghost" onClick={() => handleEditInvoice(invoice.id)}>Modifier</Button>
-                    <Button variant="ghost" onClick={() => downloadInvoicePdf(invoice)}>PDF</Button>
-                    <Button variant="outline" onClick={() => handleSendInvoice(invoice.id)}>Envoyer</Button>
+                    <Button variant="outline" onClick={() => handleEditInvoice(invoice.id)}>Modifier</Button>
+                    <Button variant="outline" onClick={() => downloadInvoicePdf(invoice)}>PDF</Button>
+                    <Button variant="primary" onClick={() => handleSendInvoice(invoice.id)}>Envoyer</Button>
                     {invoice.amountDue > 0 && invoice.status !== 'PAID' && (
                       <Button variant="success" onClick={() => handleMarkPaid(invoice.id)}>Marquer payé</Button>
                     )}
