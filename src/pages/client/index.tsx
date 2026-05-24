@@ -21,12 +21,8 @@ import {
   formatDateTime, getStatusConfig
 } from '../../data/mockData';
 
-const mockClientProjects = dashboardStore.getProjects();
-const mockClientQuotes = dashboardStore.getQuotes();
-const mockClientInvoices = dashboardStore.getInvoices();
-const mockClientFiles: any[] = [];
-const mockClientPurchases: any[] = [];
-const mockClientMessages: any[] = [];
+const emptyClientFiles: any[] = [];
+const emptyClientPurchases: any[] = [];
 
 // ===== CLIENT LAYOUT =====
 const clientNavItems = [
@@ -346,41 +342,59 @@ export function ClientDashboard() {
 
 // ===== CLIENT PROJECTS =====
 export function ClientProjects() {
+  const { user } = useAuth();
+  const [projects, setProjects] = useState(dashboardStore.getProjects());
+
+  useEffect(() => {
+    const updateProjects = () => setProjects(dashboardStore.getProjects());
+    const unsubscribe = dashboardStore.subscribe(updateProjects);
+    updateProjects();
+    return unsubscribe;
+  }, []);
+
+  const userProjects = projects.filter((project) => project.clientId === user?.id);
+
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Mes projets</h1>
       <p className="text-[#A0A0A0] mb-8">Suivez l'avancement de tous vos projets</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {mockClientProjects.map((project) => {
-          const status = getStatusConfig(project.status);
-          return (
-            <Link key={project.id} to={`/client/projets/${project.id}`}>
-              <Card hover className="h-full">
-                <div className="flex items-start justify-between mb-4">
-                  <Badge variant={status.variant}>{status.label}</Badge>
-                  <span className="text-xs text-[#6B7280]">{project.serviceType}</span>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{project.name}</h3>
-                <p className="text-sm text-[#A0A0A0] mb-4 line-clamp-2">{project.description}</p>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] rounded-full transition-all"
-                      style={{ width: `${project.progress}%` }}
-                    />
+      {userProjects.length === 0 ? (
+        <Card className="p-6">
+          <p className="text-[#A0A0A0]">Vous n'avez aucun projet associé pour le moment. Si vous pensez que c'est une erreur, contactez votre gestionnaire.</p>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {userProjects.map((project) => {
+            const status = getStatusConfig(project.status);
+            return (
+              <Link key={project.id} to={`/client/projets/${project.id}`}>
+                <Card hover className="h-full">
+                  <div className="flex items-start justify-between mb-4">
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                    <span className="text-xs text-[#6B7280]">{project.serviceType}</span>
                   </div>
-                  <span className="text-sm text-[#A0A0A0]">{project.progress}%</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-[#6B7280]">
-                  <span>Début: {formatDate(project.startDate)}</span>
-                  <span>Fin estimée: {formatDate(project.estimatedEndDate)}</span>
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">{project.name}</h3>
+                  <p className="text-sm text-[#A0A0A0] mb-4 line-clamp-2">{project.description}</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] rounded-full transition-all"
+                        style={{ width: `${project.progress}%` }}
+                      />
+                    </div>
+                    <span className="text-sm text-[#A0A0A0]">{project.progress}%</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-[#6B7280]">
+                    <span>Début: {formatDate(project.startDate)}</span>
+                    <span>Fin estimée: {formatDate(project.estimatedEndDate)}</span>
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -449,7 +463,16 @@ function ProjectMessages({ userId, userName }: { userId: string; userName: strin
 export function ClientProjectDetail() {
   const { id } = useParams();
   const { user } = useAuth();
-  const project = mockClientProjects.find(p => p.id === id);
+  const [projects, setProjects] = useState(dashboardStore.getProjects());
+
+  useEffect(() => {
+    const updateProjects = () => setProjects(dashboardStore.getProjects());
+    const unsubscribe = dashboardStore.subscribe(updateProjects);
+    updateProjects();
+    return unsubscribe;
+  }, []);
+
+  const project = projects.find((p) => p.id === id && p.clientId === user?.id);
 
   if (!project) {
     return (
@@ -460,7 +483,7 @@ export function ClientProjectDetail() {
   }
 
   const status = getStatusConfig(project.status);
-  const projectFiles = mockClientFiles.filter(f => f.project === project.name);
+  const projectFiles = emptyClientFiles.filter((f) => f.project === project.name);
 
   return (
     <div className="p-6 lg:p-8">
@@ -556,13 +579,25 @@ export function ClientProjectDetail() {
 
 // ===== CLIENT QUOTES =====
 export function ClientQuotes() {
+  const { user } = useAuth();
+  const [quotes, setQuotes] = useState(dashboardStore.getQuotes());
+
+  useEffect(() => {
+    const updateQuotes = () => setQuotes(dashboardStore.getQuotes());
+    const unsubscribe = dashboardStore.subscribe(updateQuotes);
+    updateQuotes();
+    return unsubscribe;
+  }, []);
+
+  const userQuotes = quotes.filter((quote) => quote.clientId === user?.id);
+
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Mes devis</h1>
       <p className="text-[#A0A0A0] mb-8">Consultez et gérez tous vos devis</p>
 
       <div className="space-y-3">
-        {mockClientQuotes.map((quote) => {
+        {userQuotes.map((quote) => {
           const status = getStatusConfig(quote.status);
           return (
             <Link key={quote.id} to={`/client/devis/${quote.id}`}>
@@ -590,8 +625,18 @@ export function ClientQuotes() {
 // ===== CLIENT QUOTE DETAIL =====
 export function ClientQuoteDetail() {
   const { id } = useParams();
-  const quote = mockClientQuotes.find(q => q.id === id);
+  const { user } = useAuth();
+  const [quotes, setQuotes] = useState(dashboardStore.getQuotes());
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    const updateQuotes = () => setQuotes(dashboardStore.getQuotes());
+    const unsubscribe = dashboardStore.subscribe(updateQuotes);
+    updateQuotes();
+    return unsubscribe;
+  }, []);
+
+  const quote = quotes.find((q) => q.id === id && q.clientId === user?.id);
 
   if (!quote) {
     return (
@@ -741,13 +786,25 @@ export function ClientQuoteDetail() {
 
 // ===== CLIENT INVOICES =====
 export function ClientInvoices() {
+  const { user } = useAuth();
+  const [invoices, setInvoices] = useState(dashboardStore.getInvoices());
+
+  useEffect(() => {
+    const updateInvoices = () => setInvoices(dashboardStore.getInvoices());
+    const unsubscribe = dashboardStore.subscribe(updateInvoices);
+    updateInvoices();
+    return unsubscribe;
+  }, []);
+
+  const userInvoices = invoices.filter((invoice) => invoice.clientId === user?.id);
+
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Mes factures</h1>
       <p className="text-[#A0A0A0] mb-8">Consultez et payez vos factures en ligne</p>
 
       <div className="space-y-3">
-        {mockClientInvoices.map((invoice) => {
+        {userInvoices.map((invoice) => {
           const status = getStatusConfig(invoice.status);
           return (
             <Link key={invoice.id} to={`/client/factures/${invoice.id}`}>
@@ -782,7 +839,17 @@ export function ClientInvoices() {
 // ===== CLIENT INVOICE DETAIL =====
 export function ClientInvoiceDetail() {
   const { id } = useParams();
-  const invoice = mockClientInvoices.find(i => i.id === id);
+  const { user } = useAuth();
+  const [invoices, setInvoices] = useState(dashboardStore.getInvoices());
+
+  useEffect(() => {
+    const updateInvoices = () => setInvoices(dashboardStore.getInvoices());
+    const unsubscribe = dashboardStore.subscribe(updateInvoices);
+    updateInvoices();
+    return unsubscribe;
+  }, []);
+
+  const invoice = invoices.find((i) => i.id === id && i.clientId === user?.id);
 
   if (!invoice) {
     return <div className="p-6 text-center text-[#A0A0A0]">Facture non trouvée</div>;
@@ -886,7 +953,7 @@ export function ClientFiles() {
       <p className="text-[#A0A0A0] mb-8">Téléchargez vos livrables et fichiers partagés</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockClientFiles.map((file) => (
+        {emptyClientFiles.map((file) => (
           <Card key={file.id} hover>
             <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1]">
@@ -920,9 +987,9 @@ export function ClientPurchases() {
       <h1 className="text-3xl font-bold text-white mb-2">Mes achats</h1>
       <p className="text-[#A0A0A0] mb-8">Historique de vos achats de ressources</p>
 
-      {mockClientPurchases.length > 0 ? (
+      {emptyClientPurchases.length > 0 ? (
         <div className="space-y-3">
-          {mockClientPurchases.map((purchase) => (
+          {emptyClientPurchases.map((purchase) => (
             <Card key={purchase.id}>
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>

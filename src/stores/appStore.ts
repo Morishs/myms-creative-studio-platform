@@ -10,19 +10,78 @@ interface Toast {
   message?: string;
 }
 
+export interface QuoteRequestItem {
+  id: string;
+  clientId: string;
+  fullName: string;
+  company?: string;
+  email: string;
+  phone: string;
+  services: string[];
+  description: string;
+  budget?: string;
+  deadline?: string;
+  references?: string;
+  source?: string;
+  status: 'NEW' | 'ACCEPTED' | 'REFUSED' | 'PROCESSED';
+  createdAt: string;
+}
+
 interface AppState {
   toasts: Toast[];
   newsletterEmails: string[];
   contactMessages: { name: string; email: string; subject: string; message: string; createdAt: string }[];
-  quoteRequests: { fullName: string; email: string; phone: string; service: string; description: string; createdAt: string }[];
+  quoteRequests: QuoteRequestItem[];
 }
 
-let state: AppState = {
-  toasts: [],
-  newsletterEmails: [],
-  contactMessages: [],
-  quoteRequests: [],
-};
+const STORAGE_KEY = 'myms_app_state';
+
+function loadState(): AppState {
+  if (typeof window === 'undefined') {
+    return {
+      toasts: [],
+      newsletterEmails: [],
+      contactMessages: [],
+      quoteRequests: [],
+    };
+  }
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return {
+        toasts: [],
+        newsletterEmails: [],
+        contactMessages: [],
+        quoteRequests: [],
+      };
+    }
+    const parsed = JSON.parse(raw) as AppState;
+    return {
+      toasts: parsed.toasts ?? [],
+      newsletterEmails: parsed.newsletterEmails ?? [],
+      contactMessages: parsed.contactMessages ?? [],
+      quoteRequests: parsed.quoteRequests ?? [],
+    };
+  } catch {
+    return {
+      toasts: [],
+      newsletterEmails: [],
+      contactMessages: [],
+      quoteRequests: [],
+    };
+  }
+}
+
+function persist() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+let state: AppState = loadState();
 
 const listeners: Set<Listener> = new Set();
 
@@ -41,33 +100,57 @@ export const appStore = {
   addToast: (toast: Omit<Toast, 'id'>) => {
     const id = `toast-${Date.now()}`;
     state = { ...state, toasts: [...state.toasts, { ...toast, id }] };
+    persist();
     notify();
-    // Auto remove after 4 seconds
     setTimeout(() => {
       state = { ...state, toasts: state.toasts.filter(t => t.id !== id) };
+      persist();
       notify();
     }, 4000);
   },
 
   removeToast: (id: string) => {
     state = { ...state, toasts: state.toasts.filter(t => t.id !== id) };
+    persist();
     notify();
   },
 
   addNewsletterEmail: (email: string) => {
     if (!state.newsletterEmails.includes(email)) {
       state = { ...state, newsletterEmails: [...state.newsletterEmails, email] };
+      persist();
       notify();
     }
   },
 
   addContactMessage: (msg: Omit<AppState['contactMessages'][0], 'createdAt'>) => {
     state = { ...state, contactMessages: [...state.contactMessages, { ...msg, createdAt: new Date().toISOString() }] };
+    persist();
     notify();
   },
 
-  addQuoteRequest: (req: Omit<AppState['quoteRequests'][0], 'createdAt'>) => {
-    state = { ...state, quoteRequests: [...state.quoteRequests, { ...req, createdAt: new Date().toISOString() }] };
+  addQuoteRequest: (req: Omit<QuoteRequestItem, 'id' | 'createdAt' | 'status'>) => {
+    const quoteRequest: QuoteRequestItem = {
+      ...req,
+      id: `qr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      status: 'NEW',
+      createdAt: new Date().toISOString(),
+    };
+    state = { ...state, quoteRequests: [...state.quoteRequests, quoteRequest] };
+    persist();
     notify();
+    return quoteRequest;
   },
+
+  updateQuoteRequest: (id: string, updates: Partial<Omit<QuoteRequestItem, 'id' | 'clientId' | 'createdAt'>>) => {
+    state = {
+      ...state,
+      quoteRequests: state.quoteRequests.map((req) => req.id === id ? { ...req, ...updates } : req),
+    };
+    persist();
+    notify();
+    return state.quoteRequests.find((req) => req.id === id);
+  },
+
+  getQuoteRequests: () => state.quoteRequests,
 };

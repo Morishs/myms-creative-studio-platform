@@ -21,8 +21,7 @@ import { dashboardStore } from '../../stores/dashboardStore';
 import { messageStore, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
 import { MessageStatusIcon, OnlineBadge, OfflineBadge } from '../../components/ui/MessageStatus';
 import { NotificationBell } from '../../components/NotificationPanel';
-import { 
-  mockAdminQuoteRequests, mockAdminProjects, mockAdminQuotes, mockAdminInvoices,
+import {
   formatCurrency, formatDate, formatDateTime, getStatusConfig
 } from '../../data/mockData';
 import { services, portfolioProjects, resources, blogPosts, testimonials } from '../../data';
@@ -44,6 +43,22 @@ const adminNavItems = [
   { label: 'Newsletter', href: '/admin/newsletter', icon: Users2 },
   { label: 'Équipe', href: '/admin/equipe', icon: Users2, permission: 'team.view' },
   { label: 'Paramètres', href: '/admin/parametres', icon: Settings },
+];
+
+const projectStatusOptions = [
+  { value: 'PENDING', label: 'En attente' },
+  { value: 'IN_PROGRESS', label: 'En cours' },
+  { value: 'REVISION', label: 'En révision' },
+  { value: 'DELIVERED', label: 'Livré' },
+  { value: 'COMPLETED', label: 'Terminé' },
+  { value: 'CANCELLED', label: 'Annulé' },
+];
+
+const projectPriorityOptions = [
+  { value: 'LOW', label: 'Basse' },
+  { value: 'MEDIUM', label: 'Moyenne' },
+  { value: 'HIGH', label: 'Haute' },
+  { value: 'URGENT', label: 'Urgente' },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -313,7 +328,7 @@ export function AdminDashboard() {
         <Card>
           <h2 className="text-lg font-semibold text-white mb-4">Demandes de devis récentes</h2>
           <div className="space-y-3">
-            {mockAdminQuoteRequests.slice(0, 3).map((req) => (
+            {quoteRequests.slice(0, 3).map((req) => (
               <Link 
                 key={req.id} 
                 to={`/admin/demandes/${req.id}`}
@@ -337,7 +352,7 @@ export function AdminDashboard() {
         <Card>
           <h2 className="text-lg font-semibold text-white mb-4">Projets récents</h2>
           <div className="space-y-3">
-            {mockAdminProjects.slice(-3).reverse().map((project) => (
+            {projects.slice(-3).reverse().map((project) => (
               <Link 
                 key={project.id} 
                 to={`/admin/projets/${project.id}`}
@@ -667,17 +682,26 @@ export function AdminClients() {
 
 // ===== ADMIN QUOTE REQUESTS =====
 export function AdminQuoteRequests() {
+  const [quoteRequests, setQuoteRequests] = useState(appStore.getState().quoteRequests);
+
+  useEffect(() => {
+    const unsubscribe = appStore.subscribe(() => {
+      setQuoteRequests(appStore.getState().quoteRequests);
+    });
+    return unsubscribe;
+  }, []);
+
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-white mb-2">Demandes de devis</h1>
         <p className="text-[#A0A0A0]">
-          {mockAdminQuoteRequests.filter(r => r.status === 'NEW').length} nouvelles demandes
+          {quoteRequests.filter((r) => r.status === 'NEW').length} nouvelles demandes
         </p>
       </div>
 
       <div className="space-y-3">
-        {mockAdminQuoteRequests.map((req) => (
+        {quoteRequests.map((req) => (
           <Link key={req.id} to={`/admin/demandes/${req.id}`}>
             <Card hover>
               <div className="flex items-start justify-between gap-4 mb-3">
@@ -710,12 +734,19 @@ export function AdminQuoteRequests() {
 
 // ===== ADMIN QUOTES =====
 export function AdminQuotes() {
+  const [quotes, setQuotes] = useState(dashboardStore.getQuotes());
+
+  useEffect(() => {
+    const unsubscribe = dashboardStore.subscribe(() => setQuotes(dashboardStore.getQuotes()));
+    return unsubscribe;
+  }, []);
+
   return (
     <div className="p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Devis</h1>
-          <p className="text-[#A0A0A0]">{mockAdminQuotes.length} devis au total</p>
+          <p className="text-[#A0A0A0]">{quotes.length} devis au total</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouveau devis', message: 'Ouverture de l\'éditeur de devis…' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -724,7 +755,7 @@ export function AdminQuotes() {
       </div>
 
       <div className="space-y-3">
-        {mockAdminQuotes.map((quote) => {
+        {quotes.map((quote) => {
           const status = getStatusConfig(quote.status);
           return (
             <Link key={quote.id} to={`/admin/devis/${quote.id}`}>
@@ -751,12 +782,19 @@ export function AdminQuotes() {
 
 // ===== ADMIN INVOICES =====
 export function AdminInvoices() {
+  const [invoices, setInvoices] = useState(dashboardStore.getInvoices());
+
+  useEffect(() => {
+    const unsubscribe = dashboardStore.subscribe(() => setInvoices(dashboardStore.getInvoices()));
+    return unsubscribe;
+  }, []);
+
   return (
     <div className="p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Factures</h1>
-          <p className="text-[#A0A0A0]">{mockAdminInvoices.length} factures au total</p>
+          <p className="text-[#A0A0A0]">{invoices.length} factures au total</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouvelle facture', message: 'Ouverture de l\'éditeur de facture…' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -765,7 +803,7 @@ export function AdminInvoices() {
       </div>
 
       <div className="space-y-3">
-        {mockAdminInvoices.map((invoice) => {
+        {invoices.map((invoice) => {
           const status = getStatusConfig(invoice.status);
           return (
             <Link key={invoice.id} to={`/admin/factures/${invoice.id}`}>
@@ -793,13 +831,19 @@ export function AdminInvoices() {
 // ===== ADMIN PROJECTS =====
 export function AdminProjects() {
   const navigate = useNavigate();
+  const [projects, setProjects] = useState(dashboardStore.getProjects());
+
+  useEffect(() => {
+    const unsubscribe = dashboardStore.subscribe(() => setProjects(dashboardStore.getProjects()));
+    return unsubscribe;
+  }, []);
 
   return (
     <div className="p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Projets</h1>
-          <p className="text-[#A0A0A0]">{mockAdminProjects.length} projets au total</p>
+          <p className="text-[#A0A0A0]">{projects.length} projet(s) au total</p>
         </div>
         <Button variant="primary" onClick={() => navigate('/admin/projets/nouveau')}>
           <Plus className="w-4 h-4 mr-2" />
@@ -807,35 +851,41 @@ export function AdminProjects() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockAdminProjects.map((project) => {
-          const status = getStatusConfig(project.status);
-          return (
-            <Link key={project.id} to={`/admin/projets/${project.id}`}>
-              <Card hover className="h-full">
-                <div className="flex items-start justify-between mb-3">
-                  <Badge variant={status.variant}>{status.label}</Badge>
-                  <span className="text-xs text-[#6B7280]">{project.progress}%</span>
-                </div>
-                <h3 className="font-semibold text-white mb-2">{project.name}</h3>
-                <p className="text-sm text-[#A0A0A0] mb-4 line-clamp-2">{project.description}</p>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1]"
-                      style={{ width: `${project.progress}%` }}
-                    />
+      {projects.length === 0 ? (
+        <Card className="p-6">
+          <p className="text-[#A0A0A0]">Aucun projet enregistré pour le moment. Créez-en un pour démarrer la gestion.</p>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {projects.map((project) => {
+            const status = getStatusConfig(project.status);
+            return (
+              <Link key={project.id} to={`/admin/projets/${project.id}`}>
+                <Card hover className="h-full">
+                  <div className="flex items-start justify-between mb-3">
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                    <span className="text-xs text-[#6B7280]">{project.progress}%</span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between text-xs text-[#6B7280]">
-                  <span>{project.clientName}</span>
-                  <span>{project.serviceType}</span>
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+                  <h3 className="font-semibold text-white mb-2">{project.name}</h3>
+                  <p className="text-sm text-[#A0A0A0] mb-4 line-clamp-2">{project.description}</p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1]"
+                        style={{ width: `${project.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-[#6B7280]">
+                    <span>{project.clientName}</span>
+                    <span>{project.serviceType}</span>
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -843,29 +893,47 @@ export function AdminProjects() {
 export function AdminProjectCreate() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [clientName, setClientName] = useState('');
+  const [clientId, setClientId] = useState('');
   const [serviceType, setServiceType] = useState('');
   const [description, setDescription] = useState('');
+  const [status, setStatus] = useState('PENDING');
+  const [priority, setPriority] = useState('MEDIUM');
+  const [progress, setProgress] = useState(10);
+  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
+  const [estimatedEndDate, setEstimatedEndDate] = useState(new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+  const clients = getClients();
+  const noClients = clients.length === 0;
 
   const handleCreateProject = () => {
-    if (!name.trim() || !clientName.trim() || !serviceType.trim()) {
+    if (noClients) {
+      appStore.addToast({ type: 'error', title: 'Aucun client', message: 'Créez d’abord un client avant de créer un projet.' });
+      return;
+    }
+    if (!name.trim() || !serviceType.trim() || !clientId) {
       appStore.addToast({ type: 'error', title: 'Informations manquantes', message: 'Veuillez remplir tous les champs obligatoires.' });
       return;
     }
 
-    mockAdminProjects.push({
+    const client = clients.find((item) => item.id === clientId);
+    const clientName = client ? `${client.firstName} ${client.lastName}` : 'Client inconnu';
+
+    dashboardStore.addProject({
       id: `p${Date.now()}`,
+      clientId,
+      clientName,
       name: name.trim(),
-      clientName: clientName.trim(),
       serviceType: serviceType.trim(),
-      status: 'PLANNING',
-      progress: 0,
-      startDate: new Date().toISOString().slice(0, 10),
-      estimatedEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      description: description.trim() || 'Aucun détail supplémentaire fourni.'
+      status,
+      progress,
+      priority,
+      startDate,
+      estimatedEndDate,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      description: description.trim() || 'Aucun détail supplémentaire fourni.',
     });
 
-    appStore.addToast({ type: 'success', title: 'Projet créé', message: 'Votre projet a bien été ajouté.' });
+    appStore.addToast({ type: 'success', title: 'Projet créé', message: 'Le projet a été ajouté au tableau de bord.' });
     navigate('/admin/projets');
   };
 
@@ -878,23 +946,84 @@ export function AdminProjectCreate() {
 
       <div className="max-w-3xl">
         <h1 className="text-3xl font-bold text-white mb-4">Nouveau projet</h1>
-        <p className="text-[#A0A0A0] mb-6">Créez un nouveau projet en définissant son titre, son client et ses objectifs.</p>
-        <Card className="p-6">
-          <div className="grid gap-4">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom du projet" />
-            <Input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Client" />
-            <Input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Type de service" />
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description du projet" rows={5} />
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Button variant="primary" onClick={handleCreateProject}>
-                Créer le projet
-              </Button>
-              <Link to="/admin/projets" className="inline-flex items-center justify-center px-4 py-3 border border-[#2A2A2A] text-[#A0A0A0] rounded-lg hover:border-[#6C3CE1]">
-                Annuler
-              </Link>
+        <p className="text-[#A0A0A0] mb-6">Créez un nouveau projet et assignez-le à un client existant.</p>
+        {noClients ? (
+          <Card className="p-6 bg-[#0F0F0F] border border-[#2A2A2A]">
+            <div className="text-[#A0A0A0] space-y-4">
+              <p className="text-white font-semibold">Aucun client disponible</p>
+              <p>Vous devez d'abord créer un client dans l'espace clients avant de pouvoir ajouter un projet.</p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  to="/admin/clients"
+                  className="inline-flex items-center justify-center px-4 py-3 bg-[#6C3CE1] text-white rounded-lg hover:bg-[#7C4CF1] transition"
+                >
+                  Aller aux clients
+                </Link>
+                <Button variant="ghost" onClick={() => navigate('/admin/clients')}>
+                  Annuler
+                </Button>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        ) : (
+          <Card className="p-6">
+            <div className="grid gap-4">
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom du projet" />
+              <Select
+                label="Client"
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                options={clients.map((client) => ({
+                  value: client.id,
+                  label: `${client.firstName} ${client.lastName}`,
+                }))}
+                placeholder="Sélectionner un client"
+              />
+              <Input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Type de service" />
+              <div className="grid gap-4 md:grid-cols-2">
+                <Select
+                  label="Statut"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  options={projectStatusOptions}
+                  placeholder="Choisir un statut"
+                />
+                <Select
+                  label="Priorité"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  options={projectPriorityOptions}
+                  placeholder="Choisir une priorité"
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <Input type="date" value={estimatedEndDate} onChange={(e) => setEstimatedEndDate(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Progression (%)</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={progress}
+                  onChange={(e) => setProgress(Number(e.target.value))}
+                  className="w-full accent-[#6C3CE1]"
+                />
+                <div className="text-sm text-[#A0A0A0]">{progress}%</div>
+              </div>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description du projet" rows={5} />
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Button variant="primary" onClick={handleCreateProject} disabled={noClients}>
+                  Créer le projet
+                </Button>
+                <Link to="/admin/projets" className="inline-flex items-center justify-center px-4 py-3 border border-[#2A2A2A] text-[#A0A0A0] rounded-lg hover:border-[#6C3CE1]">
+                  Annuler
+                </Link>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );
@@ -1840,24 +1969,33 @@ export function AdminMessages() {
 
 // ===== ADMIN NEWSLETTER =====
 export function AdminNewsletter() {
+  const [subscribers, setSubscribers] = useState(dashboardStore.getNewsletterSubscribers());
+
+  useEffect(() => {
+    const unsubscribe = dashboardStore.subscribe(() => setSubscribers(dashboardStore.getNewsletterSubscribers()));
+    return unsubscribe;
+  }, []);
+
+  const downloadCsv = () => {
+    const csv = 'Email,Prénom,Date\n' + subscribers.map((s) => `${s.email},${s.firstName || ''},${s.subscribedAt}`).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'newsletter_abonnes.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    appStore.addToast({ type: 'success', title: 'Export CSV', message: `${subscribers.length} abonnés exportés.` });
+  };
+
   return (
     <div className="p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Newsletter</h1>
-          <p className="text-[#A0A0A0]">{mockNewsletterSubscribers.length} abonnés</p>
+          <p className="text-[#A0A0A0]">{subscribers.length} abonnés</p>
         </div>
-        <Button variant="outline" onClick={() => {
-          const csv = 'Email,Prénom,Date\n' + mockNewsletterSubscribers.map(s => `${s.email},${s.firstName || ''},${s.subscribedAt}`).join('\n');
-          const blob = new Blob([csv], { type: 'text/csv' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'newsletter_abonnes.csv';
-          a.click();
-          URL.revokeObjectURL(url);
-          appStore.addToast({ type: 'success', title: 'Export CSV', message: `${mockNewsletterSubscribers.length} abonnés exportés.` });
-        }}>
+        <Button variant="outline" onClick={downloadCsv}>
           Exporter CSV
         </Button>
       </div>
@@ -1874,7 +2012,7 @@ export function AdminNewsletter() {
               </tr>
             </thead>
             <tbody>
-              {mockNewsletterSubscribers.map((sub) => (
+              {subscribers.map((sub) => (
                 <tr key={sub.id} className="border-b border-[#2A2A2A]">
                   <td className="p-4 text-white">{sub.email}</td>
                   <td className="p-4 text-[#A0A0A0]">{sub.firstName || '-'}</td>
@@ -1938,7 +2076,14 @@ export function AdminSettings() {
 // ===== DETAIL PAGES =====
 export function AdminQuoteRequestDetail() {
   const { id } = useParams();
-  const request = mockAdminQuoteRequests.find(r => r.id === id);
+  const [quoteRequests, setQuoteRequests] = useState(appStore.getState().quoteRequests);
+
+  useEffect(() => {
+    const unsubscribe = appStore.subscribe(() => setQuoteRequests(appStore.getState().quoteRequests));
+    return unsubscribe;
+  }, []);
+
+  const request = quoteRequests.find((r) => r.id === id);
 
   if (!request) {
     return <div className="p-6 text-center text-[#A0A0A0]">Demande non trouvée</div>;
@@ -2008,13 +2153,78 @@ export function AdminQuoteRequestDetail() {
 
 export function AdminProjectDetail() {
   const { id } = useParams();
-  const project = mockAdminProjects.find(p => p.id === id);
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState(dashboardStore.getProjects());
+  const [isSaving, setIsSaving] = useState(false);
+  const clients = getClients();
+
+  useEffect(() => {
+    const unsubscribe = dashboardStore.subscribe(() => setProjects(dashboardStore.getProjects()));
+    return unsubscribe;
+  }, []);
+
+  const project = projects.find((p) => p.id === id);
+
+  const [name, setName] = useState('');
+  const [clientId, setClientId] = useState('');
+  const [serviceType, setServiceType] = useState('');
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState('PENDING');
+  const [priority, setPriority] = useState('MEDIUM');
+  const [progress, setProgress] = useState(0);
+  const [startDate, setStartDate] = useState('');
+  const [estimatedEndDate, setEstimatedEndDate] = useState('');
+
+  useEffect(() => {
+    if (!project) return;
+    setName(project.name);
+    setClientId(project.clientId);
+    setServiceType(project.serviceType);
+    setDescription(project.description);
+    setStatus(project.status);
+    setPriority(project.priority ?? 'MEDIUM');
+    setProgress(project.progress);
+    setStartDate(project.startDate);
+    setEstimatedEndDate(project.estimatedEndDate);
+  }, [project]);
 
   if (!project) {
     return <div className="p-6 text-center text-[#A0A0A0]">Projet non trouvé</div>;
   }
 
-  const status = getStatusConfig(project.status);
+  const statusConfig = getStatusConfig(status);
+  const assignedClient = clients.find((client) => client.id === clientId);
+
+  const handleSave = () => {
+    if (!name.trim() || !serviceType.trim() || !clientId) {
+      appStore.addToast({ type: 'error', title: 'Informations manquantes', message: 'Veuillez remplir tous les champs obligatoires.' });
+      return;
+    }
+    setIsSaving(true);
+    const clientName = assignedClient ? `${assignedClient.firstName} ${assignedClient.lastName}` : project.clientName;
+    dashboardStore.updateProject(project.id, {
+      name: name.trim(),
+      clientId,
+      clientName,
+      serviceType: serviceType.trim(),
+      description: description.trim(),
+      status,
+      priority,
+      progress,
+      startDate,
+      estimatedEndDate,
+      updatedAt: new Date().toISOString(),
+    });
+    setIsSaving(false);
+    appStore.addToast({ type: 'success', title: 'Projet mis à jour', message: 'Les modifications ont bien été enregistrées.' });
+  };
+
+  const handleDelete = () => {
+    if (!window.confirm('Supprimer ce projet ? Cette action est irréversible.')) return;
+    dashboardStore.deleteProject(project.id);
+    appStore.addToast({ type: 'success', title: 'Projet supprimé', message: 'Le projet a été supprimé du tableau de bord.' });
+    navigate('/admin/projets');
+  };
 
   return (
     <div className="p-6 lg:p-8">
@@ -2026,35 +2236,119 @@ export function AdminProjectDetail() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{project.name}</h1>
-          <p className="text-[#A0A0A0]">{project.clientName} · {project.serviceType}</p>
+          <p className="text-[#A0A0A0]">{assignedClient ? `${assignedClient.firstName} ${assignedClient.lastName}` : project.clientName} · {project.serviceType}</p>
         </div>
-        <Badge variant={status.variant} className="text-sm px-4 py-2">{status.label}</Badge>
+        <Badge variant={statusConfig.variant} className="text-sm px-4 py-2">{statusConfig.label}</Badge>
       </div>
 
-      <Card className="mb-6">
-        <h3 className="font-semibold text-white mb-4">Avancement</h3>
-        <div className="flex items-center gap-4 mb-4">
-          <div className="flex-1 h-3 bg-[#2A2A2A] rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1]"
-              style={{ width: `${project.progress}%` }}
-            />
-          </div>
-          <span className="text-lg font-bold text-[#6C3CE1]">{project.progress}%</span>
+      <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
+        <div className="space-y-6">
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold text-white mb-5">Modifier le projet</h2>
+            <div className="grid gap-4">
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom du projet" />
+              <Select
+                label="Client associé"
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                options={clients.map((client) => ({
+                  value: client.id,
+                  label: `${client.firstName} ${client.lastName}`,
+                }))}
+                placeholder="Sélectionner un client"
+              />
+              <Input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Type de service" />
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description du projet" rows={5} />
+              <div className="grid gap-4 md:grid-cols-2">
+                <Select
+                  label="Statut"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  options={projectStatusOptions}
+                  placeholder="Choisir un statut"
+                />
+                <Select
+                  label="Priorité"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  options={projectPriorityOptions}
+                  placeholder="Choisir une priorité"
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <Input type="date" value={estimatedEndDate} onChange={(e) => setEstimatedEndDate(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Progression</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={progress}
+                  onChange={(e) => setProgress(Number(e.target.value))}
+                  className="w-full accent-[#6C3CE1]"
+                />
+                <div className="text-sm text-[#A0A0A0]">{progress}%</div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 mt-6">
+              <Button variant="primary" onClick={handleSave} disabled={isSaving}>
+                Enregistrer les modifications
+              </Button>
+              <Button variant="outline" onClick={handleDelete} className="text-[#EF4444]">
+                Supprimer le projet
+              </Button>
+            </div>
+          </Card>
         </div>
-      </Card>
 
-      <Card>
-        <h3 className="font-semibold text-white mb-4">Description</h3>
-        <p className="text-[#A0A0A0]">{project.description}</p>
-      </Card>
+        <div className="space-y-6">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Résumé du projet</h3>
+            <div className="space-y-3 text-sm text-[#A0A0A0]">
+              <div className="flex justify-between">
+                <span>Client</span>
+                <span>{assignedClient ? `${assignedClient.firstName} ${assignedClient.lastName}` : project.clientName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Statut</span>
+                <span>{statusConfig.label}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Priorité</span>
+                <span>{priority}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Progression</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Début</span>
+                <span>{formatDate(startDate)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Fin estimée</span>
+                <span>{formatDate(estimatedEndDate)}</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
 
 export function AdminQuoteDetail() {
   const { id } = useParams();
-  const quote = mockAdminQuotes.find(q => q.id === id);
+  const [quotes, setQuotes] = useState(dashboardStore.getQuotes());
+
+  useEffect(() => {
+    const unsubscribe = dashboardStore.subscribe(() => setQuotes(dashboardStore.getQuotes()));
+    return unsubscribe;
+  }, []);
+
+  const quote = quotes.find((q) => q.id === id);
 
   if (!quote) {
     return <div className="p-6 text-center text-[#A0A0A0]">Devis non trouvé</div>;
@@ -2102,7 +2396,14 @@ export function AdminQuoteDetail() {
 
 export function AdminInvoiceDetail() {
   const { id } = useParams();
-  const invoice = mockAdminInvoices.find(i => i.id === id);
+  const [invoices, setInvoices] = useState(dashboardStore.getInvoices());
+
+  useEffect(() => {
+    const unsubscribe = dashboardStore.subscribe(() => setInvoices(dashboardStore.getInvoices()));
+    return unsubscribe;
+  }, []);
+
+  const invoice = invoices.find((i) => i.id === id);
 
   if (!invoice) {
     return <div className="p-6 text-center text-[#A0A0A0]">Facture non trouvée</div>;
@@ -2165,13 +2466,19 @@ export function AdminTeam() {
   const { user, hasPermission } = useAuth();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<typeof mockTeamMembers[0] | null>(null);
+  const [selectedMember, setSelectedMember] = useState<DashboardTeamMember | null>(null);
   const [search, setSearch] = useState('');
+  const [teamMembers, setTeamMembers] = useState(dashboardStore.getTeamMembers());
+
+  useEffect(() => {
+    const unsubscribe = dashboardStore.subscribe(() => setTeamMembers(dashboardStore.getTeamMembers()));
+    return unsubscribe;
+  }, []);
 
   const canManageTeam = hasPermission('team.create') || hasPermission('team.edit') || hasPermission('team.delete');
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
-  const filteredMembers = mockTeamMembers.filter(m => 
+  const filteredMembers = teamMembers.filter((m) =>
     m.firstName.toLowerCase().includes(search.toLowerCase()) ||
     m.lastName.toLowerCase().includes(search.toLowerCase()) ||
     m.email.toLowerCase().includes(search.toLowerCase())
@@ -2201,7 +2508,7 @@ export function AdminTeam() {
     );
   };
 
-  const handleEdit = (member: typeof mockTeamMembers[0]) => {
+  const handleEdit = (member: DashboardTeamMember) => {
     setSelectedMember(member);
     setShowEditModal(true);
   };
@@ -2212,8 +2519,8 @@ export function AdminTeam() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Équipe</h1>
           <p className="text-[#A0A0A0]">
-            {mockTeamMembers.filter(m => m.isActive).length} membres actifs · 
-            {mockTeamMembers.filter(m => !m.isActive).length} inactifs
+            {teamMembers.filter((m) => m.isActive).length} membres actifs · 
+            {teamMembers.filter((m) => !m.isActive).length} inactifs
           </p>
         </div>
         {isSuperAdmin && (

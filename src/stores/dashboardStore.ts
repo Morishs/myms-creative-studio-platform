@@ -4,6 +4,8 @@ const PROJECTS_KEY = 'myms_dashboard_projects';
 
 const QUOTES_KEY = 'myms_dashboard_quotes';
 const INVOICES_KEY = 'myms_dashboard_invoices';
+const NEWSLETTER_KEY = 'myms_dashboard_newsletter';
+const TEAM_KEY = 'myms_dashboard_team';
 
 export interface DashboardProject {
   id: string;
@@ -13,8 +15,11 @@ export interface DashboardProject {
   serviceType: string;
   status: string;
   progress: number;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   startDate: string;
   estimatedEndDate: string;
+  createdAt?: string;
+  updatedAt?: string;
   description: string;
 }
 
@@ -44,6 +49,28 @@ export interface DashboardInvoice {
   status: string;
   issuedAt: string;
   dueDate: string;
+}
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  firstName?: string;
+  subscribedAt: string;
+}
+
+export interface DashboardTeamMember {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  role: string;
+  avatar?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  lastLogin?: string;
+  tasksAssigned: string[];
+  description?: string;
 }
 
 const listeners: Set<Listener> = new Set();
@@ -102,6 +129,20 @@ export const dashboardStore = {
     notify();
   },
 
+  updateProject: (id: string, updates: Partial<DashboardProject>) => {
+    const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
+    const updatedProjects = projects.map((project) => project.id === id ? { ...project, ...updates } : project);
+    saveState(PROJECTS_KEY, updatedProjects);
+    notify();
+  },
+
+  deleteProject: (id: string) => {
+    const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
+    const remainingProjects = projects.filter((project) => project.id !== id);
+    saveState(PROJECTS_KEY, remainingProjects);
+    notify();
+  },
+
   addQuote: (quote: DashboardQuote) => {
     const quotes = loadState<DashboardQuote[]>(QUOTES_KEY);
     saveState(QUOTES_KEY, [...quotes, quote]);
@@ -111,6 +152,35 @@ export const dashboardStore = {
   addInvoice: (invoice: DashboardInvoice) => {
     const invoices = loadState<DashboardInvoice[]>(INVOICES_KEY);
     saveState(INVOICES_KEY, [...invoices, invoice]);
+    notify();
+  },
+
+  getNewsletterSubscribers: (): NewsletterSubscriber[] => loadState<NewsletterSubscriber[]>(NEWSLETTER_KEY),
+  setNewsletterSubscribers: (subscribers: NewsletterSubscriber[]) => {
+    saveState(NEWSLETTER_KEY, subscribers);
+    notify();
+  },
+  addNewsletterSubscriber: (subscriber: NewsletterSubscriber) => {
+    const subscribers = loadState<NewsletterSubscriber[]>(NEWSLETTER_KEY);
+    saveState(NEWSLETTER_KEY, [...subscribers, subscriber]);
+    notify();
+  },
+
+  getTeamMembers: (): DashboardTeamMember[] => loadState<DashboardTeamMember[]>(TEAM_KEY),
+  setTeamMembers: (members: DashboardTeamMember[]) => {
+    saveState(TEAM_KEY, members);
+    notify();
+  },
+  addTeamMember: (member: DashboardTeamMember) => {
+    const members = loadState<DashboardTeamMember[]>(TEAM_KEY);
+    saveState(TEAM_KEY, [...members, member]);
+    notify();
+  },
+
+  updateTeamMember: (id: string, updates: Partial<DashboardTeamMember>) => {
+    const members = loadState<DashboardTeamMember[]>(TEAM_KEY);
+    const updatedMembers = members.map((member) => member.id === id ? { ...member, ...updates } : member);
+    saveState(TEAM_KEY, updatedMembers);
     notify();
   },
 };
