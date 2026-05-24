@@ -153,7 +153,11 @@ export function Login() {
 
           <div className="mt-6 text-center text-[#A0A0A0]">
             Pas encore de compte ?{' '}
-            <Link to="/auth/inscription" className="text-[#6C3CE1] hover:underline font-medium">
+            <Link
+              to="/auth/inscription"
+              state={location.state}
+              className="text-[#6C3CE1] hover:underline font-medium"
+            >
               Créer un compte
             </Link>
           </div>
@@ -704,7 +708,11 @@ export function Register() {
 
           <div className="mt-6 text-center text-[#A0A0A0]">
             Déjà un compte ?{' '}
-            <Link to="/auth/connexion" className="text-[#6C3CE1] hover:underline font-medium">
+            <Link
+              to="/auth/connexion"
+              state={location.state}
+              className="text-[#6C3CE1] hover:underline font-medium"
+            >
               Se connecter
             </Link>
           </div>

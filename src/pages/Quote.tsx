@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -13,6 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Card } from '../components/ui/Card';
 import { serviceOptions, budgetOptions, deadlineOptions, sourceOptions } from '../data';
 import { appStore } from '../stores/appStore';
+import { dashboardStore } from '../stores/dashboardStore';
 import { notificationStore } from '../stores/notificationStore';
 
 const quoteSchema = z.object({
@@ -51,43 +52,117 @@ const benefits = [
 export function Quote() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<QuoteFormData>({
+  const DRAFT_STORAGE_KEY = 'myms_quote_form_draft';
+
+  const loadDraft = (): Partial<QuoteFormData> | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as Partial<QuoteFormData>) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const saveDraft = (values: Partial<QuoteFormData>) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(values));
+    } catch {
+      // ignore
+    }
+  };
+
+  const clearDraft = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
+  const [initialDraft] = useState<Partial<QuoteFormData> | null>(() => loadDraft());
+
+  const { register, handleSubmit, watch, formState: { errors }, reset } = useForm<QuoteFormData>({
     resolver: zodResolver(quoteSchema),
+    defaultValues: initialDraft ?? undefined,
   });
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-[#0A0A0A] px-6">
-        <div className="max-w-xl w-full text-center">
-          <div className="mb-6 rounded-3xl border border-[#2A2A2A] bg-[#111111] p-10">
-            <h1 className="text-3xl font-bold text-white mb-4">Connexion requise</h1>
-            <p className="text-[#A0A0A0] mb-8">
-              Vous devez être connecté pour demander un devis et suivre votre demande depuis votre espace client.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <Button type="button" onClick={() => navigate('/auth/connexion', { state: { from: '/devis' } })}>
-                Se connecter
-              </Button>
-              <Button variant="outline" type="button" onClick={() => navigate('/auth/inscription', { state: { from: '/devis' } })}>
-                Créer un compte
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (initialDraft) {
+      reset(initialDraft as QuoteFormData);
+      setDraftRestored(true);
+    }
+
+    const subscription = watch((values) => {
+      saveDraft(values as Partial<QuoteFormData>);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [initialDraft, reset, watch]);
 
   const onSubmit = async (data: QuoteFormData) => {
+    if (!isAuthenticated) {
+      saveDraft(data);
+      appStore.addToast({
+        type: 'info',
+        title: 'Connexion nécessaire',
+        message: 'Votre brouillon a été sauvegardé. Connectez-vous ou créez un compte pour envoyer votre demande.',
+      });
+      navigate('/auth/connexion', { state: { from: '/devis' } });
+      return;
+    }
+
     setIsSubmitting(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
-    appStore.addQuoteRequest({ fullName: data.fullName, email: data.email, phone: data.phone, service: data.service, description: data.description });
-    appStore.addToast({ type: 'success', title: 'Demande envoyée !', message: 'Nous vous répondrons sous 24-48h.' });
-    // Notify admin
-    notificationStore.add({ userId: 'admin-1', type: 'quote', title: 'Nouvelle demande de devis', description: `${data.fullName} a soumis une demande pour : ${data.service}`, link: '/admin/demandes' });
+
+    appStore.addQuoteRequest({
+      clientId: user?.id ?? 'guest',
+      fullName: data.fullName,
+      company: data.company,
+      email: data.email,
+      phone: data.phone,
+      services: [data.service],
+      description: data.description,
+      budget: data.budget,
+      deadline: data.deadline,
+      references: data.references,
+      source: data.source,
+    });
+
+    dashboardStore.addQuote({
+      id: `quote-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      clientId: user?.id ?? 'guest',
+      clientName: data.fullName,
+      quoteNumber: `Q-${Date.now()}`,
+      title: `Devis ${data.service}`,
+      total: 0,
+      currency: 'EUR',
+      status: 'SENT',
+      issuedAt: new Date().toISOString(),
+      validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+
+    appStore.addToast({
+      type: 'success',
+      title: 'Demande envoyée !',
+      message: 'Nous vous répondrons sous 24-48h.',
+    });
+
+    notificationStore.add({
+      userId: 'admin-1',
+      type: 'quote',
+      title: 'Nouvelle demande de devis',
+      description: `${data.fullName} a soumis une demande pour : ${data.service}`,
+      link: '/admin/demandes',
+    });
+
+    clearDraft();
     setIsSubmitting(false);
     setIsSubmitted(true);
   };
@@ -174,6 +249,31 @@ export function Quote() {
       <section className="py-20 bg-[#0A0A0A]">
         <div className="max-w-3xl mx-auto px-6">
           <Card className="p-8 md:p-12">
+            {draftRestored && (
+              <div className="mb-6 rounded-3xl border border-[#2A2A2A] bg-[#111111] p-5 text-sm text-[#A0A0A0]">
+                <p className="mb-3">Votre brouillon de demande a été restauré. Vous pouvez modifier les informations avant l’envoi.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearDraft();
+                    reset({});
+                    setDraftRestored(false);
+                  }}
+                  className="text-[#6C3CE1] hover:underline"
+                >
+                  Effacer le brouillon
+                </button>
+              </div>
+            )}
+
+            {!isAuthenticated && (
+              <div className="mb-6 rounded-3xl border border-[#2A2A2A] bg-[#111111] p-5 text-sm text-[#A0A0A0]">
+                <p>
+                  Vous pouvez préparer votre demande sans compte. Un compte client sera demandé au moment de l'envoi.
+                </p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Personal Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
