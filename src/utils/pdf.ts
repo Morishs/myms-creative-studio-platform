@@ -7,75 +7,121 @@ const PRIMARY_COLOR = '#0D6EFD';
 const TEXT_COLOR = '#1F2937';
 const SECONDARY_TEXT = '#4B5563';
 
-async function loadImageDataUrl(src: string): Promise<string | undefined> {
+async function loadImageDataUrl(src: string): Promise<{ src: string; width: number; height: number } | undefined> {
   try {
     const response = await fetch(src);
     if (!response.ok) return undefined;
     const blob = await response.blob();
-    return await new Promise((resolve, reject) => {
-      if (blob.type === 'image/svg+xml') {
-        blob.text().then((svgText) => {
-          const svgData = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
-          const image = new Image();
-          image.crossOrigin = 'anonymous';
-          image.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = image.width || 180;
-            canvas.height = image.height || 180;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return resolve(undefined);
+    const url = URL.createObjectURL(blob);
+
+    return await new Promise((resolve) => {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => {
+        const width = image.naturalWidth || image.width || 180;
+        const height = image.naturalHeight || image.height || 180;
+
+        const finish = (dataUrl: string) => {
+          URL.revokeObjectURL(url);
+          resolve({ src: dataUrl, width, height });
+        };
+
+        if (blob.type === 'image/svg+xml') {
+          const canvas = document.createElement('canvas');
+          const ratio = width / height;
+          const maxWidth = 120;
+          const maxHeight = 90;
+          const canvasWidth = Math.min(maxWidth, width);
+          const canvasHeight = Math.min(maxHeight, canvasWidth / ratio);
+          canvas.width = canvasWidth;
+          canvas.height = canvasHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/png'));
+            finish(canvas.toDataURL('image/png'));
+          } else {
+            URL.revokeObjectURL(url);
+            resolve(undefined);
+          }
+        } else {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            finish(reader.result as string);
           };
-          image.onerror = () => resolve(undefined);
-          image.src = svgData;
-        }).catch(() => resolve(undefined));
-      } else {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
-      }
+          reader.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(undefined);
+          };
+          reader.readAsDataURL(blob);
+        }
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(undefined);
+      };
+      image.src = url;
     });
   } catch {
     return undefined;
   }
 }
 
-function drawHeader(doc: jsPDF, logoDataUrl: string | undefined) {
+function drawHeader(doc: jsPDF, logoData: { src: string; width: number; height: number } | undefined) {
   const margin = 40;
   const pageWidth = doc.internal.pageSize.getWidth();
+  const headerHeight = 120;
 
-  if (logoDataUrl) {
-    doc.addImage(logoDataUrl, 'PNG', margin, 40, 90, 90);
+  doc.setDrawColor('#E5E7EB');
+  doc.setFillColor('#FFFFFF');
+  doc.roundedRect(margin - 4, 36, pageWidth - margin * 2 + 8, headerHeight, 12, 12, 'F');
+
+  const logoMaxWidth = 110;
+  const logoMaxHeight = 90;
+  let logoWidth = logoMaxWidth;
+  let logoHeight = logoMaxHeight;
+  if (logoData) {
+    const ratio = logoData.width / logoData.height;
+    if (ratio > 1) {
+      logoHeight = Math.min(logoMaxHeight, logoMaxWidth / ratio);
+      logoWidth = logoHeight * ratio;
+    } else {
+      logoWidth = Math.min(logoMaxWidth, logoMaxHeight * ratio);
+      logoHeight = logoWidth / ratio;
+    }
+    const logoTop = 45 + (logoMaxHeight - logoHeight) / 2;
+    doc.addImage(logoData.src, 'PNG', margin + 8, logoTop, logoWidth, logoHeight);
   }
 
+  const infoX = margin + logoMaxWidth + 26;
+  let infoY = 50;
+
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  doc.setTextColor(PRIMARY_COLOR);
-  doc.text(companyInfo.name, margin + 110, 58);
+  doc.setFontSize(11);
+  doc.setTextColor(TEXT_COLOR);
+  if (companyInfo.tagline) {
+    doc.text(companyInfo.tagline, infoX, infoY);
+    infoY += 16;
+  }
 
-  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
   doc.setTextColor(SECONDARY_TEXT);
-  doc.text(companyInfo.tagline || 'Studio créatif', margin + 110, 74);
-
-  const rightColumnX = pageWidth - margin;
-  const rightText = [
+  const companyLines = [
     companyInfo.email,
     companyInfo.phone,
     companyInfo.address,
     companyInfo.website || 'https://myms-studio.com',
   ].filter(Boolean);
 
-  rightText.forEach((text, index) => {
-    doc.text(text, rightColumnX, 50 + index * 14, { align: 'right' });
+  companyLines.forEach((line) => {
+    doc.text(line, infoX, infoY);
+    infoY += 14;
   });
 
   doc.setDrawColor(PRIMARY_COLOR);
-  doc.setLineWidth(2);
-  doc.line(margin, 150, pageWidth - margin, 150);
+  doc.setLineWidth(1.5);
+  doc.line(margin + 8, 145, pageWidth - margin - 8, 145);
 }
 
 function drawInfoBoxes(doc: jsPDF, quote: DashboardQuote) {
