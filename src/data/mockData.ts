@@ -58,7 +58,10 @@ export const getStatusConfig = (status: string): { label: string; variant: 'defa
     // Quote requests
     NEW: { label: 'Nouvelle', variant: 'primary' },
     READ: { label: 'Lue', variant: 'secondary' },
+    IN_PROGRESS: { label: 'En cours', variant: 'warning' },
     RESPONDED: { label: 'Répondu', variant: 'success' },
+    PROCESSED: { label: 'Traitée', variant: 'success' },
+    CONVERTED: { label: 'Convertie en devis', variant: 'primary' },
     ARCHIVED: { label: 'Archivé', variant: 'default' }
   };
   return configs[status] || { label: status, variant: 'default' };

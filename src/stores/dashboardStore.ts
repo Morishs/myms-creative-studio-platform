@@ -45,6 +45,7 @@ export interface DashboardQuote {
   status: string;
   issuedAt: string;
   validUntil: string;
+  notes?: string;
 }
 
 export interface DashboardInvoice {

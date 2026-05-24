@@ -30,7 +30,7 @@ export interface QuoteRequestItem {
   deadline?: string;
   references?: string;
   source?: string;
-  status: 'NEW' | 'ACCEPTED' | 'REFUSED' | 'PROCESSED';
+  status: 'NEW' | 'READ' | 'RESPONDED' | 'PROCESSED' | 'CONVERTED' | 'ACCEPTED' | 'REFUSED';
   createdAt: string;
 }
 
