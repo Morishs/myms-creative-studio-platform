@@ -1062,7 +1062,7 @@ export function ClientMessages() {
     return (
       <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-brand/20 border-t-[#6C3CE1] animate-spin" />
+          <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-brand/20 border-t-brand animate-spin" />
           <p className="text-sm text-[#A0A0A0]">Chargement de vos conversations...</p>
         </div>
       </div>
@@ -1687,11 +1687,11 @@ export function ClientMessages() {
 
       {!showNew && !activeConvId && (
         <button
-          type="button"
-          aria-label="Nouveau message"
-          onClick={() => { setShowNew(true); setActiveConvId(null); }}
-          className="fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-[0_18px_32px_-20px_rgba(13,110,253,0.9)] transition hover:bg-[#7C4CF1]"
-        >
+            type="button"
+            aria-label="Nouveau message"
+            onClick={() => { setShowNew(true); setActiveConvId(null); }}
+            className="fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-[0_18px_32px_-20px_rgba(13,110,253,0.9)] transition hover:bg-accent"
+          >
           <Send className="w-6 h-6" />
         </button>
       )}

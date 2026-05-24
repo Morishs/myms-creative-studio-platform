@@ -48,7 +48,7 @@ export function Process() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-brand via-[#6C3CE1]/50 to-[#6C3CE1]/10"></div>
+            <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-brand via-brand/50 to-brand/10"></div>
 
             {/* Steps */}
             <div className="space-y-16">
@@ -64,7 +64,7 @@ export function Process() {
                   }`}
                 >
                   {/* Number circle */}
-                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[#6C3CE1]/30 z-10">
+                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[rgba(13,110,253,0.3)] z-10">
                     {step.number}
                   </div>
 
