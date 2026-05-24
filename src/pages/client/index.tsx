@@ -22,6 +22,7 @@ import {
   formatCurrency, formatDate, 
   formatDateTime, getStatusConfig
 } from '../../data/mockData';
+import { downloadQuotePdf } from '../../utils/pdf';
 
 const emptyClientFiles: any[] = [];
 const emptyClientPurchases: any[] = [];
@@ -714,6 +715,25 @@ export function ClientQuoteDetail() {
 
   const quote = quotes.find((q) => q.id === id && q.clientId === user?.id);
 
+  useEffect(() => {
+    if (!quote || quote.status !== 'SENT') return;
+
+    const viewedHistory = quote.history ? [...quote.history] : [];
+    viewedHistory.push({
+      id: `history-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      type: 'viewed',
+      label: 'Devis consulté',
+      details: 'Le client a ouvert le devis.',
+    });
+
+    dashboardStore.updateQuote(quote.id, {
+      status: 'VIEWED',
+      emailStatus: 'VIEWED',
+      history: viewedHistory,
+    });
+  }, [quote]);
+
   if (!quote) {
     return (
       <div className="p-6 lg:p-8 text-center">
@@ -724,10 +744,17 @@ export function ClientQuoteDetail() {
 
   const status = getStatusConfig(quote.status);
   const handleAction = async (action: string) => {
+    if (!quote) return;
     setActionLoading(action);
-    await new Promise(r => setTimeout(r, 1000));
+    const nextStatus = action === 'accept' ? 'ACCEPTED' : 'REFUSED';
+    dashboardStore.updateQuote(quote.id, { status: nextStatus });
+    await new Promise((resolve) => setTimeout(resolve, 500));
     setActionLoading(null);
-    appStore.addToast({ type: action === 'accept' ? 'success' : 'info', title: action === 'accept' ? 'Devis accepté !' : 'Devis refusé', message: action === 'accept' ? 'Le studio a été notifié.' : 'Le studio sera informé de votre décision.' });
+    appStore.addToast({
+      type: action === 'accept' ? 'success' : 'info',
+      title: action === 'accept' ? 'Devis accepté !' : 'Devis refusé',
+      message: action === 'accept' ? 'Le studio a été notifié.' : 'Le studio sera informé de votre décision.',
+    });
   };
 
   return (
@@ -861,9 +888,13 @@ export function ClientQuoteDetail() {
           >
             Refuser
           </Button>
-          <Button variant="outline" size="lg" onClick={() => {
-            appStore.addToast({ type: 'info', title: 'PDF généré', message: 'Le téléchargement du devis va commencer.' });
-            window.print();
+          <Button variant="outline" size="lg" onClick={async () => {
+            try {
+              await downloadQuotePdf(quote);
+              appStore.addToast({ type: 'success', title: 'PDF généré', message: 'Le téléchargement du devis va commencer.' });
+            } catch {
+              appStore.addToast({ type: 'error', title: 'Erreur PDF', message: 'Impossible de générer le PDF.' });
+            }
           }}>
             <DownloadIcon className="w-5 h-5 mr-2" />
             Télécharger PDF

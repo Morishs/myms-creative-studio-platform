@@ -20,13 +20,14 @@ import { appStore } from '../../stores/appStore';
 import { addClient, deleteClient, getClients, isEmailRegistered, subscribe, updateClient } from '../../stores/clientStore';
 import { dashboardStore } from '../../stores/dashboardStore';
 import { notificationStore } from '../../stores/notificationStore';
-import { messageStore, registerKnownUser, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
+import { messageStore, registerKnownUser, KNOWN_USERS, getKnownUser, setUserOnline, isUserOnline } from '../../stores/messageStore';
 import { MessageStatusIcon, OnlineBadge, OfflineBadge } from '../../components/ui/MessageStatus';
 import { NotificationBell } from '../../components/NotificationPanel';
 import {
   formatCurrency, formatDate, formatDateTime, getStatusConfig
 } from '../../data/mockData';
 import { services, portfolioProjects, resources, blogPosts, testimonials } from '../../data';
+import { createQuotePdf, downloadQuotePdf } from '../../utils/pdf';
 
 // ===== ADMIN LAYOUT =====
 const adminNavItems = [
@@ -2371,7 +2372,7 @@ export function AdminQuoteCreate() {
   const [budget, setBudget] = useState('');
   const [deadline, setDeadline] = useState('');
   const [validUntil, setValidUntil] = useState(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
-  const [status, setStatus] = useState('SENT');
+  const [status, setStatus] = useState('DRAFT');
   const [notes, setNotes] = useState('');
   const [conditions, setConditions] = useState('Paiement à réception de facture. Validité du devis 7 jours.');
   const [isSaving, setIsSaving] = useState(false);
@@ -2437,6 +2438,7 @@ export function AdminQuoteCreate() {
     const newQuote = {
       id: `quote-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       clientId,
+      clientEmail,
       clientName,
       quoteNumber,
       title: quoteTitle,
@@ -2447,6 +2449,15 @@ export function AdminQuoteCreate() {
       validUntil: new Date(validUntil).toISOString(),
       notes: `${notes}\n\nConditions : ${conditions}`,
       lineItems,
+      history: [
+        {
+          id: `history-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          type: 'created',
+          label: 'Devis créé',
+          details: `Devis créé pour ${clientName}`,
+        },
+      ],
     };
 
     dashboardStore.addQuote(newQuote);
@@ -2770,7 +2781,19 @@ export function AdminProjectDetail() {
 
 export function AdminQuoteDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [quotes, setQuotes] = useState(dashboardStore.getQuotes());
+  const [isSending, setIsSending] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editValidUntil, setEditValidUntil] = useState('');
+  const [editStatus, setEditStatus] = useState('DRAFT');
+  const [editNotes, setEditNotes] = useState('');
+  const [editLineItems, setEditLineItems] = useState<QuoteLineItem[]>([{ id: `item-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }]);
 
   useEffect(() => {
     const unsubscribe = dashboardStore.subscribe(() => setQuotes(dashboardStore.getQuotes()));
@@ -2779,9 +2802,184 @@ export function AdminQuoteDetail() {
 
   const quote = quotes.find((q) => q.id === id);
 
+  useEffect(() => {
+    if (!quote) return;
+    setEditTitle(quote.title);
+    setEditValidUntil(quote.validUntil.slice(0, 10));
+    setEditStatus(quote.status);
+    setEditNotes(quote.notes || '');
+    setEditLineItems(quote.lineItems?.length ? quote.lineItems : [{ id: `item-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }]);
+    setEditError(null);
+  }, [quote]);
+
   if (!quote) {
     return <div className="p-6 text-center text-text-muted">Devis non trouvé</div>;
   }
+
+  const quoteHistory = quote.history || [];
+
+  const findConversationWithClient = () => {
+    if (!user) return null;
+    return messageStore.getState().conversations.find((conversation) =>
+      conversation.participantIds.includes(user.id) &&
+      conversation.participantIds.includes(quote.clientId)
+    );
+  };
+
+  const handleSendQuote = async () => {
+    if (!quote || !user) return;
+    setSendError(null);
+    setIsSending(true);
+    try {
+      const clientId = quote.clientId || `client-${Date.now()}`;
+      const clientEmail = quote.clientEmail || '';
+      const clientName = quote.clientName;
+      const adminName = `${user.firstName} ${user.lastName}`.trim() || 'Admin';
+
+      if (clientEmail) {
+        registerKnownUser({ id: clientId, name: clientName, email: clientEmail, role: 'CLIENT' });
+      }
+
+      const existingConversation = findConversationWithClient();
+      const messageText = `Bonjour ${clientName},\n\nVotre devis ${quote.quoteNumber} est prêt. Montant total : ${formatCurrency(quote.total, quote.currency)}.\n\nVous pouvez le consulter dans votre espace client et nous faire part de vos retours.\n\nCordialement,\n${adminName}`;
+
+      let attachments;
+      try {
+        const pdfBlob = await createQuotePdf(quote);
+        const url = URL.createObjectURL(pdfBlob);
+        attachments = [
+          {
+            id: `attachment-${Date.now()}`,
+            name: `${quote.quoteNumber}.pdf`,
+            type: 'application/pdf',
+            size: pdfBlob.size,
+            url,
+          },
+        ];
+      } catch {
+        attachments = undefined;
+      }
+
+      if (existingConversation) {
+        messageStore.sendMessage({
+          conversationId: existingConversation.id,
+          senderId: user.id,
+          senderName: adminName,
+          content: messageText,
+          attachments,
+        });
+      } else {
+        messageStore.createConversation({
+          subject: `Devis ${quote.quoteNumber}`,
+          participants: [
+            { id: user.id, name: adminName, email: user.email || 'admin@myms.com' },
+            { id: clientId, name: clientName, email: clientEmail || 'client@myms.com' },
+          ],
+          firstMessage: messageText,
+          senderId: user.id,
+          senderName: adminName,
+          attachments,
+        });
+      }
+
+      dashboardStore.updateQuote(quote.id, {
+        status: 'SENT',
+        sentAt: new Date().toISOString(),
+        emailStatus: 'SENT',
+        history: [
+          ...(quote.history || []),
+          {
+            id: `history-${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            type: 'sent',
+            label: 'Devis envoyé au client',
+            details: `Envoyé à ${clientName}${clientEmail ? ` (${clientEmail})` : ''}`,
+          },
+        ],
+      });
+
+      appStore.addToast({
+        type: 'success',
+        title: 'Devis envoyé',
+        message: 'Le client a été notifié et un message interne a été créé.',
+      });
+    } catch (error) {
+      setSendError('Impossible d’envoyer le devis. Veuillez réessayer.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleGeneratePdf = async () => {
+    if (!quote) return;
+    setIsGeneratingPdf(true);
+    try {
+      await downloadQuotePdf(quote);
+      appStore.addToast({ type: 'success', title: 'PDF généré', message: 'Le téléchargement du devis démarre.' });
+    } catch {
+      appStore.addToast({ type: 'error', title: 'Erreur PDF', message: 'Impossible de générer le PDF pour le moment.' });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleToggleEdit = () => {
+    setIsEditing((current) => !current);
+    setEditError(null);
+  };
+
+  const handleEditLineItemChange = (itemId: string, field: keyof QuoteLineItem, value: string | number) => {
+    setEditLineItems((current) =>
+      current.map((item) => (item.id === itemId ? { ...item, [field]: value } : item)),
+    );
+  };
+
+  const handleAddEditLine = () => {
+    setEditLineItems((current) => [...current, { id: `item-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }]);
+  };
+
+  const handleRemoveEditLine = (itemId: string) => {
+    setEditLineItems((current) => current.filter((item) => item.id !== itemId));
+  };
+
+  const handleSaveQuote = () => {
+    if (!quote) return;
+    if (!editTitle.trim() || !editValidUntil.trim()) {
+      setEditError('Le titre et la date de validité sont requis.');
+      return;
+    }
+    if (editLineItems.some((item) => !item.description.trim() || item.quantity < 1 || item.unitPrice < 0)) {
+      setEditError('Chaque ligne doit contenir une description, une quantité et un prix unitaire valides.');
+      return;
+    }
+
+    const total = Math.round(editLineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0));
+
+    const updatedHistory = [
+      ...(quote.history || []),
+      {
+        id: `history-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        type: 'updated',
+        label: 'Devis modifié',
+        details: `Contenu et statut mis à jour par ${user?.firstName || 'l\'administrateur'}`,
+      },
+    ];
+
+    dashboardStore.updateQuote(quote.id, {
+      title: editTitle.trim(),
+      validUntil: new Date(editValidUntil).toISOString(),
+      status: editStatus,
+      notes: editNotes,
+      lineItems: editLineItems,
+      total,
+      history: updatedHistory,
+    });
+
+    appStore.addToast({ type: 'success', title: 'Devis mis à jour', message: 'Les modifications ont bien été enregistrées.' });
+    setIsEditing(false);
+    setEditError(null);
+  };
 
   return (
     <div className="p-6 lg:p-8">
@@ -2803,20 +3001,21 @@ export function AdminQuoteDetail() {
       <Card className="mb-6">
         <div className="text-4xl font-bold text-white mb-2">{formatCurrency(quote.total, quote.currency)}</div>
         <p className="text-text-muted">Émis le {formatDate(quote.issuedAt)} · Valide jusqu'au {formatDate(quote.validUntil)}</p>
+        {quote.sentAt && <p className="text-sm text-text-muted mt-2">Envoyé le {formatDateTime(quote.sentAt)}</p>}
       </Card>
 
-      <div className="flex flex-wrap gap-3">
-        <Button variant="primary" onClick={() => appStore.addToast({ type: 'success', title: 'Devis envoyé', message: 'Le client a été notifié par email.' })}>
+      <div className="flex flex-wrap gap-3 mb-6">
+        <Button variant="primary" onClick={handleSendQuote} isLoading={isSending}>
           <Send className="w-4 h-4 mr-2" />
           Envoyer au client
         </Button>
-        <Button variant="outline" onClick={() => { appStore.addToast({ type: 'info', title: 'PDF généré', message: 'Téléchargement du devis.' }); window.print(); }}>
+        <Button variant="outline" onClick={handleGeneratePdf} isLoading={isGeneratingPdf}>
           <FileText className="w-4 h-4 mr-2" />
           Générer PDF
         </Button>
-        <Button variant="outline" onClick={() => appStore.addToast({ type: 'info', title: 'Mode édition', message: 'Vous pouvez modifier le devis.' })}>
+        <Button variant="outline" onClick={handleToggleEdit}>
           <Edit className="w-4 h-4 mr-2" />
-          Modifier
+          {isEditing ? 'Annuler' : 'Modifier'}
         </Button>
         <Button
           variant="outline"
@@ -2831,6 +3030,120 @@ export function AdminQuoteDetail() {
           <Trash2 className="w-4 h-4 mr-2" />
           Supprimer
         </Button>
+      </div>
+
+      {sendError && <p className="text-sm text-error-light mb-4">{sendError}</p>}
+
+      <div className="grid gap-6 lg:grid-cols-[2fr_1fr] mb-6">
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">Détails du devis</h2>
+          <div className="grid gap-4 text-sm text-text-muted">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="block text-xs uppercase mb-1">Client</span>
+                <p className="text-white font-semibold">{quote.clientName}</p>
+                {quote.clientEmail && <p>{quote.clientEmail}</p>}
+              </div>
+              <div>
+                <span className="block text-xs uppercase mb-1">Validité</span>
+                <p className="text-white font-semibold">{formatDate(quote.validUntil)}</p>
+              </div>
+            </div>
+            <div>
+              <span className="block text-xs uppercase mb-1">Notes</span>
+              <p>{quote.notes || 'Aucune note ajoutée.'}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">Historique du devis</h2>
+          {quoteHistory.length ? (
+            <div className="space-y-3 text-sm text-text-muted">
+              {quoteHistory.slice().reverse().map((entry) => (
+                <div key={entry.id} className="rounded-2xl border border-border-dark bg-surface-alt p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-semibold text-white">{entry.label}</p>
+                    <span>{formatDateTime(entry.createdAt)}</span>
+                  </div>
+                  {entry.details && <p>{entry.details}</p>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-text-muted text-sm">Aucun historique pour ce devis.</p>
+          )}
+        </Card>
+      </div>
+
+      <div className="space-y-6">
+        {isEditing && (
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Modifier le devis</h2>
+            <div className="grid gap-4">
+              <Input label="Titre du devis" value={editTitle} onChange={(event) => setEditTitle(event.target.value)} />
+              <Select
+                label="Statut"
+                value={editStatus}
+                onChange={(event) => setEditStatus(event.target.value)}
+                options={[
+                  { value: 'DRAFT', label: 'Brouillon' },
+                  { value: 'SENT', label: 'Envoyé' },
+                  { value: 'VIEWED', label: 'Consulté' },
+                  { value: 'ACCEPTED', label: 'Accepté' },
+                  { value: 'REFUSED', label: 'Refusé' },
+                ]}
+              />
+              <Input label="Valide jusqu'au" type="date" value={editValidUntil} onChange={(event) => setEditValidUntil(event.target.value)} />
+              <Textarea label="Notes" value={editNotes} onChange={(event) => setEditNotes(event.target.value)} rows={4} />
+
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-sm font-semibold text-white">Lignes de devis</p>
+                    <p className="text-xs text-text-muted">Modifiez les prestations et les prix.</p>
+                  </div>
+                  <Button variant="outline" onClick={handleAddEditLine}>Ajouter une ligne</Button>
+                </div>
+                <div className="space-y-3">
+                  {editLineItems.map((item) => (
+                    <div key={item.id} className="rounded-2xl border border-border-dark bg-surface-alt p-4">
+                      <div className="grid gap-3 md:grid-cols-[1.8fr_0.7fr_0.9fr_0.5fr]">
+                        <Input
+                          label="Description"
+                          value={item.description}
+                          onChange={(event) => handleEditLineItemChange(item.id, 'description', event.target.value)}
+                        />
+                        <Input
+                          label="Qté"
+                          type="number"
+                          value={item.quantity}
+                          onChange={(event) => handleEditLineItemChange(item.id, 'quantity', Number(event.target.value))}
+                        />
+                        <Input
+                          label="Prix unitaire"
+                          type="number"
+                          value={item.unitPrice}
+                          onChange={(event) => handleEditLineItemChange(item.id, 'unitPrice', Number(event.target.value))}
+                        />
+                        <Button variant="ghost" onClick={() => handleRemoveEditLine(item.id)}>
+                          Supprimer
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {editError && <p className="text-sm text-error-light">{editError}</p>}
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Button variant="primary" onClick={handleSaveQuote}>Enregistrer les modifications</Button>
+                <Button variant="outline" onClick={handleToggleEdit}>Annuler</Button>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -37,6 +37,7 @@ export interface DashboardProject {
 export interface DashboardQuote {
   id: string;
   clientId: string;
+  clientEmail?: string;
   clientName: string;
   quoteNumber: string;
   title: string;
@@ -45,6 +46,9 @@ export interface DashboardQuote {
   status: string;
   issuedAt: string;
   validUntil: string;
+  sentAt?: string;
+  emailStatus?: 'DRAFT' | 'SENT' | 'VIEWED' | 'ACCEPTED' | 'REFUSED' | 'EXPIRED';
+  history?: Array<{ id: string; createdAt: string; type: string; label: string; details?: string }>;
   notes?: string;
   lineItems?: Array<{ id: string; description: string; quantity: number; unitPrice: number }>;
 }
@@ -163,6 +167,14 @@ export const dashboardStore = {
     saveState(QUOTES_KEY, [...quotes, quote]);
     notify();
     apiCreateQuote(quote).catch(() => undefined);
+  },
+
+  updateQuote: (id: string, updates: Partial<DashboardQuote>) => {
+    const quotes = loadState<DashboardQuote[]>(QUOTES_KEY);
+    const updatedQuotes = quotes.map((quote) => quote.id === id ? { ...quote, ...updates } : quote);
+    saveState<DashboardQuote[]>(QUOTES_KEY, updatedQuotes);
+    notify();
+    apiGetQuotes().catch(() => undefined);
   },
 
   deleteQuote: (id: string) => {
