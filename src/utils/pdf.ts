@@ -31,13 +31,16 @@ async function loadImageDataUrl(src: string): Promise<{ src: string; width: numb
           const ratio = width / height;
           const maxWidth = 120;
           const maxHeight = 90;
-          const canvasWidth = Math.min(maxWidth, width);
-          const canvasHeight = Math.min(maxHeight, canvasWidth / ratio);
-          canvas.width = canvasWidth;
-          canvas.height = canvasHeight;
+          const targetWidth = Math.min(maxWidth, width);
+          const targetHeight = Math.min(maxHeight, targetWidth / ratio);
+          const scale = 3;
+          canvas.width = Math.ceil(targetWidth * scale);
+          canvas.height = Math.ceil(targetHeight * scale);
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
             finish(canvas.toDataURL('image/png'));
           } else {
