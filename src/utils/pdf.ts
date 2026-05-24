@@ -223,7 +223,7 @@ function drawFooter(doc: jsPDF, quote: DashboardQuote) {
 
 export async function createQuotePdf(quote: DashboardQuote): Promise<Blob> {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-  const logoDataUrl = await loadImageDataUrl('/logo_myms.svg');
+  const logoDataUrl = await loadImageDataUrl('/Logo_pdf.svg');
 
   doc.setFillColor('#ffffff');
   doc.rect(0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), 'F');
