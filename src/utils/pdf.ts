@@ -67,16 +67,17 @@ async function loadImageDataUrl(src: string): Promise<{ src: string; width: numb
   }
 }
 
-function drawHeader(doc: jsPDF, logoData: { src: string; width: number; height: number } | undefined) {
+function drawHeader(doc: jsPDF, logoData: { src: string; width: number; height: number } | undefined, documentLabel: string) {
   const margin = 40;
   const pageWidth = doc.internal.pageSize.getWidth();
+  const headerTop = 36;
   const headerHeight = 120;
 
   doc.setDrawColor('#E5E7EB');
   doc.setFillColor('#FFFFFF');
-  doc.roundedRect(margin - 4, 36, pageWidth - margin * 2 + 8, headerHeight, 12, 12, 'F');
+  doc.roundedRect(margin - 4, headerTop, pageWidth - margin * 2 + 8, headerHeight, 12, 12, 'F');
 
-  const logoMaxWidth = 110;
+  const logoMaxWidth = 120;
   const logoMaxHeight = 90;
   let logoWidth = logoMaxWidth;
   let logoHeight = logoMaxHeight;
@@ -89,18 +90,18 @@ function drawHeader(doc: jsPDF, logoData: { src: string; width: number; height: 
       logoWidth = Math.min(logoMaxWidth, logoMaxHeight * ratio);
       logoHeight = logoWidth / ratio;
     }
-    const logoTop = 45 + (logoMaxHeight - logoHeight) / 2;
+    const logoTop = headerTop + 16 + (logoMaxHeight - logoHeight) / 2;
     doc.addImage(logoData.src, 'PNG', margin + 8, logoTop, logoWidth, logoHeight);
   }
 
-  const infoX = margin + logoMaxWidth + 26;
-  let infoY = 50;
+  const infoRightX = pageWidth - margin - 8;
+  let infoY = headerTop + 32;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(TEXT_COLOR);
   if (companyInfo.tagline) {
-    doc.text(companyInfo.tagline, infoX, infoY);
+    doc.text(companyInfo.tagline, infoRightX, infoY, { align: 'right' });
     infoY += 16;
   }
 
@@ -115,13 +116,25 @@ function drawHeader(doc: jsPDF, logoData: { src: string; width: number; height: 
   ].filter(Boolean);
 
   companyLines.forEach((line) => {
-    doc.text(line, infoX, infoY);
+    doc.text(line, infoRightX, infoY, { align: 'right' });
     infoY += 14;
   });
 
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(PRIMARY_COLOR);
+  doc.text(documentLabel.toUpperCase(), pageWidth / 2, headerTop + 56, { align: 'center' });
+
   doc.setDrawColor(PRIMARY_COLOR);
   doc.setLineWidth(1.5);
-  doc.line(margin + 8, 145, pageWidth - margin - 8, 145);
+  doc.line(margin + 8, headerTop + headerHeight + 5, pageWidth - margin - 8, headerTop + headerHeight + 5);
+}
+
+function getDocumentLabel(quote: DashboardQuote): string {
+  const normalizedTitle = quote.title?.toLowerCase() || '';
+  if (normalizedTitle.includes('facture') || normalizedTitle.includes('invoice')) return 'Facture';
+  if (normalizedTitle.includes('proforma')) return 'Proforma';
+  return 'Devis';
 }
 
 function drawInfoBoxes(doc: jsPDF, quote: DashboardQuote) {
@@ -274,7 +287,7 @@ export async function createQuotePdf(quote: DashboardQuote): Promise<Blob> {
   doc.setFillColor('#ffffff');
   doc.rect(0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), 'F');
 
-  drawHeader(doc, logoDataUrl);
+  drawHeader(doc, logoDataUrl, getDocumentLabel(quote));
   drawInfoBoxes(doc, quote);
   drawServicesTable(doc, quote);
   drawFooter(doc, quote);
