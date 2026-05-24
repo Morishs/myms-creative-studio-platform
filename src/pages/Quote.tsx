@@ -135,19 +135,6 @@ export function Quote() {
       source: data.source,
     });
 
-    dashboardStore.addQuote({
-      id: `quote-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      clientId: user?.id ?? 'guest',
-      clientName: data.fullName,
-      quoteNumber: `Q-${Date.now()}`,
-      title: `Devis ${data.service}`,
-      total: 0,
-      currency: 'EUR',
-      status: 'SENT',
-      issuedAt: new Date().toISOString(),
-      validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    });
-
     appStore.addToast({
       type: 'success',
       title: 'Demande envoyée !',

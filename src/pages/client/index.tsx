@@ -785,15 +785,28 @@ export function ClientQuoteDetail() {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-gray-200">
-              <td className="py-4">
-                <p className="font-medium">{quote.title}</p>
-                <p className="text-sm text-gray-600">Service complet avec révisions incluses</p>
-              </td>
-              <td className="text-right py-4">1</td>
-              <td className="text-right py-4">{formatCurrency(quote.total, quote.currency)}</td>
-              <td className="text-right py-4 font-semibold">{formatCurrency(quote.total, quote.currency)}</td>
-            </tr>
+                {quote.lineItems?.length ? (
+              quote.lineItems.map((item) => (
+                <tr key={item.id} className="border-b border-gray-200">
+                  <td className="py-4">
+                    <p className="font-medium">{item.description}</p>
+                  </td>
+                  <td className="text-right py-4">{item.quantity}</td>
+                  <td className="text-right py-4">{formatCurrency(item.unitPrice, quote.currency)}</td>
+                  <td className="text-right py-4 font-semibold">{formatCurrency(item.quantity * item.unitPrice, quote.currency)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr className="border-b border-gray-200">
+                <td className="py-4">
+                  <p className="font-medium">{quote.title}</p>
+                  <p className="text-sm text-gray-600">Service complet avec révisions incluses</p>
+                </td>
+                <td className="text-right py-4">1</td>
+                <td className="text-right py-4">{formatCurrency(quote.total, quote.currency)}</td>
+                <td className="text-right py-4 font-semibold">{formatCurrency(quote.total, quote.currency)}</td>
+              </tr>
+            )}
           </tbody>
         </table>
 
@@ -818,6 +831,7 @@ export function ClientQuoteDetail() {
         {/* Conditions */}
         <div className="mt-12 pt-8 border-t border-gray-200 text-sm text-gray-600">
           <h4 className="font-semibold text-gray-900 mb-2">Conditions</h4>
+          <p>{quote.notes || 'Aucune condition spécifique n’a été ajoutée pour ce devis.'}</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Acompte de 50% requis avant démarrage</li>
             <li>Solde à la livraison finale</li>

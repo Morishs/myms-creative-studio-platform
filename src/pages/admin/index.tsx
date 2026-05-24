@@ -758,6 +758,7 @@ export function AdminQuoteRequests() {
 
 // ===== ADMIN QUOTES =====
 export function AdminQuotes() {
+  const navigate = useNavigate();
   const [quotes, setQuotes] = useState(dashboardStore.getQuotes());
 
   useEffect(() => {
@@ -2346,6 +2347,10 @@ export function AdminQuoteCreate() {
   }, []);
 
   const request = requestId ? quoteRequests.find((req) => req.id === requestId) : undefined;
+  const clients = getClients();
+  const matchedClient = request
+    ? clients.find((client) => client.email.toLowerCase() === request.email.toLowerCase())
+    : undefined;
 
   useEffect(() => {
     if (!request) return;
@@ -2391,7 +2396,7 @@ export function AdminQuoteCreate() {
     setIsSaving(true);
     setErrorMessage(null);
 
-    const clientId = request?.clientId || `client-${Date.now()}`;
+    const clientId = matchedClient?.id || (request?.clientId && request.clientId !== 'guest' ? request.clientId : `client-${Date.now()}`);
     const quoteNumber = `Q-${Date.now().toString().slice(-6)}`;
     const newQuote = {
       id: `quote-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -2412,9 +2417,10 @@ export function AdminQuoteCreate() {
     if (request) {
       appStore.updateQuoteRequest(request.id, { status: 'CONVERTED' });
     }
-    if (request?.clientId || request?.email) {
+    const notificationUserId = matchedClient?.id || request?.clientId || request?.email || `client-${Date.now()}`;
+    if (notificationUserId) {
       notificationStore.add({
-        userId: request?.clientId || `client-${Date.now()}`,
+        userId: notificationUserId,
         type: 'quote',
         title: 'Nouveau devis disponible',
         description: `Un devis a été créé pour votre demande ${request?.id || requestReference}.`,
