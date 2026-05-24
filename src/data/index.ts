@@ -536,6 +536,7 @@ export const companyInfo = {
   email: 'contact@myms-studio.com',
   phone: '+221 77 000 00 00',
   whatsapp: '+221 77 000 00 00',
+  website: 'https://myms-studio.com',
   address: 'Dakar, Sénégal',
   socialLinks: {
     instagram: 'https://instagram.com/myms.studio',
