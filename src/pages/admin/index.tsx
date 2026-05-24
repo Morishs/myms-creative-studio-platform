@@ -20,7 +20,7 @@ import { appStore } from '../../stores/appStore';
 import { addClient, deleteClient, getClients, isEmailRegistered, subscribe, updateClient } from '../../stores/clientStore';
 import { dashboardStore } from '../../stores/dashboardStore';
 import { notificationStore } from '../../stores/notificationStore';
-import { messageStore, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
+import { messageStore, registerKnownUser, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
 import { MessageStatusIcon, OnlineBadge, OfflineBadge } from '../../components/ui/MessageStatus';
 import { NotificationBell } from '../../components/NotificationPanel';
 import {
@@ -766,6 +766,14 @@ export function AdminQuotes() {
     return unsubscribe;
   }, []);
 
+  const handleDeleteQuote = (id: string) => {
+    if (!window.confirm('Confirmer la suppression de ce devis ? Cette action est irréversible.')) {
+      return;
+    }
+    dashboardStore.deleteQuote(id);
+    appStore.addToast({ type: 'success', title: 'Devis supprimé', message: 'Le devis a été supprimé avec succès.' });
+  };
+
   return (
     <div className="p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -783,21 +791,39 @@ export function AdminQuotes() {
         {quotes.map((quote) => {
           const status = getStatusConfig(quote.status);
           return (
-            <Link key={quote.id} to={`/admin/devis/${quote.id}`}>
-              <Card hover>
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs text-text-muted mb-1">{quote.quoteNumber}</p>
-                    <h3 className="font-semibold text-white">{quote.title}</h3>
-                    <p className="text-sm text-text-muted">Client: {quote.clientName}</p>
+            <Card key={quote.id} hover className="group">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <Link
+                  to={`/admin/devis/${quote.id}`}
+                  className="flex-1 min-w-0"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs text-text-muted mb-1">{quote.quoteNumber}</p>
+                      <h3 className="font-semibold text-white">{quote.title}</h3>
+                      <p className="text-sm text-text-muted">Client: {quote.clientName}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-white">{formatCurrency(quote.total, quote.currency)}</p>
+                      <Badge variant={status.variant}>{status.label}</Badge>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-white">{formatCurrency(quote.total, quote.currency)}</p>
-                    <Badge variant={status.variant}>{status.label}</Badge>
-                  </div>
-                </div>
-              </Card>
-            </Link>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleDeleteQuote(quote.id);
+                  }}
+                  className="self-start md:self-auto inline-flex items-center gap-2 rounded-lg border border-border-dark bg-surface px-3 py-2 text-sm font-medium text-error-light transition hover:border-error-light hover:bg-error-light/10 hover:text-white"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Supprimer
+                </button>
+              </div>
+            </Card>
           );
         })}
       </div>
@@ -2127,10 +2153,12 @@ export function AdminQuoteRequestDetail() {
     setEmailBody(`Bonjour ${request.fullName},\n\nMerci pour votre demande de devis. Voici les informations que nous avons reçues :\n\n- Service : ${request.services.join(', ')}\n- Budget : ${request.budget || 'Non précisé'}\n- Délai : ${request.deadline || 'Non précisé'}\n- Description : ${request.description}\n\nJe reviens vers vous rapidement avec une proposition détaillée.\n\nCordialement,\n${user?.firstName || "L'équipe Myms"}`);
   }, [request, user]);
 
+  const normalizeEmailId = (email: string) => `client-${email.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
   const getConversation = () => {
     if (!request || !user) return null;
     const adminId = user.id;
-    const clientId = matchedClient?.id || request.clientId || `client-${request.email}`;
+    const clientId = matchedClient?.id || request.clientId || normalizeEmailId(request.email);
     return messageStore.getState().conversations.find((conv) => {
       const participants = new Set(conv.participantIds);
       return participants.has(adminId) && participants.has(clientId);
@@ -2143,8 +2171,8 @@ export function AdminQuoteRequestDetail() {
       return;
     }
 
-    if (!emailSubject.trim() || !emailBody.trim()) {
-      setEmailError('Le sujet et le message sont requis.');
+    if (!request.email || !emailSubject.trim() || !emailBody.trim()) {
+      setEmailError('L’adresse email, le sujet et le message sont requis.');
       return;
     }
 
@@ -2153,20 +2181,30 @@ export function AdminQuoteRequestDetail() {
 
     try {
       const adminId = user.id;
-      const clientId = matchedClient?.id || request.clientId || `client-${request.email}`;
+      const clientId = matchedClient?.id || request.clientId || normalizeEmailId(request.email);
       const adminParticipant = { id: adminId, name: `${user.firstName} ${user.lastName}`.trim() || 'Admin Myms', email: user.email };
       const clientParticipant = matchedClient
         ? { id: matchedClient.id, name: `${matchedClient.firstName} ${matchedClient.lastName}`.trim(), email: matchedClient.email }
-        : { id: clientId, name: request.fullName, email: request.email };
+        : { id: clientId, name: request.fullName || request.email, email: request.email };
+
+      if (!matchedClient && request.email) {
+        registerKnownUser({
+          id: clientId,
+          name: request.fullName || request.email,
+          email: request.email,
+          role: 'CLIENT',
+        });
+      }
 
       const existingConversation = getConversation();
+      const composedMessage = `Objet: ${emailSubject}\n\n${emailBody}`;
       let conversationId = existingConversation?.id;
 
       if (!conversationId) {
         const conversation = messageStore.createConversation({
           subject: `Réponse devis #${request.id}`,
           participants: [adminParticipant, clientParticipant],
-          firstMessage: emailBody,
+          firstMessage: composedMessage,
           senderId: adminId,
           senderName: adminParticipant.name,
         });
@@ -2176,24 +2214,22 @@ export function AdminQuoteRequestDetail() {
           conversationId,
           senderId: adminId,
           senderName: adminParticipant.name,
-          content: emailBody,
+          content: composedMessage,
         });
       }
 
       appStore.updateQuoteRequest(request.id, { status: 'RESPONDED' });
-      if (matchedClient?.id || request.clientId || request.email) {
-        notificationStore.add({
-          userId: matchedClient?.id || request.clientId || request.email || 'client-unknown',
-          type: 'message',
-          title: 'Réponse à votre demande',
-          description: `Votre demande de devis #${request.id} a reçu une réponse.`,
-          link: '/client/messages',
-        });
-      }
+      notificationStore.add({
+        userId: clientId,
+        type: 'message',
+        title: 'Réponse à votre demande',
+        description: `Votre demande de devis #${request.id} a reçu une réponse.`,
+        link: '/client/messages',
+      });
       appStore.addToast({
         type: 'success',
         title: 'Message envoyé',
-        message: 'Votre réponse a bien été enregistrée dans la messagerie interne.',
+        message: `Votre réponse a bien été envoyée à ${request.email} via la messagerie interne.`,
       });
       setIsEmailModalOpen(false);
     } catch (error) {
@@ -2781,6 +2817,19 @@ export function AdminQuoteDetail() {
         <Button variant="outline" onClick={() => appStore.addToast({ type: 'info', title: 'Mode édition', message: 'Vous pouvez modifier le devis.' })}>
           <Edit className="w-4 h-4 mr-2" />
           Modifier
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (!window.confirm('Confirmer la suppression de ce devis ?')) return;
+            dashboardStore.deleteQuote(quote.id);
+            appStore.addToast({ type: 'success', title: 'Devis supprimé', message: 'Le devis a bien été supprimé.' });
+            navigate('/admin/devis');
+          }}
+          className="text-error-light border-error-light hover:bg-error-light/10 hover:text-white"
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Supprimer
         </Button>
       </div>
     </div>

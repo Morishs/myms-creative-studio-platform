@@ -165,6 +165,13 @@ export const dashboardStore = {
     apiCreateQuote(quote).catch(() => undefined);
   },
 
+  deleteQuote: (id: string) => {
+    const quotes = loadState<DashboardQuote[]>(QUOTES_KEY);
+    const remainingQuotes = quotes.filter((quote) => quote.id !== id);
+    saveState(QUOTES_KEY, remainingQuotes);
+    notify();
+  },
+
   addInvoice: (invoice: DashboardInvoice) => {
     const invoices = loadState<DashboardInvoice[]>(INVOICES_KEY);
     saveState(INVOICES_KEY, [...invoices, invoice]);
