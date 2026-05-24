@@ -12,9 +12,9 @@ export function Card({ children, className, hover = false, glow = false }: CardP
   return (
     <div
       className={cn(
-        'bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-6',
-        hover && 'transition-all duration-300 hover:border-[#6C3CE1]/50 hover:shadow-lg hover:shadow-[#6C3CE1]/10 hover:-translate-y-1',
-        glow && 'shadow-lg shadow-[#6C3CE1]/20',
+        'bg-surface-alt border border-border rounded-3xl p-6 shadow-card',
+        hover && 'transition-all duration-300 hover:border-brand/30 hover:shadow-[0_20px_80px_rgba(13,110,253,0.12)] hover:-translate-y-1',
+        glow && 'shadow-lg shadow-accent/20',
         className
       )}
     >

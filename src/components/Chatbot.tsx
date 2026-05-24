@@ -557,10 +557,10 @@ export function Chatbot() {
       {/* Bouton flottant */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all ${
-          isOpen 
-            ? 'bg-[#1A1A1A] border border-[#2A2A2A]' 
-            : 'bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] hover:shadow-[#6C3CE1]/30 hover:shadow-xl'
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-card transition-all ${
+          isOpen
+            ? 'bg-surface-alt border border-border'
+            : 'bg-gradient-to-r from-brand to-accent hover:shadow-accent/30 hover:shadow-xl'
         }`}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -568,12 +568,12 @@ export function Chatbot() {
         <AnimatePresence mode="wait">
           {isOpen ? (
             <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
-              <X className="w-6 h-6 text-white" />
+              <X className="w-6 h-6 text-text-primary" />
             </motion.div>
           ) : (
             <motion.div key="open" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="relative">
               <MessageCircle className="w-6 h-6 text-white" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#10B981] rounded-full border-2 border-[#6C3CE1]" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-brand" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -586,10 +586,10 @@ export function Chatbot() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-[#111111] rounded-2xl border border-[#2A2A2A] shadow-2xl overflow-hidden"
+            className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-surface-alt rounded-3xl border border-border shadow-2xl overflow-hidden"
           >
             {/* En-tête */}
-            <div className="bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] p-4">
+            <div className="bg-gradient-to-r from-brand to-accent p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-white" />
@@ -597,7 +597,7 @@ export function Chatbot() {
                 <div className="flex-1">
                   <h3 className="font-semibold text-white text-sm">Myms Assistant</h3>
                   <p className="text-xs text-white/80 flex items-center gap-1">
-                    <span className="w-2 h-2 bg-[#10B981] rounded-full" />
+                    <span className="w-2 h-2 bg-success rounded-full" />
                     En ligne · Répond instantanément
                   </p>
                 </div>
@@ -608,7 +608,7 @@ export function Chatbot() {
             </div>
 
             {/* Zone de messages */}
-            <div className="h-[350px] overflow-y-auto p-4 space-y-4 bg-[#0A0A0A]">
+            <div className="h-[350px] overflow-y-auto p-4 space-y-4 bg-surface">
               {messages.map((message) => (
                 <motion.div
                   key={message.id}
@@ -620,13 +620,13 @@ export function Chatbot() {
                     {/* Avatar */}
                     <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mt-1 ${
                       message.type === 'bot'
-                        ? 'bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1]'
-                        : 'bg-[#2A2A2A]'
+                        ? 'bg-gradient-to-br from-brand to-accent'
+                        : 'bg-surface'
                     }`}>
                       {message.type === 'bot' ? (
                         <Sparkles className="w-3.5 h-3.5 text-white" />
                       ) : (
-                        <User className="w-3.5 h-3.5 text-[#A0A0A0]" />
+                        <User className="w-3.5 h-3.5 text-text-muted" />
                       )}
                     </div>
 
@@ -634,8 +634,8 @@ export function Chatbot() {
                     <div>
                       <div className={`rounded-2xl px-4 py-2.5 ${
                         message.type === 'bot'
-                          ? 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
-                          : 'bg-[#6C3CE1] text-white'
+                          ? 'bg-surface-alt border border-border text-text-primary'
+                          : 'bg-brand text-white'
                       }`}>
                       <p className="text-sm whitespace-pre-line leading-relaxed">{message.content}</p>
                       </div>
@@ -648,12 +648,12 @@ export function Chatbot() {
                               key={i}
                               href={file.url}
                               download={file.name}
-                              className="inline-flex items-center gap-2 px-3 py-2 bg-[#1A1A1A] hover:bg-[#2A2A2A] border border-[#2A2A2A] hover:border-[#6C3CE1] text-white text-xs rounded-lg transition-colors group"
+                              className="inline-flex items-center gap-2 px-3 py-2 bg-surface border border-border hover:border-brand text-text-secondary text-xs rounded-xl transition-colors group"
                               title={file.name}
                             >
-                              <Paperclip className="w-4 h-4 text-[#6C3CE1]" />
+                              <Paperclip className="w-4 h-4 text-brand" />
                               <span className="truncate max-w-[150px]">{file.name}</span>
-                              <span className="text-[#6B7280]">({(file.size / 1024).toFixed(1)}KB)</span>
+                              <span className="text-text-muted">({(file.size / 1024).toFixed(1)}KB)</span>
                             </a>
                           ))}
                         </div>
@@ -667,7 +667,7 @@ export function Chatbot() {
                               key={i}
                               to={link.href}
                               onClick={() => setIsOpen(false)}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#7C4CF1] text-white text-xs font-medium rounded-full transition-colors"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-brand hover:bg-brand-light text-white text-xs font-medium rounded-full transition-colors"
                             >
                               {link.label}
                               <ExternalLink className="w-3 h-3" />
@@ -683,7 +683,7 @@ export function Chatbot() {
                             <button
                               key={i}
                               onClick={() => handleQuickOption(option.value)}
-                              className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#2A2A2A] border border-[#2A2A2A] hover:border-[#6C3CE1] text-[#A0A0A0] hover:text-white text-xs rounded-full transition-all"
+                              className="px-3 py-1.5 bg-surface border border-border hover:border-brand text-text-secondary hover:text-text-primary text-xs rounded-full transition-all"
                             >
                               {option.label}
                             </button>
@@ -691,7 +691,7 @@ export function Chatbot() {
                         </div>
                       )}
 
-                      <p className={`text-[10px] text-[#6B7280] mt-1 ${message.type === 'user' ? 'text-right' : ''}`}>
+                      <p className={`text-[10px] text-text-muted mt-1 ${message.type === 'user' ? 'text-right' : ''}`}>
                         {message.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
@@ -702,14 +702,14 @@ export function Chatbot() {
               {/* Indicateur de frappe */}
               {isTyping && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center">
                     <Sparkles className="w-3.5 h-3.5 text-white" />
                   </div>
-                  <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl px-4 py-3">
+                  <div className="bg-surface-alt border border-border rounded-2xl px-4 py-3">
                     <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-[#6C3CE1] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-2 h-2 bg-[#6C3CE1] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-2 h-2 bg-[#6C3CE1] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span className="w-2 h-2 bg-brand rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-brand rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-brand rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                   </div>
                 </motion.div>
@@ -719,7 +719,7 @@ export function Chatbot() {
             </div>
 
             {/* Zone de saisie */}
-            <div className="p-3 bg-[#111111] border-t border-[#2A2A2A]">
+            <div className="p-3 bg-surface border-t border-border">
               <div className="flex gap-2 items-end">
                 <input
                   ref={inputRef}
@@ -728,20 +728,20 @@ export function Chatbot() {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder="Écrivez votre message…"
-                  className="flex-1 px-4 py-2.5 bg-[#0A0A0A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C3CE1] focus:border-transparent"
+                  className="flex-1 px-4 py-2.5 bg-surface-alt border border-border rounded-full text-text-primary placeholder:text-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
                 />
 
                 {/* Bouton Envoi */}
                 <button
                   onClick={handleSend}
                   disabled={!inputValue.trim()}
-                  className="w-10 h-10 rounded-full bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[#6C3CE1]/30 transition-all"
+                  className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-brand/30 transition-all"
                 >
                   <Send className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-[10px] text-[#6B7280] text-center mt-2">
-                Propulsé par Myms Studio · <Link to="/contact" className="text-[#6C3CE1] hover:underline" onClick={() => setIsOpen(false)}>Parler à un humain</Link>
+              <p className="text-[10px] text-text-muted text-center mt-2">
+                Propulsé par Myms Studio · <Link to="/contact" className="text-brand hover:underline" onClick={() => setIsOpen(false)}>Parler à un humain</Link>
               </p>
             </div>
           </motion.div>

@@ -17,16 +17,16 @@ export function SectionTitle({ title, subtitle, badge, align = 'center', classNa
       className
     )}>
       {badge && (
-        <span className="inline-block px-4 py-1.5 mb-4 text-sm font-medium text-[#6C3CE1] bg-[#6C3CE1]/10 rounded-full border border-[#6C3CE1]/20">
+        <span className="inline-block px-4 py-1.5 mb-4 text-sm font-medium text-brand bg-brand/10 rounded-full border border-brand/20">
           {badge}
         </span>
       )}
-      <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+      <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
         {title}
       </h2>
       {subtitle && (
         <p className={cn(
-          'text-lg text-[#A0A0A0]',
+          'text-lg text-text-muted',
           align === 'center' && 'max-w-2xl mx-auto'
         )}>
           {subtitle}

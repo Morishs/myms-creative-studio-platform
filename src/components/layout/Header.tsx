@@ -48,10 +48,10 @@ export function Header() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 backdrop-blur-md',
         isScrolled
-          ? 'bg-[#0A0A0A]/90 backdrop-blur-md border-b border-[#2A2A2A]' 
-          : 'bg-[#0A0A0A]/60 backdrop-blur-md'
+          ? 'bg-surface/95 border-b border-border'
+          : 'bg-surface/90'
       )}
     >
       <div className="max-w-7xl mx-auto px-6">
@@ -68,8 +68,8 @@ export function Header() {
                 className={cn(
                   'text-sm font-medium transition-colors duration-200',
                   location.pathname === link.href
-                    ? 'text-[#6C3CE1]'
-                    : 'text-[#A0A0A0] hover:text-white'
+                    ? 'text-brand'
+                    : 'text-text-secondary hover:text-brand'
                 )}
               >
                 {link.label}
@@ -83,12 +83,12 @@ export function Header() {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#1A1A1A] transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alt transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6C3CE1] to-[#7C4CF1] flex items-center justify-center text-white text-sm font-semibold">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-sm font-semibold">
                     {user?.firstName?.[0]}{user?.lastName?.[0]}
                   </div>
-                  <span className="text-sm text-white">{user?.firstName}</span>
+                  <span className="text-sm text-text-primary">{user?.firstName}</span>
                 </button>
 
                 <AnimatePresence>
@@ -97,29 +97,29 @@ export function Header() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg shadow-lg overflow-hidden"
+                      className="absolute right-0 top-full mt-2 w-56 bg-surface-alt border border-border rounded-3xl shadow-card overflow-hidden"
                     >
-                      <div className="p-3 border-b border-[#2A2A2A]">
-                        <p className="text-sm font-medium text-white">{user?.firstName} {user?.lastName}</p>
-                        <p className="text-xs text-[#6B7280]">{user?.email}</p>
+                      <div className="p-3 border-b border-border">
+                        <p className="text-sm font-medium text-text-primary">{user?.firstName} {user?.lastName}</p>
+                        <p className="text-xs text-text-muted">{user?.email}</p>
                       </div>
-                      <Link 
+                      <Link
                         to={dashboardLink}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#A0A0A0] hover:text-white hover:bg-[#0A0A0A] transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-text-secondary hover:text-text-primary hover:bg-surface transition-colors"
                       >
                         <LayoutDashboard className="w-4 h-4" />
                         Mon espace
                       </Link>
-                      <Link 
+                      <Link
                         to={isAdmin ? '/admin/parametres' : '/client/profil'}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#A0A0A0] hover:text-white hover:bg-[#0A0A0A] transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-text-secondary hover:text-text-primary hover:bg-surface transition-colors"
                       >
                         <User className="w-4 h-4" />
                         {isAdmin ? 'Paramètres' : 'Mon profil'}
                       </Link>
-                      <button 
+                      <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#EF4444] hover:bg-[#0A0A0A] transition-colors border-t border-[#2A2A2A]"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-error hover:bg-surface transition-colors border-t border-border"
                       >
                         <LogOut className="w-4 h-4" />
                         Déconnexion
@@ -130,7 +130,7 @@ export function Header() {
               </div>
             ) : (
               <>
-                <Link to="/auth/connexion" className="text-sm text-[#A0A0A0] hover:text-white transition-colors">
+                <Link to="/auth/connexion" className="text-sm text-text-secondary hover:text-brand transition-colors">
                   Connexion
                 </Link>
                 <Link to="/devis">
@@ -160,7 +160,7 @@ export function Header() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="lg:hidden bg-[#0A0A0A] border-t border-[#2A2A2A] overflow-hidden"
+            className="lg:hidden bg-surface-alt border-t border-border overflow-hidden"
           >
             <div className="px-6 py-6 space-y-4">
               {navLinks.map((link) => (
@@ -170,29 +170,29 @@ export function Header() {
                   className={cn(
                     'block py-2 text-lg font-medium transition-colors',
                     location.pathname === link.href
-                      ? 'text-[#6C3CE1]'
-                      : 'text-[#A0A0A0] hover:text-white'
+                      ? 'text-brand'
+                      : 'text-text-secondary hover:text-brand'
                   )}
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-4 border-t border-[#2A2A2A] space-y-3">
+              <div className="pt-4 border-t border-border space-y-3">
                 {isAuthenticated ? (
                   <>
-                    <Link to={dashboardLink} className="block py-2 text-lg font-medium text-[#A0A0A0] hover:text-white">
+                    <Link to={dashboardLink} className="block py-2 text-lg font-medium text-text-secondary hover:text-brand">
                       Mon espace
                     </Link>
-                    <button 
+                    <button
                       onClick={handleLogout}
-                      className="block w-full text-left py-2 text-lg font-medium text-[#EF4444] hover:text-[#F87171]"
+                      className="block w-full text-left py-2 text-lg font-medium text-error hover:text-error/80"
                     >
                       Déconnexion
                     </button>
                   </>
                 ) : (
                   <>
-                    <Link to="/auth/connexion" className="block py-2 text-lg font-medium text-[#A0A0A0] hover:text-white">
+                    <Link to="/auth/connexion" className="block py-2 text-lg font-medium text-text-secondary hover:text-brand">
                       Connexion
                     </Link>
                     <Link to="/devis" className="block">

@@ -169,23 +169,23 @@ export function Quote() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-[#0A0A0A]">
+      <div className="min-h-screen pt-20 flex items-center justify-center bg-surface">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-md text-center px-6"
         >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#10B981]/10 flex items-center justify-center">
-            <CheckCircle className="w-10 h-10 text-[#10B981]" />
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-success/10 flex items-center justify-center">
+            <CheckCircle className="w-10 h-10 text-success" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4">
+          <h1 className="text-3xl font-bold text-text-primary mb-4">
             Demande envoyée !
           </h1>
-          <p className="text-[#A0A0A0] mb-8">
-            Merci pour votre demande de devis. Nous l'avons bien reçue et nous vous 
+          <p className="text-text-secondary mb-8">
+            Merci pour votre demande de devis. Nous l'avons bien reçue et nous vous
             répondrons sous 24 à 48 heures avec une proposition personnalisée.
           </p>
-          <p className="text-sm text-[#6B7280]">
+          <p className="text-sm text-text-muted">
             Un email de confirmation vous a été envoyé.
           </p>
         </motion.div>
@@ -196,24 +196,24 @@ export function Quote() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-[#6C3CE1]/10 border border-[#6C3CE1]/20 rounded-full text-[#6C3CE1] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-brand/10 border border-brand/20 rounded-full text-brand text-sm font-medium mb-6">
               Demande de devis
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-6">
               Parlons de votre{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6C3CE1] to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-accent">
                 projet
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
-              Remplissez le formulaire ci-dessous pour recevoir un devis personnalisé. 
+            <p className="text-xl text-text-secondary">
+              Remplissez le formulaire ci-dessous pour recevoir un devis personnalisé.
               Nous vous répondons sous 24 à 48 heures.
             </p>
           </motion.div>
@@ -221,7 +221,7 @@ export function Quote() {
       </section>
 
       {/* Benefits */}
-      <section className="py-12 bg-[#0A0A0A] border-b border-[#2A2A2A]">
+      <section className="py-12 bg-surface-alt border-b border-border">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {benefits.map((benefit, index) => (
@@ -230,14 +230,14 @@ export function Quote() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-start gap-4"
+                className="flex items-start gap-4 bg-surface rounded-3xl p-6 border border-border"
               >
-                <div className="w-12 h-12 rounded-lg bg-[#6C3CE1]/10 flex items-center justify-center text-[#6C3CE1] flex-shrink-0">
+                <div className="w-12 h-12 rounded-lg bg-brand/10 flex items-center justify-center text-brand flex-shrink-0">
                   {benefit.icon}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">{benefit.title}</h3>
-                  <p className="text-[#A0A0A0] text-sm">{benefit.description}</p>
+                  <h3 className="text-lg font-semibold text-text-primary mb-1">{benefit.title}</h3>
+                  <p className="text-text-secondary text-sm">{benefit.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -246,11 +246,11 @@ export function Quote() {
       </section>
 
       {/* Form */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface">
         <div className="max-w-3xl mx-auto px-6">
           <Card className="p-8 md:p-12">
             {draftRestored && (
-              <div className="mb-6 rounded-3xl border border-[#2A2A2A] bg-[#111111] p-5 text-sm text-[#A0A0A0]">
+              <div className="mb-6 rounded-3xl border border-border bg-surface-alt p-5 text-sm text-text-secondary">
                 <p className="mb-3">Votre brouillon de demande a été restauré. Vous pouvez modifier les informations avant l’envoi.</p>
                 <button
                   type="button"
@@ -259,7 +259,7 @@ export function Quote() {
                     reset({});
                     setDraftRestored(false);
                   }}
-                  className="text-[#6C3CE1] hover:underline"
+                  className="text-brand hover:underline"
                 >
                   Effacer le brouillon
                 </button>
@@ -267,7 +267,7 @@ export function Quote() {
             )}
 
             {!isAuthenticated && (
-              <div className="mb-6 rounded-3xl border border-[#2A2A2A] bg-[#111111] p-5 text-sm text-[#A0A0A0]">
+              <div className="mb-6 rounded-3xl border border-border bg-surface-alt p-5 text-sm text-text-secondary">
                 <p>
                   Vous pouvez préparer votre demande sans compte. Un compte client sera demandé au moment de l'envoi.
                 </p>
@@ -370,13 +370,13 @@ export function Quote() {
                 Envoyer ma demande
               </Button>
 
-              <p className="text-center text-sm text-[#6B7280]">
+              <p className="text-center text-sm text-text-muted">
                 En soumettant ce formulaire, vous acceptez nos{' '}
-                <a href="/conditions-generales-de-vente" className="text-[#6C3CE1] hover:underline">
+                <a href="/conditions-generales-de-vente" className="text-brand hover:underline">
                   conditions générales
                 </a>{' '}
                 et notre{' '}
-                <a href="/politique-de-confidentialite" className="text-[#6C3CE1] hover:underline">
+                <a href="/politique-de-confidentialite" className="text-brand hover:underline">
                   politique de confidentialité
                 </a>.
               </p>

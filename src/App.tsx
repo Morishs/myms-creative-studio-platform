@@ -49,7 +49,7 @@ function ScrollToTop() {
 
 function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white">
+    <div className="min-h-screen bg-surface text-text-primary">
       <Header />
       <main>{children}</main>
       <Footer />
@@ -59,7 +59,7 @@ function PublicLayout({ children }: { children: ReactNode }) {
 }
 
 function AuthLayout({ children }: { children: ReactNode }) {
-  return <div className="min-h-screen bg-[#0A0A0A] text-white">{children}</div>;
+  return <div className="min-h-screen bg-surface text-text-primary">{children}</div>;
 }
 
 export default function App() {
@@ -142,16 +142,16 @@ export default function App() {
 
 function NotFound() {
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center">
+    <div className="min-h-screen pt-20 flex items-center justify-center bg-surface">
       <div className="text-center px-6">
-        <h1 className="text-8xl font-bold text-[#6C3CE1] mb-4">404</h1>
-        <h2 className="text-3xl font-bold text-white mb-4">Page non trouvée</h2>
-        <p className="text-[#A0A0A0] mb-8">
+        <h1 className="text-8xl font-bold text-brand mb-4">404</h1>
+        <h2 className="text-3xl font-bold text-text-primary mb-4">Page non trouvée</h2>
+        <p className="text-text-secondary mb-8">
           La page que vous recherchez n'existe pas ou a été déplacée.
         </p>
-        <a 
+        <a
           href="/"
-          className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-[#6C3CE1] to-[#7C4CF1] text-white font-medium rounded-lg hover:from-[#7C4CF1] hover:to-[#8C5CFF] transition-all"
+          className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-brand to-accent text-white font-medium rounded-lg hover:from-brand-light hover:to-accent-light transition-all"
         >
           Retour à l'accueil
         </a>

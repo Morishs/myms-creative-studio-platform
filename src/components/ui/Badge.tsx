@@ -9,12 +9,12 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', className }: BadgeProps) {
   const variants = {
-    default: 'bg-[#2A2A2A] text-[#A0A0A0]',
-    primary: 'bg-[#6C3CE1]/20 text-[#6C3CE1] border border-[#6C3CE1]/30',
-    secondary: 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/30',
-    success: 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30',
-    warning: 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/30',
-    error: 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/30'
+    default: 'bg-surface text-text-secondary border border-border text-sm text-text-secondary',
+    primary: 'bg-brand/10 text-brand border border-brand/20',
+    secondary: 'bg-accent/10 text-accent border border-accent/20',
+    success: 'bg-success/10 text-success border border-success/20',
+    warning: 'bg-warning/10 text-warning border border-warning/20',
+    error: 'bg-error/10 text-error border border-error/20'
   };
 
   return (

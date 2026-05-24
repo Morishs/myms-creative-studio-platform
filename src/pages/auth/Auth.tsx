@@ -76,14 +76,14 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center px-6 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A] relative overflow-hidden">
-      <div className="absolute top-10 md:top-1/4 right-0 md:right-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#6C3CE1]/10 rounded-full blur-[128px] pointer-events-none"></div>
-      <div className="absolute bottom-10 md:bottom-1/4 left-0 md:left-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#F59E0B]/5 rounded-full blur-[128px] pointer-events-none"></div>
+    <div className="min-h-screen pt-20 flex items-center justify-center px-6 bg-surface relative overflow-hidden">
+      <div className="absolute top-10 md:top-1/4 right-0 md:right-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-brand/10 rounded-full blur-[128px] pointer-events-none"></div>
+      <div className="absolute bottom-10 md:bottom-1/4 left-0 md:left-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-accent/10 rounded-full blur-[128px] pointer-events-none"></div>
 
       {/* Bouton retour */}
       <button
         onClick={handleGoBack}
-        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-[#A0A0A0] hover:text-white hover:border-[#6C3CE1] transition-all"
+        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-surface-alt border border-border rounded-lg text-text-secondary hover:text-text-primary hover:border-brand transition-all"
       >
         <ArrowRight className="w-4 h-4 rotate-180" />
         <span className="text-sm">Retour</span>
@@ -98,14 +98,14 @@ export function Login() {
           <div className="inline-block mb-6">
             <Logo logoClassName="h-12 w-auto sm:h-14" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Bon retour !</h1>
-          <p className="text-[#A0A0A0]">Connectez-vous à votre espace</p>
+          <h1 className="text-3xl font-bold text-text-primary mb-2">Bon retour !</h1>
+          <p className="text-text-secondary">Connectez-vous à votre espace</p>
         </div>
 
         <Card className="p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-lg text-[#EF4444] text-sm">
+              <div className="flex items-center gap-2 p-3 bg-error/10 border border-error/30 rounded-xl text-error text-sm">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 {error}
               </div>
@@ -132,14 +132,14 @@ export function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-[38px] text-[#6B7280] hover:text-white"
+                className="absolute right-3 top-[38px] text-text-muted hover:text-text-primary"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
 
             <div className="flex justify-end">
-              <Link to="/auth/mot-de-passe-oublie" className="text-sm text-[#6C3CE1] hover:underline">
+              <Link to="/auth/mot-de-passe-oublie" className="text-sm text-brand hover:underline">
                 Mot de passe oublié ?
               </Link>
             </div>
@@ -150,12 +150,12 @@ export function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-[#A0A0A0]">
+          <div className="mt-6 text-center text-text-secondary">
             Pas encore de compte ?{' '}
             <Link
               to="/auth/inscription"
               state={location.state}
-              className="text-[#6C3CE1] hover:underline font-medium"
+              className="text-brand hover:underline font-medium"
             >
               Créer un compte
             </Link>

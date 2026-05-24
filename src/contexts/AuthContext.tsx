@@ -108,13 +108,13 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 
 // Couleurs des badges par rôle
 export const ROLE_COLORS: Record<UserRole, string> = {
-  SUPER_ADMIN: 'bg-gradient-to-r from-[#EF4444] to-[#F59E0B] text-white',
-  ADMIN: 'bg-[#6C3CE1] text-white',
-  PROJECT_MANAGER: 'bg-[#3B82F6] text-white',
-  SALES_MANAGER: 'bg-[#10B981] text-white',
-  CONTENT_MANAGER: 'bg-[#F59E0B] text-white',
-  SUPPORT: 'bg-[#6B7280] text-white',
-  CLIENT: 'bg-[#2A2A2A] text-white'
+  SUPER_ADMIN: 'bg-gradient-to-r from-error to-warning text-white',
+  ADMIN: 'bg-brand text-white',
+  PROJECT_MANAGER: 'bg-info text-white',
+  SALES_MANAGER: 'bg-success text-white',
+  CONTENT_MANAGER: 'bg-warning text-white',
+  SUPPORT: 'bg-text-muted/10 text-text-muted',
+  CLIENT: 'bg-surface-alt text-text-secondary',
 };
 
 export interface User {

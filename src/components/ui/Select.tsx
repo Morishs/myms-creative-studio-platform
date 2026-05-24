@@ -12,16 +12,16 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, options, placeholder, className, id, ...props }, ref) => {
     const selectId = id || label?.toLowerCase().replace(/\s+/g, '-');
-    
+
     return (
       <div className="w-full">
         {label && (
-          <label 
+          <label
             htmlFor={selectId}
-            className="block text-sm font-medium text-[#A0A0A0] mb-2"
+            className="block text-sm font-medium text-text-secondary mb-2"
           >
             {label}
-            {props.required && <span className="text-[#EF4444] ml-1">*</span>}
+            {props.required && <span className="text-error ml-1">*</span>}
           </label>
         )}
         <div className="relative">
@@ -29,29 +29,29 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={selectId}
             className={cn(
-              'w-full px-4 py-3 bg-[#1A1A1A] border rounded-lg text-white',
-              'focus:outline-none focus:ring-2 focus:ring-[#6C3CE1] focus:border-transparent',
+              'w-full px-4 py-3 bg-surface-alt border rounded-xl text-text-primary',
+              'focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand',
               'transition-all duration-200 appearance-none cursor-pointer',
-              error ? 'border-[#EF4444]' : 'border-[#2A2A2A] hover:border-[#3A3A3A]',
+              error ? 'border-error' : 'border-border hover:border-brand',
               className
             )}
             {...props}
           >
             {placeholder && (
-              <option value="" className="text-[#6B7280]">
+              <option value="" className="text-text-muted">
                 {placeholder}
               </option>
             )}
             {options.map((option) => (
-              <option key={option.value} value={option.value} className="bg-[#1A1A1A]">
+              <option key={option.value} value={option.value} className="bg-surface-alt text-text-primary">
                 {option.label}
               </option>
             ))}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B7280] pointer-events-none" />
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted pointer-events-none" />
         </div>
         {error && (
-          <p className="mt-1 text-sm text-[#EF4444]">{error}</p>
+          <p className="mt-1 text-sm text-error">{error}</p>
         )}
       </div>
     );

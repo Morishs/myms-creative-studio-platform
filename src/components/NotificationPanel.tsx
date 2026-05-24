@@ -14,12 +14,12 @@ const typeIcons: Record<Notification['type'], React.ReactNode> = {
 };
 
 const typeColors: Record<Notification['type'], string> = {
-  message: 'bg-[#6C3CE1]/10 text-[#6C3CE1]',
-  quote: 'bg-[#F59E0B]/10 text-[#F59E0B]',
-  invoice: 'bg-[#3B82F6]/10 text-[#3B82F6]',
-  project: 'bg-[#10B981]/10 text-[#10B981]',
-  delivery: 'bg-[#10B981]/10 text-[#10B981]',
-  system: 'bg-[#6B7280]/10 text-[#6B7280]',
+  message: 'bg-brand/10 text-brand',
+  quote: 'bg-warning/10 text-warning',
+  invoice: 'bg-info/10 text-info',
+  project: 'bg-success/10 text-success',
+  delivery: 'bg-success/10 text-success',
+  system: 'bg-text-muted/10 text-text-muted',
 };
 
 function timeAgo(dateStr: string): string {
@@ -74,11 +74,11 @@ export function NotificationBell({ userId }: { userId: string }) {
       {/* Bouton cloche */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-[#A0A0A0] hover:text-white transition-colors rounded-lg hover:bg-[#1A1A1A]"
+        className="relative p-2 text-text-secondary hover:text-brand transition-colors rounded-lg hover:bg-surface-alt"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#EF4444] text-white text-[10px] font-bold flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -91,27 +91,27 @@ export function NotificationBell({ userId }: { userId: string }) {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="absolute right-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl shadow-2xl overflow-hidden z-50"
+            className="absolute right-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-surface-alt border border-border rounded-3xl shadow-2xl overflow-hidden z-50"
           >
             {/* Header */}
-            <div className="p-4 border-b border-[#2A2A2A] flex items-center justify-between">
+            <div className="p-4 border-b border-border flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-white text-sm">Notifications</h3>
+                <h3 className="font-semibold text-text-primary text-sm">Notifications</h3>
                 {unreadCount > 0 && (
-                  <p className="text-xs text-[#A0A0A0]">{unreadCount} non lue{unreadCount > 1 ? 's' : ''}</p>
+                  <p className="text-xs text-text-secondary">{unreadCount} non lue{unreadCount > 1 ? 's' : ''}</p>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
                     onClick={handleMarkAllRead}
-                    className="text-xs text-[#6C3CE1] hover:text-[#7C4CF1] transition-colors flex items-center gap-1"
+                    className="text-xs text-brand hover:text-brand-light transition-colors flex items-center gap-1"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
                     Tout marquer lu
                   </button>
                 )}
-                <button onClick={() => setIsOpen(false)} className="text-[#6B7280] hover:text-white p-1">
+                <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary p-1">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -121,16 +121,16 @@ export function NotificationBell({ userId }: { userId: string }) {
             <div className="max-h-[400px] overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="p-8 text-center">
-                  <Bell className="w-8 h-8 text-[#6B7280] mx-auto mb-3" />
-                  <p className="text-sm text-[#6B7280]">Aucune notification</p>
+                  <Bell className="w-8 h-8 text-text-muted mx-auto mb-3" />
+                  <p className="text-sm text-text-muted">Aucune notification</p>
                 </div>
               ) : (
                 notifications.map((n) => (
                   <button
                     key={n.id}
                     onClick={() => handleClickNotif(n)}
-                    className={`w-full text-left p-4 border-b border-[#2A2A2A] last:border-b-0 hover:bg-[#222222] transition-colors flex items-start gap-3 ${
-                      !n.isRead ? 'bg-[#6C3CE1]/5' : ''
+                    className={`w-full text-left p-4 border-b border-border last:border-b-0 hover:bg-surface transition-colors flex items-start gap-3 ${
+                      !n.isRead ? 'bg-brand/10' : ''
                     }`}
                   >
                     {/* Icône */}
@@ -141,13 +141,13 @@ export function NotificationBell({ userId }: { userId: string }) {
                     {/* Contenu */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        {!n.isRead && <span className="w-2 h-2 rounded-full bg-[#6C3CE1] flex-shrink-0" />}
-                        <p className={`text-sm truncate ${!n.isRead ? 'font-semibold text-white' : 'text-[#A0A0A0]'}`}>
+                        {!n.isRead && <span className="w-2 h-2 rounded-full bg-brand flex-shrink-0" />}
+                        <p className={`text-sm truncate ${!n.isRead ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}>
                           {n.title}
                         </p>
                       </div>
-                      <p className="text-xs text-[#6B7280] line-clamp-2">{n.description}</p>
-                      <p className="text-[10px] text-[#6B7280] mt-1">{timeAgo(n.createdAt)}</p>
+                      <p className="text-xs text-text-muted line-clamp-2">{n.description}</p>
+                      <p className="text-[10px] text-text-muted mt-1">{timeAgo(n.createdAt)}</p>
                     </div>
 
                     {/* Bouton lu */}
@@ -157,7 +157,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                           e.stopPropagation();
                           notificationStore.markAsRead(n.id);
                         }}
-                        className="flex-shrink-0 p-1 text-[#6B7280] hover:text-[#6C3CE1]"
+                        className="flex-shrink-0 p-1 text-text-muted hover:text-brand"
                         title="Marquer comme lu"
                       >
                         <Check className="w-4 h-4" />
