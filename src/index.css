@@ -23,13 +23,27 @@
   /* Accent Colors */
   --brand: #0D6EFD;
   --brand-light: #3D8BFF;
+  --accent: #7C3AED;
+  --accent-light: #8B5CF6;
   --accent-secondary: #7C3AED;
   
   /* Status Colors */
   --success: #22C55E;
   --warning: #F59E0B;
+  --error-light: #EF4444;
   --error: #DC2626;
   --info: #3B82F6;
+
+  /* RGB values for opacity utilities */
+  --brand-rgb: 13, 110, 253;
+  --brand-light-rgb: 61, 139, 255;
+  --accent-rgb: 124, 58, 237;
+  --accent-light-rgb: 139, 92, 246;
+  --success-rgb: 34, 197, 94;
+  --warning-rgb: 245, 158, 11;
+  --error-light-rgb: 239, 68, 68;
+  --error-rgb: 220, 38, 38;
+  --info-rgb: 59, 130, 246;
 }
 
 @keyframes fade-in {
@@ -161,4 +175,58 @@ h1, h2, h3, h4, h5, h6 {
 
 .glow-hover:hover {
   box-shadow: 0 0 40px rgba(124, 58, 237, 0.24);
+}
+
+@layer utilities {
+  .bg-brand { background-color: var(--brand); }
+  .bg-brand-light { background-color: var(--brand-light); }
+  .bg-accent { background-color: var(--accent); }
+  .bg-accent-light { background-color: var(--accent-light); }
+  .bg-success { background-color: var(--success); }
+  .bg-warning { background-color: var(--warning); }
+  .bg-error-light { background-color: var(--error-light); }
+  .bg-surface { background-color: var(--bg-surface); }
+  .bg-surface-alt { background-color: var(--bg-surface-alt); }
+  .bg-surface-dark { background-color: var(--bg-surface-dark); }
+  .text-text-primary { color: var(--text-primary); }
+  .text-text-secondary { color: var(--text-secondary); }
+  .text-text-muted { color: var(--text-muted); }
+  .text-brand { color: var(--brand); }
+  .text-accent { color: var(--accent); }
+  .text-success { color: var(--success); }
+  .text-warning { color: var(--warning); }
+  .text-error { color: var(--error); }
+  .text-error-light { color: var(--error-light); }
+  .text-info { color: var(--info); }
+  .border-border { border-color: var(--border-default); }
+  .border-border-dark { border-color: var(--border-dark); }
+  .border-brand { border-color: var(--brand); }
+  .border-error-light { border-color: var(--error-light); }
+  .hover\:bg-brand-light:hover { background-color: var(--brand-light); }
+  .hover\:border-brand:hover { border-color: var(--brand); }
+  .hover\:text-brand:hover { color: var(--brand); }
+  .hover\:text-brand-light:hover { color: var(--brand-light); }
+  .hover\:border-error-light:hover { border-color: var(--error-light); }
+  .hover\:text-error-light:hover { color: var(--error-light); }
+  .hover\:bg-surface-alt:hover { background-color: var(--bg-surface-alt); }
+  .hover\:bg-brand\/10:hover { background-color: rgba(var(--brand-rgb), 0.1); }
+  .hover\:bg-success\/10:hover { background-color: rgba(var(--success-rgb), 0.1); }
+  .hover\:bg-error-light\/10:hover { background-color: rgba(var(--error-light-rgb), 0.1); }
+  .hover\:bg-warning\/10:hover { background-color: rgba(var(--warning-rgb), 0.1); }
+  .hover\:bg-error-light\/10:hover { background-color: rgba(var(--error-light-rgb), 0.1); }
+  .hover\:border-brand\/20:hover { border-color: rgba(var(--brand-rgb), 0.2); }
+  .focus\:ring-brand:focus { --tw-ring-color: var(--brand); }
+  .focus\:ring-brand\/30:focus { --tw-ring-color: rgba(var(--brand-rgb), 0.3); }
+  .bg-brand\/10 { background-color: rgba(var(--brand-rgb), 0.1); }
+  .bg-brand\/20 { background-color: rgba(var(--brand-rgb), 0.2); }
+  .bg-accent\/10 { background-color: rgba(var(--accent-rgb), 0.1); }
+  .bg-success\/10 { background-color: rgba(var(--success-rgb), 0.1); }
+  .bg-warning\/10 { background-color: rgba(var(--warning-rgb), 0.1); }
+  .bg-error-light\/10 { background-color: rgba(var(--error-light-rgb), 0.1); }
+  .border-brand\/20 { border-color: rgba(var(--brand-rgb), 0.2); }
+  .border-accent\/20 { border-color: rgba(var(--accent-rgb), 0.2); }
+  .border-success\/20 { border-color: rgba(var(--success-rgb), 0.2); }
+  .border-warning\/20 { border-color: rgba(var(--warning-rgb), 0.2); }
+  .border-error-light\/20 { border-color: rgba(var(--error-light-rgb), 0.2); }
+  .shadow-brand\/10 { --tw-shadow-color: rgba(13, 110, 253, 0.1); box-shadow: var(--tw-shadow); }
 }

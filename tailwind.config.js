@@ -1,5 +1,4 @@
-import type { Config } from 'tailwindcss';
-
+/** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
@@ -26,6 +25,9 @@ export default {
           DEFAULT: '#DC2626',
           light: '#EF4444',
         },
+        info: {
+          DEFAULT: '#3B82F6',
+        },
         surface: {
           DEFAULT: '#111111',
           alt: '#0A0A0A',
@@ -35,6 +37,7 @@ export default {
         border: '#D1D5DB',
         text: {
           DEFAULT: '#FFFFFF',
+          primary: '#FFFFFF',
           muted: '#9CA3AF',
           secondary: '#D1D5DB',
         },
@@ -47,5 +50,10 @@ export default {
       },
     },
   },
+  safelist: [
+    {
+      pattern: /^(?:bg|text|border|hover:bg|hover:text|hover:border|focus:ring|shadow)-(?:brand|brand-light|accent|accent-light|success|warning|error|error-light|info|surface|surface-alt|surface-dark|border|border-dark|text|text-primary|text-secondary|text-muted)(?:\/\d+)?$/,
+    },
+  ],
   plugins: [],
-} satisfies Config;
+};
