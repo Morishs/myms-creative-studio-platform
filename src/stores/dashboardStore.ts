@@ -1,3 +1,14 @@
+import {
+  getProjects as apiGetProjects,
+  getDashboardQuotes as apiGetQuotes,
+  getInvoices as apiGetInvoices,
+  getTeamMembers as apiGetTeamMembers,
+  createProject as apiCreateProject,
+  createDashboardQuote as apiCreateQuote,
+  createInvoice as apiCreateInvoice,
+  createTeamMember as apiCreateTeamMember,
+} from '../api/backend';
+
 type Listener = () => void;
 
 const PROJECTS_KEY = 'myms_dashboard_projects';
@@ -127,6 +138,7 @@ export const dashboardStore = {
     const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
     saveState(PROJECTS_KEY, [...projects, project]);
     notify();
+    apiCreateProject(project).catch(() => undefined);
   },
 
   updateProject: (id: string, updates: Partial<DashboardProject>) => {
@@ -134,6 +146,7 @@ export const dashboardStore = {
     const updatedProjects = projects.map((project) => project.id === id ? { ...project, ...updates } : project);
     saveState(PROJECTS_KEY, updatedProjects);
     notify();
+    apiGetProjects().catch(() => undefined);
   },
 
   deleteProject: (id: string) => {
@@ -147,12 +160,14 @@ export const dashboardStore = {
     const quotes = loadState<DashboardQuote[]>(QUOTES_KEY);
     saveState(QUOTES_KEY, [...quotes, quote]);
     notify();
+    apiCreateQuote(quote).catch(() => undefined);
   },
 
   addInvoice: (invoice: DashboardInvoice) => {
     const invoices = loadState<DashboardInvoice[]>(INVOICES_KEY);
     saveState(INVOICES_KEY, [...invoices, invoice]);
     notify();
+    apiCreateInvoice(invoice).catch(() => undefined);
   },
 
   getNewsletterSubscribers: (): NewsletterSubscriber[] => loadState<NewsletterSubscriber[]>(NEWSLETTER_KEY),
@@ -169,6 +184,27 @@ export const dashboardStore = {
   getTeamMembers: (): DashboardTeamMember[] => loadState<DashboardTeamMember[]>(TEAM_KEY),
   setTeamMembers: (members: DashboardTeamMember[]) => {
     saveState(TEAM_KEY, members);
+    notify();
+  },
+  addTeamMember: (member: DashboardTeamMember) => {
+    const members = loadState<DashboardTeamMember[]>(TEAM_KEY);
+    saveState(TEAM_KEY, [...members, member]);
+    notify();
+    apiCreateTeamMember(member).catch(() => undefined);
+  },
+
+  syncFromApi: async () => {
+    const [projects, quotes, invoices, teamMembers] = await Promise.all([
+      apiGetProjects(),
+      apiGetQuotes(),
+      apiGetInvoices(),
+      apiGetTeamMembers(),
+    ]);
+
+    if (projects?.length) saveState(PROJECTS_KEY, projects);
+    if (quotes?.length) saveState(QUOTES_KEY, quotes);
+    if (invoices?.length) saveState(INVOICES_KEY, invoices);
+    if (teamMembers?.length) saveState(TEAM_KEY, teamMembers);
     notify();
   },
   addTeamMember: (member: DashboardTeamMember) => {

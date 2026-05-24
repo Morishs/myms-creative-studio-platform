@@ -49,10 +49,10 @@ export function Home() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-20">
         {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A]">
+        <div className="absolute inset-0 bg-gradient-to-br from-surface-alt via-[#111111] to-surface-alt">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzLTItMi0yLTQgMi00IDItNCAyIDIgMiA0LTIgNC0yIDQtMi0yLTItNCAyLTQgMi00IDIgMiAyIDQtMiA0LTIgNHoiIHN0cm9rZT0iIzJBMkEyQSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjwvZz48L3N2Zz4=')] opacity-30"></div>
           <div className="absolute top-10 md:top-1/4 right-0 md:right-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-brand/10 rounded-full blur-[128px] pointer-events-none"></div>
-          <div className="absolute bottom-10 md:bottom-1/4 left-0 md:left-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-[#F59E0B]/10 rounded-full blur-[128px] pointer-events-none"></div>
+          <div className="absolute bottom-10 md:bottom-1/4 left-0 md:left-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-warning/10 rounded-full blur-[128px] pointer-events-none"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 py-20">
@@ -74,7 +74,7 @@ export function Home() {
               className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight mb-6"
             >
               Créons des{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 identités visuelles
               </span>{' '}
               qui marquent les esprits
@@ -82,7 +82,7 @@ export function Home() {
             
             <motion.p 
               variants={fadeInUp}
-              className="text-xl text-[#A0A0A0] mb-10 max-w-2xl"
+              className="text-xl text-text-muted mb-10 max-w-2xl"
             >
               Myms est un studio créatif spécialisé en design graphique, infographie et community management. 
               Nous transformons vos idées en visuels percutants qui font la différence.
@@ -109,7 +109,7 @@ export function Home() {
       </section>
 
       {/* Services Section */}
-      <section className="py-20 md:py-32 bg-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <SectionTitle 
             badge="Nos services"
@@ -134,7 +134,7 @@ export function Home() {
                     <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-brand transition-colors">
                       {service.title}
                     </h3>
-                    <p className="text-[#A0A0A0] mb-4">
+                    <p className="text-text-muted mb-4">
                       {service.shortDescription}
                     </p>
                     <span className="inline-flex items-center text-brand text-sm font-medium">
@@ -158,7 +158,7 @@ export function Home() {
       </section>
 
       {/* Portfolio Section */}
-      <section className="py-20 md:py-32 bg-[#111111]">
+      <section className="py-20 md:py-32 bg-surface">
         <div className="max-w-7xl mx-auto px-6">
           <SectionTitle 
             badge="Portfolio"
@@ -176,14 +176,14 @@ export function Home() {
             {featuredProjects.map((project) => (
               <motion.div key={project.id} variants={fadeInUp}>
                 <Link to={`/portfolio/${project.slug}`}>
-                  <div className="group relative overflow-hidden rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:border-brand/20 transition-all">
+                  <div className="group relative overflow-hidden rounded-xl bg-surface-dark border border-border-dark hover:border-brand/20 transition-all">
                     <div className="aspect-[4/3] overflow-hidden">
                       <img 
                         src={project.coverImage} 
                         alt={project.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A]/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-surface-alt/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <div className="p-6">
                       <span className="text-xs font-medium text-brand uppercase tracking-wider">
@@ -210,7 +210,7 @@ export function Home() {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 md:py-32 bg-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <SectionTitle 
             badge="Notre méthode"
@@ -236,7 +236,7 @@ export function Home() {
                     <h3 className="text-lg font-semibold text-white mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-[#A0A0A0] text-sm">
+                    <p className="text-text-muted text-sm">
                       {step.description}
                     </p>
                   </div>
@@ -259,7 +259,7 @@ export function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-brand/10 to-[#F59E0B]/10 border-y border-[#2A2A2A]">
+      <section className="py-20 bg-gradient-to-r from-brand/10 to-warning/10 border-y border-border-dark">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -274,7 +274,7 @@ export function Home() {
                 <div className="text-4xl md:text-5xl font-bold text-white mb-2">
                   {stat.value}{stat.suffix}
                 </div>
-                <div className="text-[#A0A0A0]">{stat.label}</div>
+                <div className="text-text-muted">{stat.label}</div>
               </motion.div>
             ))}
           </div>
@@ -282,7 +282,7 @@ export function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 md:py-32 bg-[#111111]">
+      <section className="py-20 md:py-32 bg-surface">
         <div className="max-w-7xl mx-auto px-6">
           <SectionTitle 
             badge="Témoignages"
@@ -304,11 +304,11 @@ export function Home() {
                     {[...Array(5)].map((_, i) => (
                       <Star 
                         key={i} 
-                        className={`w-5 h-5 ${i < testimonial.rating ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-[#2A2A2A]'}`} 
+                        className={`w-5 h-5 ${i < testimonial.rating ? 'text-warning fill-[#F59E0B]' : 'text-[#2A2A2A]'}`} 
                       />
                     ))}
                   </div>
-                  <p className="text-[#A0A0A0] mb-6 italic">
+                  <p className="text-text-muted mb-6 italic">
                     "{testimonial.content}"
                   </p>
                   <div className="flex items-center gap-4">
@@ -319,7 +319,7 @@ export function Home() {
                     />
                     <div>
                       <div className="font-semibold text-white">{testimonial.clientName}</div>
-                      <div className="text-sm text-[#6B7280]">
+                      <div className="text-sm text-text-muted">
                         {testimonial.role}{testimonial.company && `, ${testimonial.company}`}
                       </div>
                     </div>
@@ -340,24 +340,24 @@ export function Home() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="inline-block px-4 py-2 bg-[#F59E0B]/10 border border-[#F59E0B]/20 rounded-full text-[#F59E0B] text-sm font-medium mb-6">
+            <span className="inline-block px-4 py-2 bg-warning/10 border border-warning/20 rounded-full text-warning text-sm font-medium mb-6">
               📬 Newsletter
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Restez inspirés
             </h2>
-            <p className="text-[#A0A0A0] mb-8">
+            <p className="text-text-muted mb-8">
               Recevez nos conseils design, nos nouveautés et nos ressources gratuites directement dans votre boîte mail.
             </p>
             {nlDone ? (
-              <div className="flex items-center justify-center gap-2 p-4 bg-[#10B981]/10 border border-[#10B981]/30 rounded-lg text-[#10B981]">
+              <div className="flex items-center justify-center gap-2 p-4 bg-success/10 border border-[#10B981]/30 rounded-lg text-success">
                 <CheckCircle className="w-5 h-5" />
                 <span>Merci ! Vous êtes inscrit à notre newsletter.</span>
               </div>
@@ -369,7 +369,7 @@ export function Home() {
                   value={nlEmail}
                   onChange={e => setNlEmail(e.target.value)}
                   placeholder="Votre adresse email"
-                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                  className="flex-1 px-4 py-3 bg-surface-dark border border-border-dark rounded-lg text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 />
                 <Button type="submit" variant="primary">
                   S'inscrire
@@ -417,15 +417,15 @@ export function Home() {
             
             <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-white/80">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-[#10B981]" />
+                <CheckCircle className="w-5 h-5 text-success" />
                 <span>Devis gratuit</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-[#10B981]" />
+                <CheckCircle className="w-5 h-5 text-success" />
                 <span>Réponse sous 48h</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-[#10B981]" />
+                <CheckCircle className="w-5 h-5 text-success" />
                 <span>Satisfaction garantie</span>
               </div>
             </div>

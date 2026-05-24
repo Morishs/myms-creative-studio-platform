@@ -22,7 +22,7 @@ export function Blog() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -34,11 +34,11 @@ export function Blog() {
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Conseils &{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 Inspirations
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               Articles, conseils et tendances sur le design graphique, le branding 
               et le community management.
             </p>
@@ -47,7 +47,7 @@ export function Blog() {
       </section>
 
       {/* Blog Grid */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogPosts.map((post, index) => (
@@ -70,7 +70,7 @@ export function Blog() {
                     <div className="pt-6">
                       <div className="flex items-center gap-4 mb-3">
                         <Badge variant="primary">{post.category}</Badge>
-                        <span className="text-sm text-[#6B7280] flex items-center gap-1">
+                        <span className="text-sm text-text-muted flex items-center gap-1">
                           <Clock className="w-4 h-4" />
                           {post.readTime} min
                         </span>
@@ -78,11 +78,11 @@ export function Blog() {
                       <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-brand transition-colors line-clamp-2">
                         {post.title}
                       </h3>
-                      <p className="text-[#A0A0A0] text-sm mb-4 line-clamp-2">
+                      <p className="text-text-muted text-sm mb-4 line-clamp-2">
                         {post.excerpt}
                       </p>
-                      <div className="flex items-center justify-between pt-4 border-t border-[#2A2A2A]">
-                        <span className="text-sm text-[#6B7280] flex items-center gap-2">
+                      <div className="flex items-center justify-between pt-4 border-t border-border-dark">
+                        <span className="text-sm text-text-muted flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
                           {new Date(post.publishedAt).toLocaleDateString('fr-FR', {
                             day: 'numeric',
@@ -105,7 +105,7 @@ export function Blog() {
       </section>
 
       {/* Newsletter */}
-      <section className="py-20 bg-[#111111]">
+      <section className="py-20 bg-surface">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -115,11 +115,11 @@ export function Blog() {
             <h2 className="text-3xl font-bold text-white mb-4">
               Restez informés
             </h2>
-            <p className="text-[#A0A0A0] mb-8">
+            <p className="text-text-muted mb-8">
               Recevez nos derniers articles et conseils directement dans votre boîte mail.
             </p>
             {blogNlDone ? (
-              <div className="flex items-center justify-center gap-2 p-4 bg-[#10B981]/10 border border-[#10B981]/30 rounded-lg text-[#10B981]">
+              <div className="flex items-center justify-center gap-2 p-4 bg-success/10 border border-[#10B981]/30 rounded-lg text-success">
                 <CheckCircle className="w-5 h-5" />
                 <span>Merci ! Vous êtes inscrit.</span>
               </div>
@@ -131,7 +131,7 @@ export function Blog() {
                   value={blogNlEmail}
                   onChange={e => setBlogNlEmail(e.target.value)}
                   placeholder="Votre adresse email"
-                  className="flex-1 px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                  className="flex-1 px-4 py-3 bg-surface-dark border border-border-dark rounded-lg text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 />
                 <Button type="submit" variant="primary">
                   S'inscrire
@@ -165,7 +165,7 @@ export function BlogDetail() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-4xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -178,7 +178,7 @@ export function BlogDetail() {
 
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <Badge variant="primary">{post.category}</Badge>
-              <span className="text-[#6B7280] flex items-center gap-2">
+              <span className="text-text-muted flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 {new Date(post.publishedAt).toLocaleDateString('fr-FR', {
                   day: 'numeric',
@@ -186,7 +186,7 @@ export function BlogDetail() {
                   year: 'numeric'
                 })}
               </span>
-              <span className="text-[#6B7280] flex items-center gap-2">
+              <span className="text-text-muted flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 {post.readTime} min de lecture
               </span>
@@ -202,7 +202,7 @@ export function BlogDetail() {
               </div>
               <div>
                 <span className="text-white font-medium">{post.author}</span>
-                <span className="text-[#6B7280] text-sm block">Auteur</span>
+                <span className="text-text-muted text-sm block">Auteur</span>
               </div>
             </div>
           </motion.div>
@@ -210,7 +210,7 @@ export function BlogDetail() {
       </section>
 
       {/* Featured Image */}
-      <section className="bg-[#0A0A0A]">
+      <section className="bg-surface-alt">
         <div className="max-w-5xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
@@ -228,13 +228,13 @@ export function BlogDetail() {
       </section>
 
       {/* Content */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-3xl mx-auto px-6">
           <div className="prose prose-invert prose-lg max-w-none">
-            <p className="text-xl text-[#A0A0A0] leading-relaxed mb-8">
+            <p className="text-xl text-text-muted leading-relaxed mb-8">
               {post.excerpt}
             </p>
-            <p className="text-[#A0A0A0] leading-relaxed">
+            <p className="text-text-muted leading-relaxed">
               Cet article est un aperçu. Le contenu complet sera bientôt disponible.
               Restez à l'écoute pour plus de conseils et d'informations sur le design
               et la communication visuelle.
@@ -242,7 +242,7 @@ export function BlogDetail() {
           </div>
 
           {/* Tags */}
-          <div className="mt-12 pt-8 border-t border-[#2A2A2A]">
+          <div className="mt-12 pt-8 border-t border-border-dark">
             <h4 className="text-white font-semibold mb-4">Tags</h4>
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
@@ -254,12 +254,12 @@ export function BlogDetail() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-[#111111]">
+      <section className="py-20 bg-surface">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
             Vous avez un projet ?
           </h2>
-          <p className="text-xl text-[#A0A0A0] mb-10">
+          <p className="text-xl text-text-muted mb-10">
             Mettons en pratique ces conseils pour votre marque.
           </p>
           <Link to="/devis">

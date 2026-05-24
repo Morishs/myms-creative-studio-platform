@@ -24,7 +24,7 @@ export function Resources() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -36,11 +36,11 @@ export function Resources() {
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Templates &{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 Ressources
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               Des ressources professionnelles pour booster votre communication visuelle. 
               Templates, guides et kits prêts à l'emploi.
             </p>
@@ -49,7 +49,7 @@ export function Resources() {
       </section>
 
       {/* Filter */}
-      <section className="py-8 bg-[#0A0A0A] border-b border-[#2A2A2A] sticky top-20 z-40 backdrop-blur-md bg-[#0A0A0A]/90">
+      <section className="py-8 bg-surface-alt border-b border-border-dark sticky top-20 z-40 backdrop-blur-md bg-surface-alt/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-3">
             {filterOptions.map((filter) => (
@@ -59,7 +59,7 @@ export function Resources() {
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                   activeFilter === filter
                     ? 'bg-brand text-white'
-                    : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-brand'
+                    : 'bg-surface-dark text-text-muted hover:text-white border border-border-dark hover:border-brand'
                 }`}
               >
                 {filter}
@@ -70,7 +70,7 @@ export function Resources() {
       </section>
 
       {/* Resources Grid */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <AnimatePresence mode="wait">
             <motion.div
@@ -102,7 +102,7 @@ export function Resources() {
                           <Badge variant={resource.isFree ? 'success' : 'primary'}>
                             {resource.isFree ? 'Gratuit' : `${resource.price?.toLocaleString()} ${resource.currency}`}
                           </Badge>
-                          <span className="text-sm text-[#6B7280] flex items-center gap-1">
+                          <span className="text-sm text-text-muted flex items-center gap-1">
                             <Download className="w-4 h-4" />
                             {resource.downloads}
                           </span>
@@ -110,11 +110,11 @@ export function Resources() {
                         <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-brand transition-colors">
                           {resource.title}
                         </h3>
-                        <p className="text-[#A0A0A0] text-sm mb-4">
+                        <p className="text-text-muted text-sm mb-4">
                           {resource.shortDescription}
                         </p>
-                        <div className="flex items-center justify-between pt-4 border-t border-[#2A2A2A]">
-                          <span className="text-xs text-[#6B7280]">{resource.fileFormat}</span>
+                        <div className="flex items-center justify-between pt-4 border-t border-border-dark">
+                          <span className="text-xs text-text-muted">{resource.fileFormat}</span>
                           <span className="text-sm font-medium text-brand flex items-center gap-1">
                             {resource.isFree ? 'Télécharger' : 'Acheter'}
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -130,7 +130,7 @@ export function Resources() {
 
           {filteredResources.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-[#A0A0A0]">Aucune ressource trouvée dans cette catégorie.</p>
+              <p className="text-text-muted">Aucune ressource trouvée dans cette catégorie.</p>
             </div>
           )}
         </div>
@@ -220,7 +220,7 @@ export function ResourceDetail() {
 
   return (
     <div className="min-h-screen pt-20">
-      <section className="py-20 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Link to="/ressources" className="inline-flex items-center gap-2 text-brand mb-6 hover:text-brand-light transition-colors">
@@ -232,7 +232,7 @@ export function ResourceDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* Image */}
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#1A1A1A]">
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-surface-dark">
                 <img src={resource.coverImage} alt={resource.title} className="w-full h-full object-cover" />
               </div>
             </motion.div>
@@ -244,7 +244,7 @@ export function ResourceDetail() {
               </Badge>
               
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">{resource.title}</h1>
-              <p className="text-lg text-[#A0A0A0] mb-8">{resource.description}</p>
+              <p className="text-lg text-text-muted mb-8">{resource.description}</p>
 
               {/* Details card */}
               <Card className="mb-8">
@@ -254,19 +254,19 @@ export function ResourceDetail() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-[#6B7280]">Format</span>
+                    <span className="text-text-muted">Format</span>
                     <p className="text-white font-medium">{resource.fileFormat}</p>
                   </div>
                   <div>
-                    <span className="text-[#6B7280]">Type</span>
+                    <span className="text-text-muted">Type</span>
                     <p className="text-white font-medium">{resource.type}</p>
                   </div>
                   <div>
-                    <span className="text-[#6B7280]">Compatibilité</span>
+                    <span className="text-text-muted">Compatibilité</span>
                     <p className="text-white font-medium">{resource.compatibility.join(', ')}</p>
                   </div>
                   <div>
-                    <span className="text-[#6B7280]">Téléchargements</span>
+                    <span className="text-text-muted">Téléchargements</span>
                     <p className="text-white font-medium">{resource.downloads}+</p>
                   </div>
                 </div>
@@ -276,10 +276,10 @@ export function ResourceDetail() {
               {resource.isFree && (
                 <div>
                   {downloadStep === 'done' ? (
-                    <div className="p-6 bg-[#10B981]/10 border border-[#10B981]/30 rounded-xl text-center">
-                      <CheckCircle className="w-10 h-10 text-[#10B981] mx-auto mb-3" />
+                    <div className="p-6 bg-success/10 border border-[#10B981]/30 rounded-xl text-center">
+                      <CheckCircle className="w-10 h-10 text-success mx-auto mb-3" />
                       <p className="font-semibold text-white mb-1">Téléchargement lancé !</p>
-                      <p className="text-sm text-[#A0A0A0]">Le fichier va se télécharger automatiquement. Vérifiez votre dossier de téléchargements.</p>
+                      <p className="text-sm text-text-muted">Le fichier va se télécharger automatiquement. Vérifiez votre dossier de téléchargements.</p>
                       <Button variant="outline" size="sm" className="mt-4" onClick={() => {
                         const link = document.createElement('a');
                         link.href = resource.coverImage;
@@ -301,7 +301,7 @@ export function ResourceDetail() {
                         </div>
                         <div>
                           <p className="font-semibold text-white">Entrez votre email</p>
-                          <p className="text-xs text-[#6B7280]">Pour recevoir le lien de téléchargement</p>
+                          <p className="text-xs text-text-muted">Pour recevoir le lien de téléchargement</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -317,7 +317,7 @@ export function ResourceDetail() {
                           <Download className="w-4 h-4" />
                         </Button>
                       </div>
-                      <p className="text-xs text-[#6B7280] mt-2">Vous serez inscrit à notre newsletter. Désabonnement possible à tout moment.</p>
+                      <p className="text-xs text-text-muted mt-2">Vous serez inscrit à notre newsletter. Désabonnement possible à tout moment.</p>
                     </Card>
                   ) : (
                     <Button variant="primary" size="lg" className="w-full" onClick={handleFreeDownload}>
@@ -332,11 +332,11 @@ export function ResourceDetail() {
               {!resource.isFree && (
                 <div>
                   {purchaseStep === 'done' ? (
-                    <div className="p-6 bg-[#10B981]/10 border border-[#10B981]/30 rounded-xl text-center">
-                      <CheckCircle className="w-10 h-10 text-[#10B981] mx-auto mb-3" />
+                    <div className="p-6 bg-success/10 border border-[#10B981]/30 rounded-xl text-center">
+                      <CheckCircle className="w-10 h-10 text-success mx-auto mb-3" />
                       <p className="font-semibold text-white mb-1">Achat confirmé !</p>
-                      <p className="text-sm text-[#A0A0A0] mb-1">Votre fichier se télécharge automatiquement.</p>
-                      <p className="text-xs text-[#6B7280]">Un reçu a été envoyé à {payEmail}</p>
+                      <p className="text-sm text-text-muted mb-1">Votre fichier se télécharge automatiquement.</p>
+                      <p className="text-xs text-text-muted">Un reçu a été envoyé à {payEmail}</p>
                       <Button variant="outline" size="sm" className="mt-4" onClick={() => {
                         const link = document.createElement('a');
                         link.href = resource.coverImage;
@@ -351,15 +351,15 @@ export function ResourceDetail() {
                       </Button>
                     </div>
                   ) : purchaseStep === 'processing' ? (
-                    <div className="p-8 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl text-center">
+                    <div className="p-8 bg-surface-dark border border-border-dark rounded-xl text-center">
                       <div className="w-12 h-12 mx-auto mb-4 rounded-full border-4 border-brand border-t-transparent animate-spin" />
                       <p className="font-semibold text-white mb-1">Traitement du paiement…</p>
-                      <p className="text-sm text-[#A0A0A0]">Veuillez patienter quelques instants.</p>
+                      <p className="text-sm text-text-muted">Veuillez patienter quelques instants.</p>
                     </div>
                   ) : purchaseStep === 'form' ? (
                     <Card className="border-brand/20">
                       <h3 className="font-semibold text-white mb-1">Finaliser l'achat</h3>
-                      <p className="text-sm text-[#6B7280] mb-4">
+                      <p className="text-sm text-text-muted mb-4">
                         {resource.title} — <span className="text-brand font-semibold">{resource.price?.toLocaleString()} {resource.currency}</span>
                       </p>
                       <div className="space-y-3">
@@ -379,7 +379,7 @@ export function ResourceDetail() {
                           onChange={e => setPayEmail(e.target.value)}
                         />
                         <div>
-                          <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Moyen de paiement <span className="text-[#EF4444]">*</span></label>
+                          <label className="block text-sm font-medium text-text-muted mb-2">Moyen de paiement <span className="text-error-light">*</span></label>
                           <div className="grid grid-cols-2 gap-2">
                             {[
                               { id: 'mobile', label: '📱 Mobile Money', sub: 'Orange Money, Wave' },
@@ -394,17 +394,17 @@ export function ResourceDetail() {
                                 className={`p-3 rounded-lg border text-left transition-all ${
                                   payMethod === m.id
                                     ? 'border-brand bg-brand/10'
-                                    : 'border-[#2A2A2A] bg-[#0A0A0A] hover:border-[#3A3A3A]'
+                                    : 'border-border-dark bg-surface-alt hover:border-[#3A3A3A]'
                                 }`}
                               >
                                 <span className="text-sm font-medium text-white block">{m.label}</span>
-                                <span className="text-xs text-[#6B7280]">{m.sub}</span>
+                                <span className="text-xs text-text-muted">{m.sub}</span>
                               </button>
                             ))}
                           </div>
                         </div>
-                        <div className="pt-3 border-t border-[#2A2A2A] flex items-center justify-between">
-                          <span className="text-[#A0A0A0]">Total à payer</span>
+                        <div className="pt-3 border-t border-border-dark flex items-center justify-between">
+                          <span className="text-text-muted">Total à payer</span>
                           <span className="text-xl font-bold text-white">{resource.price?.toLocaleString()} {resource.currency}</span>
                         </div>
                         <div className="flex gap-2">

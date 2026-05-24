@@ -27,15 +27,16 @@ export default {
           light: '#EF4444',
         },
         surface: {
-          DEFAULT: '#F5F6F8',
-          alt: '#FFFFFF',
-          dark: '#111111',
+          DEFAULT: '#111111',
+          alt: '#0A0A0A',
+          dark: '#000000',
         },
+        'border-dark': '#2A2A2A',
         border: '#D1D5DB',
         text: {
-          DEFAULT: '#111111',
-          muted: '#6B7280',
-          secondary: '#374151',
+          DEFAULT: '#FFFFFF',
+          muted: '#9CA3AF',
+          secondary: '#D1D5DB',
         },
       },
       boxShadow: {

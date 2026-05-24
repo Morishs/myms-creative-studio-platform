@@ -14,6 +14,7 @@ import { Logo } from '../../components/Logo';
 import { useAuth } from '../../contexts/AuthContext';
 import { appStore } from '../../stores/appStore';
 import { dashboardStore } from '../../stores/dashboardStore';
+import { notificationStore } from '../../stores/notificationStore';
 import { messageStore, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
 import { MessageStatusIcon, OnlineBadge, OfflineBadge } from '../../components/ui/MessageStatus';
 import { NotificationBell } from '../../components/NotificationPanel';
@@ -49,6 +50,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) return;
     setUserOnline(user.id);
+    messageStore.syncFromApi(user.id).catch(() => undefined);
+    notificationStore.syncFromApi(user.id).catch(() => undefined);
+    dashboardStore.syncFromApi().catch(() => undefined);
+    appStore.syncFromApi(user.id).catch(() => undefined);
     const interval = setInterval(() => setUserOnline(user.id), 30_000);
     return () => clearInterval(interval);
   }, [user]);
@@ -62,7 +67,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   if (isLoading) {
-    return <div className="min-h-screen pt-16 bg-[#0A0A0A]" />;
+    return <div className="min-h-screen pt-16 bg-surface-alt" />;
   }
 
   if (!isAuthenticated || user?.role !== 'CLIENT') {
@@ -72,9 +77,9 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pt-16">
+    <div className="min-h-screen bg-surface-alt pt-16">
       {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 h-16 bg-[#111111] border-b border-[#2A2A2A] z-40 flex items-center justify-between px-4 lg:px-6">
+      <div className="fixed top-0 left-0 right-0 h-16 bg-surface border-b border-border-dark z-40 flex items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -83,8 +88,8 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
           <Logo logoClassName="h-8 w-auto md:h-10" />
-          <span className="hidden sm:inline text-[#6B7280]">/</span>
-          <span className="hidden sm:inline text-[#A0A0A0] text-sm">Espace Client</span>
+          <span className="hidden sm:inline text-text-muted">/</span>
+          <span className="hidden sm:inline text-text-muted text-sm">Espace Client</span>
         </div>
         <div className="flex items-center gap-3">
           <NotificationBell userId={user?.id || ''} />
@@ -96,7 +101,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           </div>
           <button 
             onClick={handleLogout}
-            className="text-[#A0A0A0] hover:text-[#EF4444] transition-colors"
+            className="text-text-muted hover:text-error-light transition-colors"
             title="Déconnexion"
           >
             <LogOut className="w-5 h-5" />
@@ -107,7 +112,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <div className="flex">
         {/* Sidebar */}
         <aside className={`
-          fixed lg:sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-[#111111] border-r border-[#2A2A2A]
+          fixed lg:sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-surface border-r border-border-dark
           transition-transform duration-300 z-30 overflow-y-auto
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
@@ -120,7 +125,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                    isActive ? 'bg-brand/10 text-brand font-medium' : 'text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A]'
+                    isActive ? 'bg-brand/10 text-brand font-medium' : 'text-text-muted hover:text-white hover:bg-surface-dark'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
@@ -133,10 +138,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-            <div className="pt-4 mt-4 border-t border-[#2A2A2A]">
+            <div className="pt-4 mt-4 border-t border-border-dark">
               <Link
                 to="/"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A] transition-colors text-sm"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-white hover:bg-surface-dark transition-colors text-sm"
               >
                 <Home className="w-5 h-5" />
                 Retour au site
@@ -189,6 +194,8 @@ export function ClientDashboard() {
   const unpaidInvoices = userInvoices.filter((invoice) => invoice.status !== 'PAID');
   const totalDue = unpaidInvoices.reduce((sum, invoice) => sum + invoice.amountDue, 0);
   const recentMessages = messageStore.getUserRecentMessages(user?.id || '').slice(0, 3);
+  const recentQuotes = userQuotes.slice(0, 3);
+  const recentInvoices = userInvoices.slice(0, 3);
 
   return (
     <div className="p-6 lg:p-8">
@@ -200,7 +207,7 @@ export function ClientDashboard() {
         <h1 className="text-3xl font-bold text-white mb-2">
           Bonjour, {user?.firstName} 👋
         </h1>
-        <p className="text-[#A0A0A0]">Voici un aperçu de votre activité.</p>
+        <p className="text-text-muted">Voici un aperçu de votre activité.</p>
       </motion.div>
 
       {/* Stats */}
@@ -210,42 +217,42 @@ export function ClientDashboard() {
             <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
               <FolderKanban className="w-5 h-5" />
             </div>
-            <TrendingUp className="w-4 h-4 text-[#10B981]" />
+            <TrendingUp className="w-4 h-4 text-success" />
           </div>
           <p className="text-3xl font-bold text-white">{activeProjects.length}</p>
-          <p className="text-sm text-[#A0A0A0]">Projets en cours</p>
+          <p className="text-sm text-text-muted">Projets en cours</p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B]">
+            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
               <FileText className="w-5 h-5" />
             </div>
-            <Clock className="w-4 h-4 text-[#F59E0B]" />
+            <Clock className="w-4 h-4 text-warning" />
           </div>
           <p className="text-3xl font-bold text-white">{pendingQuotes.length}</p>
-          <p className="text-sm text-[#A0A0A0]">Devis en attente</p>
+          <p className="text-sm text-text-muted">Devis en attente</p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#EF4444]/10 flex items-center justify-center text-[#EF4444]">
+            <div className="w-10 h-10 rounded-lg bg-error-light/10 flex items-center justify-center text-error-light">
               <Receipt className="w-5 h-5" />
             </div>
-            <AlertCircle className="w-4 h-4 text-[#EF4444]" />
+            <AlertCircle className="w-4 h-4 text-error-light" />
           </div>
           <p className="text-3xl font-bold text-white">{unpaidInvoices.length}</p>
-          <p className="text-sm text-[#A0A0A0]">Factures impayées</p>
+          <p className="text-sm text-text-muted">Factures impayées</p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981]">
+            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success">
               <CheckCircle className="w-5 h-5" />
             </div>
           </div>
           <p className="text-3xl font-bold text-white">{formatCurrency(totalDue)}</p>
-          <p className="text-sm text-[#A0A0A0]">Total à payer</p>
+          <p className="text-sm text-text-muted">Total à payer</p>
         </Card>
       </div>
 
@@ -266,21 +273,21 @@ export function ClientDashboard() {
                   <Link
                     key={project.id}
                     to={`/client/projets/${project.id}`}
-                    className="block p-4 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A] hover:border-brand/20 transition-colors"
+                    className="block p-4 bg-surface-alt rounded-lg border border-border-dark hover:border-brand/20 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-medium text-white">{project.name}</h3>
                       <Badge variant={status.variant}>{status.label}</Badge>
                     </div>
-                    <p className="text-sm text-[#6B7280] mb-3">{project.serviceType}</p>
+                    <p className="text-sm text-text-muted mb-3">{project.serviceType}</p>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-border-dark rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-brand to-accent rounded-full"
                           style={{ width: `${project.progress}%` }}
                         />
                       </div>
-                      <span className="text-xs text-[#A0A0A0]">{project.progress}%</span>
+                      <span className="text-xs text-text-muted">{project.progress}%</span>
                     </div>
                   </Link>
                 );
@@ -294,15 +301,15 @@ export function ClientDashboard() {
             <h2 className="text-lg font-semibold text-white mb-4">Derniers messages</h2>
             <div className="space-y-3">
               {recentMessages.length === 0 ? (
-                <p className="text-[#6B7280] text-sm">Aucun nouveau message pour le moment.</p>
+                <p className="text-text-muted text-sm">Aucun nouveau message pour le moment.</p>
               ) : (
                 recentMessages.map((message) => (
-                  <Link key={message.id} to="/client/messages" className="block p-3 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A] hover:border-brand/20 transition-colors">
+                  <Link key={message.id} to="/client/messages" className="block p-3 bg-surface-alt rounded-lg border border-border-dark hover:border-brand/20 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-white truncate">{message.senderName}</p>
-                      <span className="text-[10px] text-[#6B7280]">{formatDateTime(message.createdAt)}</span>
+                      <span className="text-[10px] text-text-muted">{formatDateTime(message.createdAt)}</span>
                     </div>
-                    <p className="text-sm text-[#A0A0A0] truncate">{message.content}</p>
+                    <p className="text-sm text-text-muted truncate">{message.content}</p>
                   </Link>
                 ))
               )}
@@ -315,25 +322,95 @@ export function ClientDashboard() {
           <Card>
             <h2 className="text-lg font-semibold text-white mb-4">Actions rapides</h2>
             <div className="space-y-2">
-              <Link to="/client/devis" className="flex items-center justify-between p-3 bg-[#0A0A0A] rounded-lg hover:bg-[#1A1A1A] transition-colors">
-                <span className="text-sm text-[#A0A0A0]">Voir mes devis</span>
+              <Link to="/client/devis" className="flex items-center justify-between p-3 bg-surface-alt rounded-lg hover:bg-surface-dark transition-colors">
+                <span className="text-sm text-text-muted">Voir mes devis</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link to="/client/factures" className="flex items-center justify-between p-3 bg-[#0A0A0A] rounded-lg hover:bg-[#1A1A1A] transition-colors">
-                <span className="text-sm text-[#A0A0A0]">Voir mes factures</span>
+              <Link to="/client/factures" className="flex items-center justify-between p-3 bg-surface-alt rounded-lg hover:bg-surface-dark transition-colors">
+                <span className="text-sm text-text-muted">Voir mes factures</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link to="/client/fichiers" className="flex items-center justify-between p-3 bg-[#0A0A0A] rounded-lg hover:bg-[#1A1A1A] transition-colors">
-                <span className="text-sm text-[#A0A0A0]">Mes livrables</span>
+              <Link to="/client/fichiers" className="flex items-center justify-between p-3 bg-surface-alt rounded-lg hover:bg-surface-dark transition-colors">
+                <span className="text-sm text-text-muted">Mes livrables</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link to="/client/messages" className="flex items-center justify-between p-3 bg-[#0A0A0A] rounded-lg hover:bg-[#1A1A1A] transition-colors">
-                <span className="text-sm text-[#A0A0A0]">Messages</span>
+              <Link to="/client/messages" className="flex items-center justify-between p-3 bg-surface-alt rounded-lg hover:bg-surface-dark transition-colors">
+                <span className="text-sm text-text-muted">Messages</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </Card>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Devis récents</h2>
+              <p className="text-text-muted text-sm">Accédez aux derniers devis qui vous concernent.</p>
+            </div>
+            <Link to="/client/devis" className="text-sm text-brand hover:underline">Voir tout</Link>
+          </div>
+          <div className="space-y-3">
+            {recentQuotes.length === 0 ? (
+              <p className="text-text-muted">Aucun devis récent.</p>
+            ) : (
+              recentQuotes.map((quote) => {
+                const status = getStatusConfig(quote.status);
+                return (
+                  <Link key={quote.id} to={`/client/devis/${quote.id}`} className="block p-3 bg-surface-alt rounded-lg hover:bg-surface-dark transition-colors">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm text-white font-semibold">{quote.title}</p>
+                        <p className="text-xs text-text-muted">{quote.quoteNumber}</p>
+                      </div>
+                      <Badge variant={status.variant}>{status.label}</Badge>
+                    </div>
+                    <div className="mt-2 text-sm text-text-muted flex items-center justify-between">
+                      <span>{formatCurrency(quote.total, quote.currency)}</span>
+                      <span>{formatDate(quote.issuedAt)}</span>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Factures récentes</h2>
+              <p className="text-text-muted text-sm">Suivez les dernières échéances et paiements.</p>
+            </div>
+            <Link to="/client/factures" className="text-sm text-brand hover:underline">Voir tout</Link>
+          </div>
+          <div className="space-y-3">
+            {recentInvoices.length === 0 ? (
+              <p className="text-text-muted">Aucune facture récente.</p>
+            ) : (
+              recentInvoices.map((invoice) => {
+                const status = getStatusConfig(invoice.status);
+                return (
+                  <Link key={invoice.id} to={`/client/factures/${invoice.id}`} className="block p-3 bg-surface-alt rounded-lg hover:bg-surface-dark transition-colors">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm text-white font-semibold">{invoice.title}</p>
+                        <p className="text-xs text-text-muted">{invoice.invoiceNumber}</p>
+                      </div>
+                      <Badge variant={status.variant}>{status.label}</Badge>
+                    </div>
+                    <div className="mt-2 text-sm text-text-muted flex items-center justify-between">
+                      <span>{formatCurrency(invoice.amountDue, invoice.currency)} à payer</span>
+                      <span>{formatDate(invoice.dueDate)}</span>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );
@@ -356,11 +433,11 @@ export function ClientProjects() {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Mes projets</h1>
-      <p className="text-[#A0A0A0] mb-8">Suivez l'avancement de tous vos projets</p>
+      <p className="text-text-muted mb-8">Suivez l'avancement de tous vos projets</p>
 
       {userProjects.length === 0 ? (
         <Card className="p-6">
-          <p className="text-[#A0A0A0]">Vous n'avez aucun projet associé pour le moment. Si vous pensez que c'est une erreur, contactez votre gestionnaire.</p>
+          <p className="text-text-muted">Vous n'avez aucun projet associé pour le moment. Si vous pensez que c'est une erreur, contactez votre gestionnaire.</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -371,20 +448,20 @@ export function ClientProjects() {
                 <Card hover className="h-full">
                   <div className="flex items-start justify-between mb-4">
                     <Badge variant={status.variant}>{status.label}</Badge>
-                    <span className="text-xs text-[#6B7280]">{project.serviceType}</span>
+                    <span className="text-xs text-text-muted">{project.serviceType}</span>
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">{project.name}</h3>
-                  <p className="text-sm text-[#A0A0A0] mb-4 line-clamp-2">{project.description}</p>
+                  <p className="text-sm text-text-muted mb-4 line-clamp-2">{project.description}</p>
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-border-dark rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-brand to-accent rounded-full transition-all"
                         style={{ width: `${project.progress}%` }}
                       />
                     </div>
-                    <span className="text-sm text-[#A0A0A0]">{project.progress}%</span>
+                    <span className="text-sm text-text-muted">{project.progress}%</span>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-[#6B7280]">
+                  <div className="flex items-center justify-between text-xs text-text-muted">
                     <span>Début: {formatDate(project.startDate)}</span>
                     <span>Fin estimée: {formatDate(project.estimatedEndDate)}</span>
                   </div>
@@ -440,13 +517,13 @@ function ProjectMessages({ userId, userName }: { userId: string; userName: strin
       <div className="space-y-3 mb-4 max-h-80 overflow-y-auto">
         {messages.map(m => (
           <div key={m.id} className={`flex ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${m.senderId === userId ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'}`}>
+            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${m.senderId === userId ? 'bg-brand text-white' : 'bg-surface-dark border border-border-dark text-text-secondary'}`}>
               <p className="text-sm">{m.content}</p>
               <p className="text-[10px] mt-1 opacity-60">{formatDateTime(m.createdAt)}</p>
             </div>
           </div>
         ))}
-        {messages.length === 0 && <p className="text-[#6B7280] text-sm text-center py-4">Aucun message pour le moment.</p>}
+        {messages.length === 0 && <p className="text-text-muted text-sm text-center py-4">Aucun message pour le moment.</p>}
       </div>
       <div className="flex gap-2">
         <Input placeholder="Écrivez un message…" value={msg} onChange={e => setMsg(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSend(); }} />
@@ -476,7 +553,7 @@ export function ClientProjectDetail() {
   if (!project) {
     return (
       <div className="p-6 lg:p-8 text-center">
-        <p className="text-[#A0A0A0]">Projet non trouvé</p>
+        <p className="text-text-muted">Projet non trouvé</p>
       </div>
     );
   }
@@ -494,7 +571,7 @@ export function ClientProjectDetail() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{project.name}</h1>
-          <p className="text-[#A0A0A0]">{project.serviceType}</p>
+          <p className="text-text-muted">{project.serviceType}</p>
         </div>
         <Badge variant={status.variant} className="text-sm px-4 py-2">{status.label}</Badge>
       </div>
@@ -503,7 +580,7 @@ export function ClientProjectDetail() {
       <Card className="mb-6">
         <h3 className="font-semibold text-white mb-4">Avancement du projet</h3>
         <div className="flex items-center gap-4 mb-4">
-          <div className="flex-1 h-3 bg-[#2A2A2A] rounded-full overflow-hidden">
+          <div className="flex-1 h-3 bg-border-dark rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-brand to-accent rounded-full"
               style={{ width: `${project.progress}%` }}
@@ -513,19 +590,19 @@ export function ClientProjectDetail() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <p className="text-[#6B7280]">Date de début</p>
+            <p className="text-text-muted">Date de début</p>
             <p className="text-white font-medium">{formatDate(project.startDate)}</p>
           </div>
           <div>
-            <p className="text-[#6B7280]">Fin estimée</p>
+            <p className="text-text-muted">Fin estimée</p>
             <p className="text-white font-medium">{formatDate(project.estimatedEndDate)}</p>
           </div>
           <div>
-            <p className="text-[#6B7280]">Révisions incluses</p>
+            <p className="text-text-muted">Révisions incluses</p>
             <p className="text-white font-medium">2</p>
           </div>
           <div>
-            <p className="text-[#6B7280]">Révisions utilisées</p>
+            <p className="text-text-muted">Révisions utilisées</p>
             <p className="text-white font-medium">1</p>
           </div>
         </div>
@@ -536,7 +613,7 @@ export function ClientProjectDetail() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <h3 className="font-semibold text-white mb-3">Brief du projet</h3>
-            <p className="text-[#A0A0A0]">{project.description}</p>
+            <p className="text-text-muted">{project.description}</p>
           </Card>
 
           {/* Messages */}
@@ -550,13 +627,13 @@ export function ClientProjectDetail() {
             {projectFiles.length > 0 ? (
               <div className="space-y-2">
                 {projectFiles.map((file) => (
-                  <div key={file.id} className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A]">
+                  <div key={file.id} className="flex items-center gap-3 p-3 bg-surface-alt rounded-lg border border-border-dark">
                     <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
                       <File className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">{file.fileName}</p>
-                      <p className="text-xs text-[#6B7280]">{(file.fileSize / 1024 / 1024).toFixed(2)} MB</p>
+                      <p className="text-xs text-text-muted">{(file.fileSize / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
                     <button className="text-brand hover:text-brand-light" onClick={() => {
                       appStore.addToast({ type: 'success', title: 'Téléchargement', message: `${file.fileName} — Lancé.` });
@@ -567,7 +644,7 @@ export function ClientProjectDetail() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-[#6B7280] text-center py-4">Aucun fichier</p>
+              <p className="text-sm text-text-muted text-center py-4">Aucun fichier</p>
             )}
           </Card>
         </div>
@@ -593,7 +670,7 @@ export function ClientQuotes() {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Mes devis</h1>
-      <p className="text-[#A0A0A0] mb-8">Consultez et gérez tous vos devis</p>
+      <p className="text-text-muted mb-8">Consultez et gérez tous vos devis</p>
 
       <div className="space-y-3">
         {userQuotes.map((quote) => {
@@ -603,9 +680,9 @@ export function ClientQuotes() {
               <Card hover>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs text-[#6B7280] mb-1">{quote.quoteNumber}</p>
+                    <p className="text-xs text-text-muted mb-1">{quote.quoteNumber}</p>
                     <h3 className="font-semibold text-white mb-1">{quote.title}</h3>
-                    <p className="text-sm text-[#A0A0A0]">Émis le {formatDate(quote.issuedAt)}</p>
+                    <p className="text-sm text-text-muted">Émis le {formatDate(quote.issuedAt)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-white mb-1">{formatCurrency(quote.total, quote.currency)}</p>
@@ -640,7 +717,7 @@ export function ClientQuoteDetail() {
   if (!quote) {
     return (
       <div className="p-6 lg:p-8 text-center">
-        <p className="text-[#A0A0A0]">Devis non trouvé</p>
+        <p className="text-text-muted">Devis non trouvé</p>
       </div>
     );
   }
@@ -800,7 +877,7 @@ export function ClientInvoices() {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Mes factures</h1>
-      <p className="text-[#A0A0A0] mb-8">Consultez et payez vos factures en ligne</p>
+      <p className="text-text-muted mb-8">Consultez et payez vos factures en ligne</p>
 
       <div className="space-y-3">
         {userInvoices.map((invoice) => {
@@ -810,9 +887,9 @@ export function ClientInvoices() {
               <Card hover>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs text-[#6B7280] mb-1">{invoice.invoiceNumber}</p>
+                    <p className="text-xs text-text-muted mb-1">{invoice.invoiceNumber}</p>
                     <h3 className="font-semibold text-white mb-1">{invoice.title}</h3>
-                    <p className="text-sm text-[#A0A0A0]">Échéance: {formatDate(invoice.dueDate)}</p>
+                    <p className="text-sm text-text-muted">Échéance: {formatDate(invoice.dueDate)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-white mb-1">{formatCurrency(invoice.total, invoice.currency)}</p>
@@ -820,9 +897,9 @@ export function ClientInvoices() {
                   </div>
                 </div>
                 {invoice.amountDue > 0 && invoice.status !== 'PAID' && (
-                  <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
-                    <p className="text-sm text-[#A0A0A0]">
-                      Reste à payer: <span className="font-semibold text-[#EF4444]">{formatCurrency(invoice.amountDue, invoice.currency)}</span>
+                  <div className="mt-4 pt-4 border-t border-border-dark">
+                    <p className="text-sm text-text-muted">
+                      Reste à payer: <span className="font-semibold text-error-light">{formatCurrency(invoice.amountDue, invoice.currency)}</span>
                     </p>
                   </div>
                 )}
@@ -851,7 +928,7 @@ export function ClientInvoiceDetail() {
   const invoice = invoices.find((i) => i.id === id && i.clientId === user?.id);
 
   if (!invoice) {
-    return <div className="p-6 text-center text-[#A0A0A0]">Facture non trouvée</div>;
+    return <div className="p-6 text-center text-text-muted">Facture non trouvée</div>;
   }
 
   const status = getStatusConfig(invoice.status);
@@ -910,7 +987,7 @@ export function ClientInvoiceDetail() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Déjà payé</span>
-              <span className="text-[#10B981]">-{formatCurrency(invoice.amountPaid, invoice.currency)}</span>
+              <span className="text-success">-{formatCurrency(invoice.amountPaid, invoice.currency)}</span>
             </div>
             <div className="flex justify-between text-xl font-bold pt-2 border-t-2 border-gray-900">
               <span>À PAYER</span>
@@ -949,7 +1026,7 @@ export function ClientFiles() {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Mes fichiers</h1>
-      <p className="text-[#A0A0A0] mb-8">Téléchargez vos livrables et fichiers partagés</p>
+      <p className="text-text-muted mb-8">Téléchargez vos livrables et fichiers partagés</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {emptyClientFiles.map((file) => (
@@ -960,11 +1037,11 @@ export function ClientFiles() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-white truncate">{file.fileName}</h3>
-                <p className="text-xs text-[#6B7280]">{(file.fileSize / 1024 / 1024).toFixed(2)} MB</p>
+                <p className="text-xs text-text-muted">{(file.fileSize / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             </div>
-            <p className="text-xs text-[#A0A0A0] mb-2">{file.project}</p>
-            <p className="text-xs text-[#6B7280] mb-4">Livré le {formatDate(file.createdAt)}</p>
+            <p className="text-xs text-text-muted mb-2">{file.project}</p>
+            <p className="text-xs text-text-muted mb-4">Livré le {formatDate(file.createdAt)}</p>
             <Button variant="outline" size="sm" className="w-full" onClick={(e) => {
               e.preventDefault();
               appStore.addToast({ type: 'success', title: 'Téléchargement', message: `${file.fileName} — Téléchargement lancé.` });
@@ -984,7 +1061,7 @@ export function ClientPurchases() {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Mes achats</h1>
-      <p className="text-[#A0A0A0] mb-8">Historique de vos achats de ressources</p>
+      <p className="text-text-muted mb-8">Historique de vos achats de ressources</p>
 
       {emptyClientPurchases.length > 0 ? (
         <div className="space-y-3">
@@ -993,14 +1070,14 @@ export function ClientPurchases() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h3 className="font-semibold text-white mb-1">{purchase.resourceTitle}</h3>
-                  <p className="text-sm text-[#A0A0A0]">Acheté le {formatDate(purchase.purchasedAt)}</p>
+                  <p className="text-sm text-text-muted">Acheté le {formatDate(purchase.purchasedAt)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-bold text-white mb-1">{formatCurrency(purchase.amount, purchase.currency)}</p>
-                  <p className="text-xs text-[#6B7280]">{purchase.downloads} téléchargement(s)</p>
+                  <p className="text-xs text-text-muted">{purchase.downloads} téléchargement(s)</p>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
+              <div className="mt-4 pt-4 border-t border-border-dark">
                 <Button variant="outline" size="sm" onClick={() => {
                   appStore.addToast({ type: 'success', title: 'Téléchargement', message: `${purchase.resourceTitle} — Téléchargement lancé.` });
                 }}>
@@ -1013,9 +1090,9 @@ export function ClientPurchases() {
         </div>
       ) : (
         <Card className="text-center py-12">
-          <ShoppingBag className="w-12 h-12 text-[#6B7280] mx-auto mb-4" />
+          <ShoppingBag className="w-12 h-12 text-text-muted mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-white mb-2">Aucun achat</h3>
-          <p className="text-[#A0A0A0] mb-6">Vous n'avez pas encore acheté de ressources.</p>
+          <p className="text-text-muted mb-6">Vous n'avez pas encore acheté de ressources.</p>
           <Link to="/ressources">
             <Button variant="primary">Découvrir les ressources</Button>
           </Link>
@@ -1052,18 +1129,18 @@ export function ClientMessages() {
 
   if (!user) {
     return (
-      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
-        <p className="text-sm text-[#A0A0A0]">Chargement de la messagerie...</p>
+      <div className="min-h-screen p-6 bg-surface-alt text-white flex items-center justify-center">
+        <p className="text-sm text-text-muted">Chargement de la messagerie...</p>
       </div>
     );
   }
 
   if (isLoadingMessages) {
     return (
-      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
+      <div className="min-h-screen p-6 bg-surface-alt text-white flex items-center justify-center">
         <div className="text-center">
           <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-brand/20 border-t-brand animate-spin" />
-          <p className="text-sm text-[#A0A0A0]">Chargement de vos conversations...</p>
+          <p className="text-sm text-text-muted">Chargement de vos conversations...</p>
         </div>
       </div>
     );
@@ -1071,10 +1148,10 @@ export function ClientMessages() {
 
   if (messageError) {
     return (
-      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
-        <div className="max-w-lg rounded-3xl border border-[#2A2A2A] bg-[#111111] p-8 text-center">
+      <div className="min-h-screen p-6 bg-surface-alt text-white flex items-center justify-center">
+        <div className="max-w-lg rounded-3xl border border-border-dark bg-surface p-8 text-center">
           <h2 className="text-xl font-semibold text-white mb-3">Erreur de messagerie</h2>
-          <p className="text-sm text-[#A0A0A0] mb-6">{messageError}</p>
+          <p className="text-sm text-text-muted mb-6">{messageError}</p>
           <Button variant="primary" onClick={() => {
             setIsLoadingMessages(true);
             setMessageError(null);
@@ -1257,21 +1334,21 @@ export function ClientMessages() {
               key={attachment.id}
               href={attachment.url}
               download={attachment.name}
-              className="block rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 text-[#E5E7EB] hover:border-brand transition"
+              className="block rounded-2xl border border-border-dark bg-surface p-3 text-text-secondary hover:border-brand transition"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#0E0E0E] border border-[#2A2A2A] flex items-center justify-center overflow-hidden">
+                <div className="w-12 h-12 rounded-xl bg-surface-dark border border-border-dark flex items-center justify-center overflow-hidden">
                   {isImage ? (
                     <img src={attachment.url} alt={attachment.name} className="w-full h-full object-cover" />
                   ) : (
-                    <File className="w-5 h-5 text-[#6B7280]" />
+                    <File className="w-5 h-5 text-text-muted" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{attachment.name}</p>
-                  <p className="text-xs text-[#6B7280]">{(attachment.size / 1024).toFixed(1)} KB</p>
+                  <p className="text-xs text-text-muted">{(attachment.size / 1024).toFixed(1)} KB</p>
                 </div>
-                <span className="text-xs text-[#6B7280]">Télécharger</span>
+                <span className="text-xs text-text-muted">Télécharger</span>
               </div>
             </a>
           );
@@ -1316,16 +1393,16 @@ export function ClientMessages() {
   // Mobile List View
   const renderMobileListView = () => (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
-      <div className="p-4 border-b border-[#2A2A2A] bg-[#111111]">
+      <div className="p-4 border-b border-border-dark bg-surface">
         <h2 className="text-lg font-semibold text-white">Messages</h2>
       </div>
       <div className="overflow-y-auto flex-1 space-y-1 px-2 py-3">
-        {convos.length === 0 && <p className="text-[#6B7280] text-sm text-center py-8">Aucune conversation</p>}
+        {convos.length === 0 && <p className="text-text-muted text-sm text-center py-8">Aucune conversation</p>}
         {convos.map(conv => (
           <button
             key={conv.id}
             onClick={() => openConversation(conv.id)}
-            className="w-full text-left p-3 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all active:bg-brand/10"
+            className="w-full text-left p-3 rounded-lg bg-surface-dark border border-border-dark hover:border-[#3A3A3A] transition-all active:bg-brand/10"
           >
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
@@ -1346,9 +1423,9 @@ export function ClientMessages() {
                 {isConversationTyping(conv) ? (
                   <p className="text-xs text-brand truncate">En train d'écrire…</p>
                 ) : (
-                  <p className="text-xs text-[#A0A0A0] truncate">{conv.lastMessage}</p>
+                  <p className="text-xs text-text-muted truncate">{conv.lastMessage}</p>
                 )}
-                <p className="text-[10px] text-[#6B7280] mt-0.5">{formatDateTime(conv.lastMessageAt)}</p>
+                <p className="text-[10px] text-text-muted mt-0.5">{formatDateTime(conv.lastMessageAt)}</p>
               </div>
             </div>
           </button>
@@ -1363,32 +1440,32 @@ export function ClientMessages() {
     return (
       <div className="flex flex-col h-[calc(100vh-6rem)]">
         {/* Header */}
-        <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] space-y-3">
+        <div className="p-4 border-b border-border-dark bg-surface space-y-3">
           <div className="flex items-center gap-3">
-            <button onClick={() => { setActiveConvId(null); }} className="text-[#A0A0A0] hover:text-white transition-colors">
+            <button onClick={() => { setActiveConvId(null); }} className="text-text-muted hover:text-white transition-colors">
               <ArrowRight className="w-5 h-5 transform rotate-180" />
             </button>
             <div>
               <h3 className="font-semibold text-white text-sm">{currentConv?.subject}</h3>
-              <p className="text-xs text-[#6B7280]">{currentConv ? getOtherParticipants(currentConv) : ''}</p>
+              <p className="text-xs text-text-muted">{currentConv ? getOtherParticipants(currentConv) : ''}</p>
             </div>
           </div>
           <Input
             placeholder="Rechercher dans la conversation…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-[#131313]"
+            className="bg-surface-dark"
           />
         </div>
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
           {visibleMessages.length === 0 ? (
-            <div className="py-12 text-center text-sm text-[#A0A0A0]">Aucun message trouvé pour «{searchTerm}».</div>
+            <div className="py-12 text-center text-sm text-text-muted">Aucun message trouvé pour «{searchTerm}».</div>
           ) : visibleMessages.map(m => (
             <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                m.senderId === uid ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
+                m.senderId === uid ? 'bg-brand text-white' : 'bg-surface-dark border border-border-dark text-text-secondary'
               }`}>
                 {m.senderId !== uid && <p className="text-xs font-medium mb-1 opacity-70">{m.senderName}</p>}
                 <p className="text-sm whitespace-pre-line">{m.content}</p>
@@ -1404,13 +1481,13 @@ export function ClientMessages() {
 
         {otherParticipantTyping && (
           <div className="px-4 pb-2">
-            <div className="inline-flex items-center gap-3 rounded-2xl bg-[#111111] px-4 py-3 border border-[#2A2A2A]">
+            <div className="inline-flex items-center gap-3 rounded-2xl bg-surface px-4 py-3 border border-border-dark">
               <div className="flex items-center gap-1">
                 <span className="typing-dot bg-brand" />
                 <span className="typing-dot bg-brand" />
                 <span className="typing-dot bg-brand" />
               </div>
-              <span className="text-xs text-[#A0A0A0]">{convos.find(c => c.id === activeConvId)?.participants.find(p => p.id !== uid)?.name} écrit...</span>
+              <span className="text-xs text-text-muted">{convos.find(c => c.id === activeConvId)?.participants.find(p => p.id !== uid)?.name} écrit...</span>
             </div>
           </div>
         )}
@@ -1419,27 +1496,27 @@ export function ClientMessages() {
         {attachmentFiles.length > 0 && (
           <div className="px-4 pb-2 space-y-2">
             {attachmentFiles.map((attachment) => (
-              <div key={attachment.id} className="rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 flex items-center justify-between gap-3">
+              <div key={attachment.id} className="rounded-2xl border border-border-dark bg-surface p-3 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <File className="w-5 h-5 text-[#6B7280]" />
+                  <File className="w-5 h-5 text-text-muted" />
                   <div className="min-w-0">
                     <p className="text-sm text-white truncate">{attachment.name}</p>
-                    <p className="text-xs text-[#6B7280]">{(attachment.size / 1024).toFixed(1)} KB</p>
+                    <p className="text-xs text-text-muted">{(attachment.size / 1024).toFixed(1)} KB</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => removeAttachment(attachment.id)} className="text-[#A0A0A0] hover:text-white">Supprimer</button>
+                <button type="button" onClick={() => removeAttachment(attachment.id)} className="text-text-muted hover:text-white">Supprimer</button>
               </div>
             ))}
           </div>
         )}
-        <div className="p-3 border-t border-[#2A2A2A] flex flex-wrap items-center gap-2">
+        <div className="p-3 border-t border-border-dark flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2 flex-shrink-0">
             <div className="relative">
-              <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
+              <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-surface border border-border-dark text-text-muted hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                 <Smile className="w-5 h-5" />
               </button>
               {showEmojiPicker && (
-                <div className="absolute bottom-full left-0 mb-2 w-44 rounded-2xl bg-[#111111] border border-[#2A2A2A] p-2 shadow-xl z-20 grid grid-cols-4 gap-1">
+                <div className="absolute bottom-full left-0 mb-2 w-44 rounded-2xl bg-surface border border-border-dark p-2 shadow-xl z-20 grid grid-cols-4 gap-1">
                   {emojiList.map((emoji) => (
                     <button key={emoji} type="button" onClick={() => handleInsertEmoji(emoji)} className="rounded-xl p-2 text-sm hover:bg-[#1F1F1F] transition">
                       {emoji}
@@ -1448,7 +1525,7 @@ export function ClientMessages() {
                 </div>
               )}
             </div>
-            <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center">
+            <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-surface border border-border-dark text-text-muted hover:text-white transition-all flex items-center justify-center">
               <Paperclip className="w-5 h-5" />
             </button>
           </div>
@@ -1457,7 +1534,7 @@ export function ClientMessages() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder="Écrivez un message…"
-            className="flex-1 min-w-0 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            className="flex-1 min-w-0 px-4 py-2.5 bg-surface-dark border border-border-dark rounded-full text-white placeholder:text-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
           <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 transition-all flex-shrink-0">
             <Send className="w-4 h-4" />
@@ -1470,26 +1547,26 @@ export function ClientMessages() {
   // Mobile New Message View
   const renderMobileNewMessageView = () => (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
-      <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] flex items-center gap-3">
-        <button onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="text-[#A0A0A0] hover:text-white transition-colors">
+      <div className="p-4 border-b border-border-dark bg-surface flex items-center gap-3">
+        <button onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="text-text-muted hover:text-white transition-colors">
           <ArrowRight className="w-5 h-5 transform rotate-180" />
         </button>
         <h3 className="text-lg font-semibold text-white">Nouveau message</h3>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Destinataire <span className="text-[#EF4444]">*</span></label>
+          <label className="block text-sm font-medium text-text-muted mb-2">Destinataire <span className="text-error-light">*</span></label>
           <div className="space-y-2">
             {recipientOptions.map(r => (
               <button key={r.id} type="button" onClick={() => setNewRecipientId(r.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-[#2A2A2A] bg-[#0A0A0A] active:border-[#3A3A3A]'}`}>
+                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-border-dark bg-surface-alt active:border-[#3A3A3A]'}`}>
                 <div className="relative flex-shrink-0">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
                   {isUserOnline(r.id) && <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#10B981] rounded-full border border-[#0A0A0A]"></span>}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">{r.name}</p>
-                  <p className="text-xs text-[#6B7280]">{r.email}</p>
+                  <p className="text-xs text-text-muted">{r.email}</p>
                 </div>
               </button>
             ))}
@@ -1497,11 +1574,11 @@ export function ClientMessages() {
         </div>
         <Input label="Sujet" required placeholder="Ex: Question sur mon projet…" value={newSubject} onChange={e => setNewSubject(e.target.value)} />
         <div>
-          <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Message <span className="text-[#EF4444]">*</span></label>
-          <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand resize-none" />
+          <label className="block text-sm font-medium text-text-muted mb-2">Message <span className="text-error-light">*</span></label>
+          <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-surface-dark border border-border-dark rounded-lg text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand resize-none" />
         </div>
       </div>
-      <div className="p-4 border-t border-[#2A2A2A] flex gap-2">
+      <div className="p-4 border-t border-border-dark flex gap-2">
         <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="flex-1">Annuler</Button>
         <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId} className="flex-1">
           <Send className="w-4 h-4 mr-2" />Envoyer
@@ -1517,7 +1594,7 @@ export function ClientMessages() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white mb-1">Messages</h1>
-            <p className="text-[#A0A0A0]">Vos échanges avec Myms Studio</p>
+            <p className="text-text-muted">Vos échanges avec Myms Studio</p>
           </div>
           <Button variant="primary" size="sm" onClick={() => { setShowNew(true); setActiveConvId(null); }}>
             <Send className="w-4 h-4 mr-2" />
@@ -1526,14 +1603,14 @@ export function ClientMessages() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-14rem)]">
-          <div className="overflow-y-auto space-y-2 lg:border-r lg:border-[#2A2A2A] lg:pr-4">
-            {convos.length === 0 && <p className="text-[#6B7280] text-sm text-center py-8">Aucune conversation</p>}
+          <div className="overflow-y-auto space-y-2 lg:border-r lg:border-border-dark lg:pr-4">
+            {convos.length === 0 && <p className="text-text-muted text-sm text-center py-8">Aucune conversation</p>}
             {convos.map(conv => (
               <button
                 key={conv.id}
                 onClick={() => { setActiveConvId(conv.id); setMsgs(messageStore.getMessages(conv.id)); messageStore.markAsRead(conv.id, uid); setShowNew(false); }}
                 className={`w-full text-left p-4 rounded-xl border transition-all ${
-                  activeConvId === conv.id ? 'bg-brand/10 border-brand/20' : 'bg-[#1A1A1A] border-[#2A2A2A] hover:border-[#3A3A3A]'
+                  activeConvId === conv.id ? 'bg-brand/10 border-brand/20' : 'bg-surface-dark border-border-dark hover:border-[#3A3A3A]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -1546,39 +1623,39 @@ export function ClientMessages() {
                   {conv.participants.filter(p => p.id !== uid).map(p => isUserOnline(p.id) ? <OnlineBadge key={p.id} /> : <OfflineBadge key={p.id} />)}
                   {getOtherParticipants(conv)}
                 </p>
-                <p className="text-xs text-[#A0A0A0] truncate">{conv.lastMessage}</p>
-                <p className="text-[10px] text-[#6B7280] mt-1">{formatDateTime(conv.lastMessageAt)}</p>
+                <p className="text-xs text-text-muted truncate">{conv.lastMessage}</p>
+                <p className="text-[10px] text-text-muted mt-1">{formatDateTime(conv.lastMessageAt)}</p>
               </button>
             ))}
           </div>
 
           {/* Chat Area */}
-          <div className="lg:col-span-2 flex flex-col bg-[#0A0A0A] rounded-xl border border-[#2A2A2A] overflow-hidden">
+          <div className="lg:col-span-2 flex flex-col bg-surface-alt rounded-xl border border-border-dark overflow-hidden">
             {showNew ? (
               <div className="flex-1 flex flex-col p-6 overflow-y-auto">
                 <h3 className="text-lg font-semibold text-white mb-4">Nouveau message</h3>
                 {/* Destinataire */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Destinataire <span className="text-[#EF4444]">*</span></label>
+                  <label className="block text-sm font-medium text-text-muted mb-2">Destinataire <span className="text-error-light">*</span></label>
                   <div className="grid grid-cols-1 gap-2">
                     {recipientOptions.map(r => (
                       <button key={r.id} type="button" onClick={() => setNewRecipientId(r.id)}
-                        className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-[#2A2A2A] bg-[#0A0A0A] hover:border-[#3A3A3A]'}`}>
+                        className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-border-dark bg-surface-alt hover:border-[#3A3A3A]'}`}>
                         <div className="relative">
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
                           <span className="absolute -bottom-0.5 -right-0.5">{isUserOnline(r.id) ? <OnlineBadge /> : <OfflineBadge />}</span>
                         </div>
                         <div>
                           <p className="text-sm font-medium text-white">{r.name}</p>
-                          <p className="text-xs text-[#6B7280]">{r.email}</p>
+                          <p className="text-xs text-text-muted">{r.email}</p>
                         </div>
                       </button>
                     ))}
                   </div>
                 </div>
                 <Input label="Sujet" required placeholder="Ex: Question sur mon projet…" value={newSubject} onChange={e => setNewSubject(e.target.value)} className="mb-4" />
-                <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Message <span className="text-[#EF4444]">*</span></label>
-                <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand resize-none mb-4" />
+                <label className="block text-sm font-medium text-text-muted mb-2">Message <span className="text-error-light">*</span></label>
+                <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-surface-dark border border-border-dark rounded-lg text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand resize-none mb-4" />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }}>Annuler</Button>
                   <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId}>
@@ -1588,25 +1665,25 @@ export function ClientMessages() {
               </div>
             ) : activeConvId ? (
               <>
-                <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] space-y-3">
+                <div className="p-4 border-b border-border-dark bg-surface space-y-3">
                   <div>
                     <h3 className="font-semibold text-white">{convos.find(c => c.id === activeConvId)?.subject}</h3>
-                    <p className="text-xs text-[#6B7280]">Avec {convos.find(c => c.id === activeConvId) ? getOtherParticipants(convos.find(c => c.id === activeConvId)!) : ''}</p>
+                    <p className="text-xs text-text-muted">Avec {convos.find(c => c.id === activeConvId) ? getOtherParticipants(convos.find(c => c.id === activeConvId)!) : ''}</p>
                   </div>
                   <Input
                     placeholder="Rechercher dans la conversation…"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="bg-[#131313]"
+                    className="bg-surface-dark"
                   />
                 </div>
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
                   {visibleMessages.length === 0 ? (
-                    <div className="py-12 text-center text-sm text-[#A0A0A0]">Aucun message trouvé pour «{searchTerm}».</div>
+                    <div className="py-12 text-center text-sm text-text-muted">Aucun message trouvé pour «{searchTerm}».</div>
                   ) : visibleMessages.map(m => (
                     <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                        m.senderId === uid ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
+                        m.senderId === uid ? 'bg-brand text-white' : 'bg-surface-dark border border-border-dark text-text-secondary'
                       }`}>
                         {m.senderId !== uid && <p className="text-xs font-medium mb-1 opacity-70">{m.senderName}</p>}
                         <p className="text-sm whitespace-pre-line">{m.content}</p>
@@ -1622,27 +1699,27 @@ export function ClientMessages() {
                 {attachmentFiles.length > 0 && (
                   <div className="px-4 pb-2 space-y-2">
                     {attachmentFiles.map((attachment) => (
-                      <div key={attachment.id} className="rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 flex items-center justify-between gap-3">
+                      <div key={attachment.id} className="rounded-2xl border border-border-dark bg-surface p-3 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                          <File className="w-5 h-5 text-[#6B7280]" />
+                          <File className="w-5 h-5 text-text-muted" />
                           <div className="min-w-0">
                             <p className="text-sm text-white truncate">{attachment.name}</p>
-                            <p className="text-xs text-[#6B7280]">{(attachment.size / 1024).toFixed(1)} KB</p>
+                            <p className="text-xs text-text-muted">{(attachment.size / 1024).toFixed(1)} KB</p>
                           </div>
                         </div>
-                        <button type="button" onClick={() => removeAttachment(attachment.id)} className="text-[#A0A0A0] hover:text-white">Supprimer</button>
+                        <button type="button" onClick={() => removeAttachment(attachment.id)} className="text-text-muted hover:text-white">Supprimer</button>
                       </div>
                     ))}
                   </div>
                 )}
-                <div className="p-3 border-t border-[#2A2A2A] flex items-center gap-2">
+                <div className="p-3 border-t border-border-dark flex items-center gap-2">
                   <div className="flex items-center gap-2">
                     <div className="relative">
-                      <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center">
+                      <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-surface border border-border-dark text-text-muted hover:text-white transition-all flex items-center justify-center">
                         <Smile className="w-5 h-5" />
                       </button>
                       {showEmojiPicker && (
-                        <div className="absolute bottom-full left-0 mb-2 w-44 rounded-2xl bg-[#111111] border border-[#2A2A2A] p-2 shadow-xl z-20 grid grid-cols-4 gap-1">
+                        <div className="absolute bottom-full left-0 mb-2 w-44 rounded-2xl bg-surface border border-border-dark p-2 shadow-xl z-20 grid grid-cols-4 gap-1">
                           {emojiList.map((emoji) => (
                             <button key={emoji} type="button" onClick={() => handleInsertEmoji(emoji)} className="rounded-xl p-2 text-sm hover:bg-[#1F1F1F] transition">
                               {emoji}
@@ -1651,7 +1728,7 @@ export function ClientMessages() {
                         </div>
                       )}
                     </div>
-                    <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center">
+                    <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-surface border border-border-dark text-text-muted hover:text-white transition-all flex items-center justify-center">
                       <Paperclip className="w-5 h-5" />
                     </button>
                   </div>
@@ -1660,7 +1737,7 @@ export function ClientMessages() {
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                     placeholder="Écrivez un message…"
-                    className="flex-1 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    className="flex-1 px-4 py-2.5 bg-surface-dark border border-border-dark rounded-full text-white placeholder:text-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                   />
                   <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 transition-all">
                     <Send className="w-4 h-4" />
@@ -1671,8 +1748,8 @@ export function ClientMessages() {
               /* Empty State */
               <div className="flex-1 flex items-center justify-center text-center p-8">
                 <div>
-                  <MessageSquare className="w-12 h-12 text-[#6B7280] mx-auto mb-4" />
-                  <p className="text-[#A0A0A0]">Sélectionnez une conversation ou créez-en une nouvelle</p>
+                  <MessageSquare className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                  <p className="text-text-muted">Sélectionnez une conversation ou créez-en une nouvelle</p>
                 </div>
               </div>
             )}
@@ -1724,7 +1801,7 @@ export function ClientProfile() {
   return (
     <div className="p-6 lg:p-8 max-w-4xl">
       <h1 className="text-3xl font-bold text-white mb-2">Mon profil</h1>
-      <p className="text-[#A0A0A0] mb-8">Gérez vos informations personnelles</p>
+      <p className="text-text-muted mb-8">Gérez vos informations personnelles</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
@@ -1735,16 +1812,16 @@ export function ClientProfile() {
           <h2 className="text-xl font-semibold text-white mb-1">
             {user.firstName} {user.lastName}
           </h2>
-          <p className="text-[#A0A0A0] mb-3">{user.email}</p>
+          <p className="text-text-muted mb-3">{user.email}</p>
           <Badge variant={isCompany ? 'primary' : 'secondary'}>
             {isCompany ? '🏢 Compte Entreprise' : '👤 Compte Particulier'}
           </Badge>
           {isCompany && user.companyName && (
-            <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
-              <p className="text-sm text-[#6B7280]">Entreprise</p>
+            <div className="mt-4 pt-4 border-t border-border-dark">
+              <p className="text-sm text-text-muted">Entreprise</p>
               <p className="font-semibold text-white">{user.companyName}</p>
               {user.position && (
-                <p className="text-sm text-[#A0A0A0]">{user.position}</p>
+                <p className="text-sm text-text-muted">{user.position}</p>
               )}
             </div>
           )}
@@ -1774,7 +1851,7 @@ export function ClientProfile() {
 
             {/* Company Info (only for company accounts) */}
             {isCompany && (
-              <div className="pt-6 border-t border-[#2A2A2A]">
+              <div className="pt-6 border-t border-border-dark">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <FolderKanban className="w-5 h-5 text-brand" />
                   Informations de l'entreprise
@@ -1796,7 +1873,7 @@ export function ClientProfile() {
 
             {/* Individual - optional company */}
             {!isCompany && (
-              <div className="pt-6 border-t border-[#2A2A2A]">
+              <div className="pt-6 border-t border-border-dark">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <FolderKanban className="w-5 h-5 text-brand" />
                   Informations professionnelles
@@ -1806,7 +1883,7 @@ export function ClientProfile() {
             )}
 
             {saved && (
-              <div className="flex items-center gap-2 p-3 bg-[#10B981]/10 border border-[#10B981]/30 rounded-lg text-[#10B981] text-sm">
+              <div className="flex items-center gap-2 p-3 bg-success/10 border border-[#10B981]/30 rounded-lg text-success text-sm">
                 <CheckCircle className="w-4 h-4" />
                 Profil sauvegardé avec succès
               </div>
@@ -1826,7 +1903,7 @@ export function ClientProfile() {
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
           🔐 Sécurité
         </h3>
-        <p className="text-[#A0A0A0] mb-4">Modifiez votre mot de passe pour sécuriser votre compte.</p>
+        <p className="text-text-muted mb-4">Modifiez votre mot de passe pour sécuriser votre compte.</p>
         <Button variant="outline" onClick={() => appStore.addToast({ type: 'info', title: 'Email envoyé', message: 'Un lien de réinitialisation a été envoyé à votre adresse email.' })}>Changer le mot de passe</Button>
       </Card>
     </div>

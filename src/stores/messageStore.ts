@@ -3,6 +3,8 @@
 // Les conversations sont privées entre les 2 participants uniquement
 // Persisté dans localStorage
 
+import { API_BASE } from '../api/config';
+
 // Annuaire de tous les utilisateurs connus du site
 export interface KnownUser {
   id: string;
@@ -262,6 +264,45 @@ function notify() {
   listeners.forEach(l => l());
 }
 
+function hasApiBase() {
+  return typeof window !== 'undefined' && !!API_BASE;
+}
+
+async function apiPost(path: string, body: any) {
+  if (!hasApiBase()) {
+    throw new Error('API base URL is not configured');
+  }
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`API request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+async function sendMessageToApi(opts: {
+  conversationId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  attachments?: FileAttachment[];
+}) {
+  return apiPost('/messages/send', opts);
+}
+
+async function createConversationToApi(opts: {
+  subject: string;
+  participants: { id: string; name: string; email: string }[];
+  firstMessage: string;
+  senderId: string;
+  senderName: string;
+}) {
+  return apiPost('/conversations', opts);
+}
+
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (event) => {
     if (event.key === STORAGE_KEY) {
@@ -396,6 +437,13 @@ export const messageStore = {
     };
     persist();
     notify();
+
+    if (hasApiBase()) {
+      sendMessageToApi(opts).catch(() => {
+        // Fallback to localStorage if API is unavailable.
+      });
+    }
+
     return msg;
   },
 
@@ -489,6 +537,13 @@ export const messageStore = {
     };
     persist();
     notify();
+
+    if (hasApiBase()) {
+      createConversationToApi(opts).catch(() => {
+        // Fallback to localStorage if API is unavailable.
+      });
+    }
+
     return conv;
   },
 
@@ -497,5 +552,28 @@ export const messageStore = {
     state = getDefaultState();
     persist();
     notify();
+  },
+
+  // POC: synchroniser depuis un serveur API (Express + lowdb) si disponible
+  syncFromApi: async (userId: string) => {
+    if (!hasApiBase()) return false;
+    try {
+      const convRes = await fetch(`${API_BASE}/conversations?userId=${encodeURIComponent(userId)}`);
+      if (!convRes.ok) return false;
+      const convs = await convRes.json();
+      const messagesPromises = convs.map((c: any) => fetch(`${API_BASE}/conversations/${c.id}/messages`).then(r => r.ok ? r.json() : []));
+      const messagesArrays = await Promise.all(messagesPromises);
+      state = {
+        ...state,
+        conversations: convs,
+        messages: messagesArrays.flat(),
+        typing: {},
+      };
+      persist();
+      notify();
+      return true;
+    } catch (e) {
+      return false;
+    }
   },
 };

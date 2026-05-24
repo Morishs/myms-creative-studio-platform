@@ -1,6 +1,8 @@
 // ===== SYSTÈME DE NOTIFICATIONS =====
 // Notifications par utilisateur, persistées dans localStorage
 
+import { createNotification as apiCreateNotification, getNotifications as apiGetNotifications } from '../api/backend';
+
 export interface Notification {
   id: string;
   userId: string;
@@ -85,6 +87,7 @@ export const notificationStore = {
     state = [notif, ...state];
     persist();
     notify();
+    apiCreateNotification(notif).catch(() => undefined);
   },
 
   // Marquer une notification comme lue
@@ -104,6 +107,19 @@ export const notificationStore = {
   // Supprimer
   remove: (id: string) => {
     state = state.filter(n => n.id !== id);
+    persist();
+    notify();
+  },
+
+  syncFromApi: async (userId: string) => {
+    const remoteNotifications = await apiGetNotifications(userId);
+    if (!remoteNotifications || remoteNotifications.length === 0) return;
+    const existingIds = new Set(state.map((n) => n.id));
+    const merged = [
+      ...remoteNotifications.filter((n) => !existingIds.has(n.id)),
+      ...state,
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    state = merged;
     persist();
     notify();
   },

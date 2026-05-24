@@ -19,7 +19,7 @@ export function Process() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -31,11 +31,11 @@ export function Process() {
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Processus de{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 travail
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               Découvrez comment nous travaillons ensemble pour donner vie à vos projets, 
               du premier contact jusqu'à la livraison finale.
             </p>
@@ -44,7 +44,7 @@ export function Process() {
       </section>
 
       {/* Process Timeline */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-4xl mx-auto px-6">
           <div className="relative">
             {/* Timeline line */}
@@ -72,14 +72,14 @@ export function Process() {
                   <div className={`ml-24 md:ml-0 md:w-[calc(50%-4rem)] ${
                     index % 2 === 0 ? 'md:pr-16' : 'md:pl-16'
                   }`}>
-                    <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-6 hover:border-brand/20 transition-colors">
+                    <div className="bg-surface-dark border border-border-dark rounded-xl p-6 hover:border-brand/20 transition-colors">
                       <div className="w-12 h-12 rounded-lg bg-brand/10 flex items-center justify-center text-brand mb-4">
                         {iconMap[step.icon] || <CheckCircle className="w-6 h-6" />}
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-2">
                         {step.title}
                       </h3>
-                      <p className="text-[#A0A0A0]">
+                      <p className="text-text-muted">
                         {step.description}
                       </p>
                     </div>

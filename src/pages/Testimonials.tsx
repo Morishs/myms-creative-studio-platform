@@ -10,7 +10,7 @@ export function Testimonials() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -22,11 +22,11 @@ export function Testimonials() {
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Ce que nos clients{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 disent de nous
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               La satisfaction de nos clients est notre plus grande fierté. 
               Découvrez leurs retours sur notre collaboration.
             </p>
@@ -35,7 +35,7 @@ export function Testimonials() {
       </section>
 
       {/* Testimonials Grid */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {testimonials.map((testimonial, index) => (
@@ -58,13 +58,13 @@ export function Testimonials() {
                       {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
-                          className={`w-5 h-5 ${i < testimonial.rating ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-[#2A2A2A]'}`} 
+                          className={`w-5 h-5 ${i < testimonial.rating ? 'text-warning fill-[#F59E0B]' : 'text-[#2A2A2A]'}`} 
                         />
                       ))}
                     </div>
 
                     {/* Content */}
-                    <p className="text-lg text-[#A0A0A0] mb-6 italic leading-relaxed">
+                    <p className="text-lg text-text-muted mb-6 italic leading-relaxed">
                       "{testimonial.content}"
                     </p>
 
@@ -76,7 +76,7 @@ export function Testimonials() {
                     )}
 
                     {/* Author */}
-                    <div className="flex items-center gap-4 pt-4 border-t border-[#2A2A2A]">
+                    <div className="flex items-center gap-4 pt-4 border-t border-border-dark">
                       <img 
                         src={testimonial.avatar || 'https://via.placeholder.com/48'} 
                         alt={testimonial.clientName}
@@ -86,7 +86,7 @@ export function Testimonials() {
                         <div className="font-semibold text-white text-lg">
                           {testimonial.clientName}
                         </div>
-                        <div className="text-[#6B7280]">
+                        <div className="text-text-muted">
                           {testimonial.role}
                           {testimonial.company && `, ${testimonial.company}`}
                         </div>
@@ -101,31 +101,31 @@ export function Testimonials() {
       </section>
 
       {/* Stats */}
-      <section className="py-16 bg-gradient-to-r from-brand/10 to-[#F59E0B]/10 border-y border-[#2A2A2A]">
+      <section className="py-16 bg-gradient-to-r from-brand/10 to-warning/10 border-y border-border-dark">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold text-white mb-2">100%</div>
-              <div className="text-[#A0A0A0]">Clients satisfaits</div>
+              <div className="text-text-muted">Clients satisfaits</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-white mb-2">5/5</div>
-              <div className="text-[#A0A0A0]">Note moyenne</div>
+              <div className="text-text-muted">Note moyenne</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-white mb-2">80+</div>
-              <div className="text-[#A0A0A0]">Projets réalisés</div>
+              <div className="text-text-muted">Projets réalisés</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-white mb-2">95%</div>
-              <div className="text-[#A0A0A0]">Clients récurrents</div>
+              <div className="text-text-muted">Clients récurrents</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -135,7 +135,7 @@ export function Testimonials() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Prêt à devenir notre prochain client satisfait ?
             </h2>
-            <p className="text-xl text-[#A0A0A0] mb-10">
+            <p className="text-xl text-text-muted mb-10">
               Rejoignez nos clients heureux et donnez vie à vos projets créatifs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

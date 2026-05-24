@@ -20,7 +20,7 @@ export function FAQ() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -32,11 +32,11 @@ export function FAQ() {
             </span>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Questions{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 fréquentes
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               Retrouvez les réponses aux questions les plus courantes sur nos services, 
               notre processus et nos tarifs.
             </p>
@@ -45,7 +45,7 @@ export function FAQ() {
       </section>
 
       {/* Categories */}
-      <section className="py-8 bg-[#0A0A0A] border-b border-[#2A2A2A]">
+      <section className="py-8 bg-surface-alt border-b border-border-dark">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-3">
             <button
@@ -53,7 +53,7 @@ export function FAQ() {
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                 activeCategory === null
                   ? 'bg-brand text-white'
-                  : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-brand'
+                  : 'bg-surface-dark text-text-muted hover:text-white border border-border-dark hover:border-brand'
               }`}
             >
               Tout
@@ -65,7 +65,7 @@ export function FAQ() {
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                   activeCategory === category
                     ? 'bg-brand text-white'
-                    : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-brand'
+                    : 'bg-surface-dark text-text-muted hover:text-white border border-border-dark hover:border-brand'
                 }`}
               >
                 {category}
@@ -76,7 +76,7 @@ export function FAQ() {
       </section>
 
       {/* FAQ Content */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-3xl mx-auto px-6">
           <motion.div
             key={activeCategory}
@@ -96,7 +96,7 @@ export function FAQ() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-[#111111]">
+      <section className="py-20 bg-surface">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -109,7 +109,7 @@ export function FAQ() {
             <h2 className="text-3xl font-bold text-white mb-4">
               Vous n'avez pas trouvé votre réponse ?
             </h2>
-            <p className="text-xl text-[#A0A0A0] mb-10">
+            <p className="text-xl text-text-muted mb-10">
               N'hésitez pas à nous contacter, nous serons ravis de vous aider.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -75,19 +75,19 @@ export function Contact() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-[#0A0A0A]">
+      <div className="min-h-screen pt-20 flex items-center justify-center bg-surface-alt">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-md text-center px-6"
         >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#10B981]/10 flex items-center justify-center">
-            <CheckCircle className="w-10 h-10 text-[#10B981]" />
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-success/10 flex items-center justify-center">
+            <CheckCircle className="w-10 h-10 text-success" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-4">
             Message envoyé !
           </h1>
-          <p className="text-[#A0A0A0] mb-8">
+          <p className="text-text-muted mb-8">
             Merci pour votre message. Nous l'avons bien reçu et nous vous 
             répondrons dans les plus brefs délais.
           </p>
@@ -99,7 +99,7 @@ export function Contact() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -111,11 +111,11 @@ export function Contact() {
             </span>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Restons en{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 contact
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               Une question, une idée de projet ou juste envie de dire bonjour ? 
               N'hésitez pas à nous contacter.
             </p>
@@ -124,7 +124,7 @@ export function Contact() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Contact Info */}
@@ -137,7 +137,7 @@ export function Contact() {
                     {item.icon}
                   </div>
                   <div>
-                    <p className="text-sm text-[#6B7280] mb-1">{item.label}</p>
+                    <p className="text-sm text-text-muted mb-1">{item.label}</p>
                     {item.href ? (
                       <a 
                         href={item.href}
@@ -160,7 +160,7 @@ export function Contact() {
                     href={companyInfo.socialLinks.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
+                    className="w-12 h-12 rounded-lg bg-surface-dark border border-border-dark flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
                   >
                     📸
                   </a>
@@ -168,7 +168,7 @@ export function Contact() {
                     href={companyInfo.socialLinks.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
+                    className="w-12 h-12 rounded-lg bg-surface-dark border border-border-dark flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
                   >
                     💼
                   </a>
@@ -176,7 +176,7 @@ export function Contact() {
                     href={companyInfo.socialLinks.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
+                    className="w-12 h-12 rounded-lg bg-surface-dark border border-border-dark flex items-center justify-center text-xl hover:border-brand hover:text-brand transition-all"
                   >
                     👍
                   </a>

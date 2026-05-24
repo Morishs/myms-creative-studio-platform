@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { registerKnownUser } from '../stores/messageStore';
+import { registerKnownUser, messageStore } from '../stores/messageStore';
 import { addClient, isEmailRegistered } from '../stores/clientStore';
+import { notificationStore } from '../stores/notificationStore';
+import { dashboardStore } from '../stores/dashboardStore';
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'PROJECT_MANAGER' | 'SALES_MANAGER' | 'CONTENT_MANAGER' | 'SUPPORT' | 'CLIENT';
 export type AccountType = 'INDIVIDUAL' | 'COMPANY';
@@ -231,6 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: demo.user.email,
           role: demo.user.role
         });
+        messageStore.syncFromApi(demo.user.id).catch(() => undefined);
         return true;
       }
       // Demo account exists but wrong password → reject
@@ -253,6 +256,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: found.email,
           role: found.role
         });
+        messageStore.syncFromApi(found.id).catch(() => undefined);
+        notificationStore.syncFromApi(found.id).catch(() => undefined);
+        dashboardStore.syncFromApi().catch(() => undefined);
         return true;
       }
       // Registered user but wrong password → reject
@@ -307,6 +313,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Log in the new user
     setUser(newUser);
     localStorage.setItem('myms_user', JSON.stringify(newUser));
+    messageStore.syncFromApi(newUser.id).catch(() => undefined);
+    notificationStore.syncFromApi(newUser.id).catch(() => undefined);
+    dashboardStore.syncFromApi().catch(() => undefined);
     return true;
   };
 

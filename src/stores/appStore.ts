@@ -1,6 +1,13 @@
 // ===== GLOBAL APP STATE STORE =====
 // Simple event-driven store for cross-component communication
 
+import {
+  createQuoteRequest as apiCreateQuoteRequest,
+  addContactMessage as apiAddContactMessage,
+  addNewsletterEmail as apiAddNewsletterEmail,
+  getQuoteRequests as apiGetQuoteRequests,
+} from '../api/backend';
+
 type Listener = () => void;
 
 interface Toast {
@@ -120,13 +127,16 @@ export const appStore = {
       state = { ...state, newsletterEmails: [...state.newsletterEmails, email] };
       persist();
       notify();
+      apiAddNewsletterEmail({ email }).catch(() => undefined);
     }
   },
 
   addContactMessage: (msg: Omit<AppState['contactMessages'][0], 'createdAt'>) => {
-    state = { ...state, contactMessages: [...state.contactMessages, { ...msg, createdAt: new Date().toISOString() }] };
+    const contactMessage = { ...msg, createdAt: new Date().toISOString() };
+    state = { ...state, contactMessages: [...state.contactMessages, contactMessage] };
     persist();
     notify();
+    apiAddContactMessage(contactMessage).catch(() => undefined);
   },
 
   addQuoteRequest: (req: Omit<QuoteRequestItem, 'id' | 'createdAt' | 'status'>) => {
@@ -139,6 +149,7 @@ export const appStore = {
     state = { ...state, quoteRequests: [...state.quoteRequests, quoteRequest] };
     persist();
     notify();
+    apiCreateQuoteRequest(quoteRequest).catch(() => undefined);
     return quoteRequest;
   },
 
@@ -153,4 +164,16 @@ export const appStore = {
   },
 
   getQuoteRequests: () => state.quoteRequests,
+
+  syncFromApi: async (clientId?: string) => {
+    const apiQuoteRequests = await apiGetQuoteRequests(clientId);
+    if (!apiQuoteRequests || apiQuoteRequests.length === 0) return;
+    const merged = [
+      ...state.quoteRequests,
+      ...apiQuoteRequests.filter((apiReq) => !state.quoteRequests.some((localReq) => localReq.id === apiReq.id)),
+    ];
+    state = { ...state, quoteRequests: merged };
+    persist();
+    notify();
+  },
 };

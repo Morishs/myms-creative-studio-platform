@@ -53,7 +53,7 @@ export function About() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -65,11 +65,11 @@ export function About() {
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Le studio créatif qui donne vie à vos{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 ambitions
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               Myms est un studio créatif passionné par le design et la communication visuelle. 
               Nous aidons les marques et entrepreneurs à se démarquer grâce à des créations 
               uniques et percutantes.
@@ -79,7 +79,7 @@ export function About() {
       </section>
 
       {/* Story */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div
@@ -87,13 +87,13 @@ export function About() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="inline-block px-4 py-2 bg-[#F59E0B]/10 border border-[#F59E0B]/20 rounded-full text-[#F59E0B] text-sm font-medium mb-6">
+              <span className="inline-block px-4 py-2 bg-warning/10 border border-warning/20 rounded-full text-warning text-sm font-medium mb-6">
                 Notre histoire
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
                 Une passion transformée en expertise
               </h2>
-              <div className="space-y-4 text-[#A0A0A0]">
+              <div className="space-y-4 text-text-muted">
                 <p>
                   Myms est né d'une passion profonde pour le design graphique et la communication visuelle. 
                   Fort de plusieurs années d'expérience dans le domaine créatif, le studio s'est donné 
@@ -117,11 +117,11 @@ export function About() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-brand/20 to-[#F59E0B]/20 p-8 flex items-center justify-center">
+              <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-brand/20 to-warning/20 p-8 flex items-center justify-center">
                 <div className="text-center">
                   <span className="text-8xl">🎨</span>
                   <p className="mt-6 text-2xl font-bold text-white">Myms Studio</p>
-                  <p className="text-[#A0A0A0]">Design & Communication</p>
+                  <p className="text-text-muted">Design & Communication</p>
                 </div>
               </div>
               <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-brand rounded-2xl -z-10"></div>
@@ -131,7 +131,7 @@ export function About() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-20 bg-[#111111]">
+      <section className="py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <motion.div
@@ -144,7 +144,7 @@ export function About() {
                   <Target className="w-7 h-7" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Notre mission</h3>
-                <p className="text-[#A0A0A0]">
+                <p className="text-text-muted">
                   Aider les marques et entrepreneurs à se démarquer grâce à une communication 
                   visuelle forte et cohérente. Nous croyons que chaque marque mérite une 
                   identité visuelle qui reflète sa valeur unique.
@@ -158,12 +158,12 @@ export function About() {
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="h-full border-[#F59E0B]/30">
-                <div className="w-14 h-14 rounded-xl bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B] mb-6">
+              <Card className="h-full border-warning/20">
+                <div className="w-14 h-14 rounded-xl bg-warning/10 flex items-center justify-center text-warning mb-6">
                   <Lightbulb className="w-7 h-7" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Notre vision</h3>
-                <p className="text-[#A0A0A0]">
+                <p className="text-text-muted">
                   Devenir le studio créatif de référence pour les marques ambitieuses en Afrique 
                   et au-delà. Nous aspirons à élever les standards du design graphique et de la 
                   communication visuelle.
@@ -175,7 +175,7 @@ export function About() {
       </section>
 
       {/* Values */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <SectionTitle 
             badge="Nos valeurs"
@@ -197,7 +197,7 @@ export function About() {
                     {value.icon}
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">{value.title}</h3>
-                  <p className="text-[#A0A0A0] text-sm">{value.description}</p>
+                  <p className="text-text-muted text-sm">{value.description}</p>
                 </Card>
               </motion.div>
             ))}
@@ -206,7 +206,7 @@ export function About() {
       </section>
 
       {/* Skills */}
-      <section className="py-20 bg-[#111111]">
+      <section className="py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-6">
           <SectionTitle 
             badge="Compétences"
@@ -227,7 +227,7 @@ export function About() {
                   <span className="text-white font-medium">{skill.name}</span>
                   <span className="text-brand">{skill.level}%</span>
                 </div>
-                <div className="h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                <div className="h-2 bg-border-dark rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-brand to-accent rounded-full"
                     initial={{ width: 0 }}
@@ -243,7 +243,7 @@ export function About() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -253,7 +253,7 @@ export function About() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Prêt à travailler ensemble ?
             </h2>
-            <p className="text-xl text-[#A0A0A0] mb-10">
+            <p className="text-xl text-text-muted mb-10">
               Découvrez nos services et donnez vie à vos projets créatifs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

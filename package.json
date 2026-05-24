@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server:start": "npm --prefix server start"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -25,10 +26,10 @@
     "@types/node": "22.19.17",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "5.1.1",
+    "@vitejs/plugin-react": "6.0.2",
     "tailwindcss": "4.1.17",
     "typescript": "6.0.3",
-    "vite": "7.3.2",
+    "vite": "8.0.14",
     "vite-plugin-singlefile": "2.3.0"
   }
 }

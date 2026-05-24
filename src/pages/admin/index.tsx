@@ -19,6 +19,7 @@ import { useAuth, ROLE_LABELS, type User, type UserRole } from '../../contexts/A
 import { appStore } from '../../stores/appStore';
 import { addClient, deleteClient, getClients, isEmailRegistered, subscribe, updateClient } from '../../stores/clientStore';
 import { dashboardStore } from '../../stores/dashboardStore';
+import { notificationStore } from '../../stores/notificationStore';
 import { messageStore, KNOWN_USERS, setUserOnline, isUserOnline } from '../../stores/messageStore';
 import { MessageStatusIcon, OnlineBadge, OfflineBadge } from '../../components/ui/MessageStatus';
 import { NotificationBell } from '../../components/NotificationPanel';
@@ -74,6 +75,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) return;
     setUserOnline(user.id);
+    messageStore.syncFromApi(user.id).catch(() => undefined);
+    notificationStore.syncFromApi(user.id).catch(() => undefined);
+    dashboardStore.syncFromApi().catch(() => undefined);
+    appStore.syncFromApi().catch(() => undefined);
     const interval = setInterval(() => setUserOnline(user.id), 30_000);
     return () => clearInterval(interval);
   }, [user]);
@@ -87,7 +92,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   if (isLoading) {
-    return <div className="min-h-screen pt-16 bg-[#0A0A0A]" />;
+    return <div className="min-h-screen pt-16 bg-surface-alt" />;
   }
 
   if (!isAuthenticated || !isAdmin) {
@@ -97,9 +102,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pt-16">
+    <div className="min-h-screen bg-surface-alt pt-16">
       {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 h-16 bg-[#111111] border-b border-[#2A2A2A] z-40 flex items-center justify-between px-4 lg:px-6">
+      <div className="fixed top-0 left-0 right-0 h-16 bg-surface border-b border-border-dark z-40 flex items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -108,20 +113,20 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
           <Logo logoClassName="h-8 w-auto md:h-10" />
-          <span className="hidden sm:inline text-[#6B7280]">/</span>
-          <span className="hidden sm:inline text-[#EF4444] text-sm font-medium">Administration</span>
+          <span className="hidden sm:inline text-text-muted">/</span>
+          <span className="hidden sm:inline text-error-light text-sm font-medium">Administration</span>
         </div>
         <div className="flex items-center gap-3">
           <NotificationBell userId={user?.id || ''} />
           <div className="hidden md:flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EF4444] to-[#F59E0B] flex items-center justify-center text-white text-sm font-semibold">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-error-light to-warning flex items-center justify-center text-white text-sm font-semibold">
               {user?.firstName?.[0]}
             </div>
             <span className="text-sm text-white">{user?.firstName} {user?.lastName}</span>
           </div>
           <button 
             onClick={handleLogout}
-            className="text-[#A0A0A0] hover:text-[#EF4444] transition-colors"
+            className="text-text-muted hover:text-error-light transition-colors"
             title="Déconnexion"
           >
             <LogOut className="w-5 h-5" />
@@ -132,7 +137,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <div className="flex">
         {/* Sidebar */}
         <aside className={`
-          fixed lg:sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-[#111111] border-r border-[#2A2A2A]
+          fixed lg:sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-surface border-r border-border-dark
           transition-transform duration-300 z-30 overflow-y-auto
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
@@ -145,7 +150,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                    isActive ? 'bg-brand/10 text-brand font-medium' : 'text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A]'
+                    isActive ? 'bg-brand/10 text-brand font-medium' : 'text-text-muted hover:text-white hover:bg-surface-dark'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
@@ -158,11 +163,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-            <div className="pt-4 mt-4 border-t border-[#2A2A2A]">
+            <div className="pt-4 mt-4 border-t border-border-dark">
               <Link
                 to="/"
                 onClick={() => setSidebarOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A] transition-colors text-sm"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-white hover:bg-surface-dark transition-colors text-sm"
               >
                 <Home className="w-5 h-5" />
                 Retour au site
@@ -212,6 +217,7 @@ export function AdminDashboard() {
   const projects = dashboardStore.getProjects();
   const quotes = dashboardStore.getQuotes();
   const invoices = dashboardStore.getInvoices();
+  const teamMembers = dashboardStore.getTeamMembers();
 
   const totalRevenue = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   const currentMonth = new Date().getMonth();
@@ -231,6 +237,8 @@ export function AdminDashboard() {
     const joined = new Date(client.joinedAt);
     return joined.getMonth() === currentMonth && joined.getFullYear() === currentYear;
   }).length;
+  const teamMembersCount = teamMembers.length;
+  const activeTeamMembersCount = teamMembers.filter((member) => member.isActive).length;
   const pendingQuoteRequestsCount = quoteRequests.length;
 
   return (
@@ -241,21 +249,21 @@ export function AdminDashboard() {
         className="mb-8"
       >
         <h1 className="text-3xl font-bold text-white mb-2">Tableau de bord</h1>
-        <p className="text-[#A0A0A0]">Vue d'ensemble de votre activité</p>
+        <p className="text-text-muted">Vue d'ensemble de votre activité</p>
       </motion.div>
 
       {/* Main Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981]">
+            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success">
               <DollarSign className="w-5 h-5" />
             </div>
-            <TrendingUp className="w-4 h-4 text-[#10B981]" />
+            <TrendingUp className="w-4 h-4 text-success" />
           </div>
           <p className="text-2xl font-bold text-white">{formatCurrency(monthlyRevenue)}</p>
-          <p className="text-sm text-[#A0A0A0]">Revenus ce mois</p>
-          <p className="text-xs text-[#6B7280] mt-2">CA total: {formatCurrency(totalRevenue)}</p>
+          <p className="text-sm text-text-muted">Revenus ce mois</p>
+          <p className="text-xs text-text-muted mt-2">CA total: {formatCurrency(totalRevenue)}</p>
         </Card>
 
         <Card>
@@ -265,36 +273,36 @@ export function AdminDashboard() {
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{activeProjectsCount}</p>
-          <p className="text-sm text-[#A0A0A0]">Projets actifs</p>
+          <p className="text-sm text-text-muted">Projets actifs</p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B]">
+            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
               <FileText className="w-5 h-5" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{pendingQuotesCount}</p>
-          <p className="text-sm text-[#A0A0A0]">Devis en attente</p>
+          <p className="text-sm text-text-muted">Devis en attente</p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#EF4444]/10 flex items-center justify-center text-[#EF4444]">
+            <div className="w-10 h-10 rounded-lg bg-error-light/10 flex items-center justify-center text-error-light">
               <Receipt className="w-5 h-5" />
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{unpaidInvoicesCount}</p>
-          <p className="text-sm text-[#A0A0A0]">Factures impayées</p>
+          <p className="text-sm text-text-muted">Factures impayées</p>
         </Card>
       </div>
 
       {/* Secondary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[#A0A0A0]">Total clients</p>
+              <p className="text-sm text-text-muted">Total clients</p>
               <p className="text-2xl font-bold text-white">{totalClientsCount}</p>
             </div>
             <Users className="w-8 h-8 text-brand" />
@@ -304,20 +312,30 @@ export function AdminDashboard() {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[#A0A0A0]">Nouveaux ce mois</p>
+              <p className="text-sm text-text-muted">Nouveaux ce mois</p>
               <p className="text-2xl font-bold text-white">{newClientsThisMonth}</p>
             </div>
-            <Users className="w-8 h-8 text-[#10B981]" />
+            <Users className="w-8 h-8 text-success" />
           </div>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[#A0A0A0]">Demandes non traitées</p>
+              <p className="text-sm text-text-muted">Membres actifs</p>
+              <p className="text-2xl font-bold text-white">{activeTeamMembersCount}</p>
+            </div>
+            <Users2 className="w-8 h-8 text-info" />
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-text-muted">Demandes non traitées</p>
               <p className="text-2xl font-bold text-white">{pendingQuoteRequestsCount}</p>
             </div>
-            <MessageCircle className="w-8 h-8 text-[#F59E0B]" />
+            <MessageCircle className="w-8 h-8 text-warning" />
           </div>
         </Card>
       </div>
@@ -331,11 +349,11 @@ export function AdminDashboard() {
               <Link 
                 key={req.id} 
                 to={`/admin/demandes/${req.id}`}
-                className="flex items-center justify-between p-3 bg-[#0A0A0A] rounded-lg hover:bg-[#1A1A1A] transition-colors"
+                className="flex items-center justify-between p-3 bg-surface-alt rounded-lg hover:bg-surface-dark transition-colors"
               >
                 <div>
                   <p className="font-medium text-white">{req.fullName}</p>
-                  <p className="text-xs text-[#6B7280]">{req.services.join(', ')}</p>
+                  <p className="text-xs text-text-muted">{req.services.join(', ')}</p>
                 </div>
                 <Badge variant={getStatusConfig(req.status).variant}>
                   {getStatusConfig(req.status).label}
@@ -355,7 +373,7 @@ export function AdminDashboard() {
               <Link 
                 key={project.id} 
                 to={`/admin/projets/${project.id}`}
-                className="block p-3 bg-[#0A0A0A] rounded-lg hover:bg-[#1A1A1A] transition-colors"
+                className="block p-3 bg-surface-alt rounded-lg hover:bg-surface-dark transition-colors"
               >
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-medium text-white">{project.name}</p>
@@ -364,13 +382,13 @@ export function AdminDashboard() {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-border-dark rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-brand to-accent"
                       style={{ width: `${project.progress}%` }}
                     />
                   </div>
-                  <span className="text-xs text-[#6B7280]">{project.progress}%</span>
+                  <span className="text-xs text-text-muted">{project.progress}%</span>
                 </div>
               </Link>
             ))}
@@ -552,8 +570,8 @@ export function AdminClients() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Clients</h1>
-          <p className="text-[#A0A0A0]">{totalClientsCount} clients au total</p>
-          <p className="text-[#6B7280] text-sm">{newClientsThisMonth} nouveaux clients ce mois-ci</p>
+          <p className="text-text-muted">{totalClientsCount} clients au total</p>
+          <p className="text-text-muted text-sm">{newClientsThisMonth} nouveaux clients ce mois-ci</p>
         </div>
         <Button variant="primary" onClick={() => {
           resetClientForm();
@@ -565,34 +583,34 @@ export function AdminClients() {
       </div>
 
       {showClientForm && (
-        <Card className="mb-6 p-6 border border-[#2A2A2A] bg-[#0F0F0F]">
+        <Card className="mb-6 p-6 border border-border-dark bg-surface-alt">
           <div className="mb-4">
             <h2 className="text-xl font-semibold text-white">{editingClient ? 'Modifier un client' : 'Créer un nouveau client'}</h2>
-            <p className="text-sm text-[#A0A0A0]">{editingClient ? 'Mettez à jour les informations du client.' : 'Remplissez les informations obligatoires et confirmez pour ajouter le client.'}</p>
+            <p className="text-sm text-text-muted">{editingClient ? 'Mettez à jour les informations du client.' : 'Remplissez les informations obligatoires et confirmez pour ajouter le client.'}</p>
           </div>
           <form onSubmit={handleSaveClient} className="grid gap-4 lg:grid-cols-2">
             <div>
-              <label className="block text-sm text-[#A0A0A0] mb-2">Prénom *</label>
+              <label className="block text-sm text-text-muted mb-2">Prénom *</label>
               <Input name="firstName" value={newClient.firstName} onChange={handleClientFieldChange} placeholder="Ex: Sophie" />
             </div>
             <div>
-              <label className="block text-sm text-[#A0A0A0] mb-2">Nom *</label>
+              <label className="block text-sm text-text-muted mb-2">Nom *</label>
               <Input name="lastName" value={newClient.lastName} onChange={handleClientFieldChange} placeholder="Ex: Martin" />
             </div>
             <div>
-              <label className="block text-sm text-[#A0A0A0] mb-2">Email *</label>
+              <label className="block text-sm text-text-muted mb-2">Email *</label>
               <Input name="email" value={newClient.email} onChange={handleClientFieldChange} placeholder="client@example.com" type="email" />
             </div>
             <div>
-              <label className="block text-sm text-[#A0A0A0] mb-2">Mot de passe *</label>
+              <label className="block text-sm text-text-muted mb-2">Mot de passe *</label>
               <Input name="password" value={newClient.password} onChange={handleClientFieldChange} placeholder="Mot de passe temporaire" type="password" />
             </div>
             <div>
-              <label className="block text-sm text-[#A0A0A0] mb-2">Téléphone</label>
+              <label className="block text-sm text-text-muted mb-2">Téléphone</label>
               <Input name="phone" value={newClient.phone} onChange={handleClientFieldChange} placeholder="+221 77 123 45 67" />
             </div>
             <div>
-              <label className="block text-sm text-[#A0A0A0] mb-2">Entreprise</label>
+              <label className="block text-sm text-text-muted mb-2">Entreprise</label>
               <Input name="company" value={newClient.company} onChange={handleClientFieldChange} placeholder="Ex: Café Lumière" />
             </div>
             {formError && (
@@ -615,7 +633,7 @@ export function AdminClients() {
 
       <div className="mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B7280]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
           <Input 
             placeholder="Rechercher un client..."
             value={search}
@@ -628,18 +646,18 @@ export function AdminClients() {
       <Card className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#0A0A0A] border-b border-[#2A2A2A]">
+            <thead className="bg-surface-alt border-b border-border-dark">
               <tr>
-                <th className="text-left p-4 text-sm font-medium text-[#A0A0A0]">Client</th>
-                <th className="text-left p-4 text-sm font-medium text-[#A0A0A0]">Entreprise</th>
-                <th className="text-left p-4 text-sm font-medium text-[#A0A0A0]">Projets</th>
-                <th className="text-right p-4 text-sm font-medium text-[#A0A0A0]">Total dépensé</th>
-                <th className="text-right p-4 text-sm font-medium text-[#A0A0A0]">Actions</th>
+                <th className="text-left p-4 text-sm font-medium text-text-muted">Client</th>
+                <th className="text-left p-4 text-sm font-medium text-text-muted">Entreprise</th>
+                <th className="text-left p-4 text-sm font-medium text-text-muted">Projets</th>
+                <th className="text-right p-4 text-sm font-medium text-text-muted">Total dépensé</th>
+                <th className="text-right p-4 text-sm font-medium text-text-muted">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredClients.map((client) => (
-                <tr key={client.id} className="border-b border-[#2A2A2A] hover:bg-[#1A1A1A]">
+                <tr key={client.id} className="border-b border-border-dark hover:bg-surface-dark">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white font-semibold">
@@ -647,24 +665,24 @@ export function AdminClients() {
                       </div>
                       <div>
                         <p className="font-medium text-white">{client.firstName} {client.lastName}</p>
-                        <p className="text-xs text-[#6B7280]">{client.email}</p>
+                        <p className="text-xs text-text-muted">{client.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-[#A0A0A0]">{client.company || '-'}</td>
-                  <td className="p-4 text-[#A0A0A0]">{client.projectsCount ?? 0}</td>
+                  <td className="p-4 text-text-muted">{client.company || '-'}</td>
+                  <td className="p-4 text-text-muted">{client.projectsCount ?? 0}</td>
                   <td className="p-4 text-right font-medium text-white">
                     {formatCurrency(client.totalSpent ?? 0)}
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <button className="p-2 text-[#6B7280] hover:text-brand">
+                      <button className="p-2 text-text-muted hover:text-brand">
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-[#6B7280] hover:text-brand" onClick={() => handleEditClient(client)}>
+                      <button className="p-2 text-text-muted hover:text-brand" onClick={() => handleEditClient(client)}>
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-[#EF4444] hover:text-[#F87171]" onClick={() => handleDeleteClient(client.id)}>
+                      <button className="p-2 text-error-light hover:text-[#F87171]" onClick={() => handleDeleteClient(client.id)}>
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -694,7 +712,7 @@ export function AdminQuoteRequests() {
     <div className="p-6 lg:p-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-white mb-2">Demandes de devis</h1>
-        <p className="text-[#A0A0A0]">
+        <p className="text-text-muted">
           {quoteRequests.filter((r) => r.status === 'NEW').length} nouvelles demandes
         </p>
       </div>
@@ -706,20 +724,20 @@ export function AdminQuoteRequests() {
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <h3 className="text-lg font-semibold text-white">{req.fullName}</h3>
-                  <p className="text-sm text-[#A0A0A0]">{req.email} · {req.phone}</p>
-                  {req.company && <p className="text-xs text-[#6B7280]">{req.company}</p>}
+                  <p className="text-sm text-text-muted">{req.email} · {req.phone}</p>
+                  {req.company && <p className="text-xs text-text-muted">{req.company}</p>}
                 </div>
                 <Badge variant={getStatusConfig(req.status).variant}>
                   {getStatusConfig(req.status).label}
                 </Badge>
               </div>
-              <p className="text-[#A0A0A0] mb-3 line-clamp-2">{req.description}</p>
+              <p className="text-text-muted mb-3 line-clamp-2">{req.description}</p>
               <div className="flex flex-wrap gap-2 mb-3">
                 {req.services.map((service) => (
                   <Badge key={service} variant="default">{service}</Badge>
                 ))}
               </div>
-              <div className="flex items-center justify-between text-xs text-[#6B7280] pt-3 border-t border-[#2A2A2A]">
+              <div className="flex items-center justify-between text-xs text-text-muted pt-3 border-t border-border-dark">
                 <span>Budget: {req.budget}</span>
                 <span>{formatDateTime(req.createdAt)}</span>
               </div>
@@ -745,7 +763,7 @@ export function AdminQuotes() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Devis</h1>
-          <p className="text-[#A0A0A0]">{quotes.length} devis au total</p>
+          <p className="text-text-muted">{quotes.length} devis au total</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouveau devis', message: 'Ouverture de l\'éditeur de devis…' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -761,9 +779,9 @@ export function AdminQuotes() {
               <Card hover>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs text-[#6B7280] mb-1">{quote.quoteNumber}</p>
+                    <p className="text-xs text-text-muted mb-1">{quote.quoteNumber}</p>
                     <h3 className="font-semibold text-white">{quote.title}</h3>
-                    <p className="text-sm text-[#A0A0A0]">Client: {quote.clientName}</p>
+                    <p className="text-sm text-text-muted">Client: {quote.clientName}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-white">{formatCurrency(quote.total, quote.currency)}</p>
@@ -793,7 +811,7 @@ export function AdminInvoices() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Factures</h1>
-          <p className="text-[#A0A0A0]">{invoices.length} factures au total</p>
+          <p className="text-text-muted">{invoices.length} factures au total</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouvelle facture', message: 'Ouverture de l\'éditeur de facture…' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -809,9 +827,9 @@ export function AdminInvoices() {
               <Card hover>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs text-[#6B7280] mb-1">{invoice.invoiceNumber}</p>
+                    <p className="text-xs text-text-muted mb-1">{invoice.invoiceNumber}</p>
                     <h3 className="font-semibold text-white">{invoice.title}</h3>
-                    <p className="text-sm text-[#A0A0A0]">Client: {invoice.clientName}</p>
+                    <p className="text-sm text-text-muted">Client: {invoice.clientName}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-white">{formatCurrency(invoice.total, invoice.currency)}</p>
@@ -842,7 +860,7 @@ export function AdminProjects() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Projets</h1>
-          <p className="text-[#A0A0A0]">{projects.length} projet(s) au total</p>
+          <p className="text-text-muted">{projects.length} projet(s) au total</p>
         </div>
         <Button variant="primary" onClick={() => navigate('/admin/projets/nouveau')}>
           <Plus className="w-4 h-4 mr-2" />
@@ -852,7 +870,7 @@ export function AdminProjects() {
 
       {projects.length === 0 ? (
         <Card className="p-6">
-          <p className="text-[#A0A0A0]">Aucun projet enregistré pour le moment. Créez-en un pour démarrer la gestion.</p>
+          <p className="text-text-muted">Aucun projet enregistré pour le moment. Créez-en un pour démarrer la gestion.</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -863,19 +881,19 @@ export function AdminProjects() {
                 <Card hover className="h-full">
                   <div className="flex items-start justify-between mb-3">
                     <Badge variant={status.variant}>{status.label}</Badge>
-                    <span className="text-xs text-[#6B7280]">{project.progress}%</span>
+                    <span className="text-xs text-text-muted">{project.progress}%</span>
                   </div>
                   <h3 className="font-semibold text-white mb-2">{project.name}</h3>
-                  <p className="text-sm text-[#A0A0A0] mb-4 line-clamp-2">{project.description}</p>
+                  <p className="text-sm text-text-muted mb-4 line-clamp-2">{project.description}</p>
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-border-dark rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-brand to-accent"
                         style={{ width: `${project.progress}%` }}
                       />
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-[#6B7280]">
+                  <div className="flex items-center justify-between text-xs text-text-muted">
                     <span>{project.clientName}</span>
                     <span>{project.serviceType}</span>
                   </div>
@@ -945,10 +963,10 @@ export function AdminProjectCreate() {
 
       <div className="max-w-3xl">
         <h1 className="text-3xl font-bold text-white mb-4">Nouveau projet</h1>
-        <p className="text-[#A0A0A0] mb-6">Créez un nouveau projet et assignez-le à un client existant.</p>
+        <p className="text-text-muted mb-6">Créez un nouveau projet et assignez-le à un client existant.</p>
         {noClients ? (
-          <Card className="p-6 bg-[#0F0F0F] border border-[#2A2A2A]">
-            <div className="text-[#A0A0A0] space-y-4">
+          <Card className="p-6 bg-surface-alt border border-border-dark">
+            <div className="text-text-muted space-y-4">
               <p className="text-white font-semibold">Aucun client disponible</p>
               <p>Vous devez d'abord créer un client dans l'espace clients avant de pouvoir ajouter un projet.</p>
               <div className="flex flex-wrap gap-3">
@@ -1000,7 +1018,7 @@ export function AdminProjectCreate() {
                 <Input type="date" value={estimatedEndDate} onChange={(e) => setEstimatedEndDate(e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Progression (%)</label>
+                <label className="block text-sm font-medium text-text-muted mb-2">Progression (%)</label>
                 <input
                   type="range"
                   min="0"
@@ -1009,14 +1027,14 @@ export function AdminProjectCreate() {
                   onChange={(e) => setProgress(Number(e.target.value))}
                   className="w-full accent-brand"
                 />
-                <div className="text-sm text-[#A0A0A0]">{progress}%</div>
+                <div className="text-sm text-text-muted">{progress}%</div>
               </div>
               <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description du projet" rows={5} />
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Button variant="primary" onClick={handleCreateProject} disabled={noClients}>
                   Créer le projet
                 </Button>
-                <Link to="/admin/projets" className="inline-flex items-center justify-center px-4 py-3 border border-[#2A2A2A] text-[#A0A0A0] rounded-lg hover:border-brand">
+                <Link to="/admin/projets" className="inline-flex items-center justify-center px-4 py-3 border border-border-dark text-text-muted rounded-lg hover:border-brand">
                   Annuler
                 </Link>
               </div>
@@ -1035,7 +1053,7 @@ export function AdminPortfolio() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Portfolio</h1>
-          <p className="text-[#A0A0A0]">{portfolioProjects.length} projets dans le portfolio</p>
+          <p className="text-text-muted">{portfolioProjects.length} projets dans le portfolio</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouveau projet portfolio', message: 'Ajoutez les détails du projet.' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -1052,7 +1070,7 @@ export function AdminPortfolio() {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <h3 className="font-semibold text-white">{project.title}</h3>
-                <p className="text-sm text-[#6B7280]">{project.category}</p>
+                <p className="text-sm text-text-muted">{project.category}</p>
               </div>
               {project.isFeatured && <Badge variant="primary">En vedette</Badge>}
             </div>
@@ -1061,7 +1079,7 @@ export function AdminPortfolio() {
                 <Edit className="w-4 h-4 mr-1" />
                 Modifier
               </Button>
-              <button className="p-2 text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg">
+              <button className="p-2 text-error-light hover:bg-error-light/10 rounded-lg">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -1079,7 +1097,7 @@ export function AdminServices() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Services</h1>
-          <p className="text-[#A0A0A0]">{services.length} services configurés</p>
+          <p className="text-text-muted">{services.length} services configurés</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouveau service', message: 'Configuration du nouveau service…' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -1093,7 +1111,7 @@ export function AdminServices() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">{service.title}</h3>
-                <p className="text-sm text-[#A0A0A0]">{service.shortDescription}</p>
+                <p className="text-sm text-text-muted">{service.shortDescription}</p>
               </div>
               <Badge variant="success">Actif</Badge>
             </div>
@@ -1103,7 +1121,7 @@ export function AdminServices() {
                 <Edit className="w-4 h-4 mr-1" />
                 Modifier
               </Button>
-              <button className="p-2 text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg">
+              <button className="p-2 text-error-light hover:bg-error-light/10 rounded-lg">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -1121,7 +1139,7 @@ export function AdminResources() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Ressources</h1>
-          <p className="text-[#A0A0A0]">{resources.length} ressources au total</p>
+          <p className="text-text-muted">{resources.length} ressources au total</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouvelle ressource', message: 'Ajoutez les détails de la ressource.' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -1138,7 +1156,7 @@ export function AdminResources() {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <h3 className="font-semibold text-white">{resource.title}</h3>
-                <p className="text-xs text-[#6B7280]">{resource.downloads} téléchargements</p>
+                <p className="text-xs text-text-muted">{resource.downloads} téléchargements</p>
               </div>
               <Badge variant={resource.isFree ? 'success' : 'primary'}>
                 {resource.isFree ? 'Gratuit' : formatCurrency(resource.price || 0, resource.currency)}
@@ -1149,7 +1167,7 @@ export function AdminResources() {
                 <Edit className="w-4 h-4 mr-1" />
                 Modifier
               </Button>
-              <button className="p-2 text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg">
+              <button className="p-2 text-error-light hover:bg-error-light/10 rounded-lg">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -1167,7 +1185,7 @@ export function AdminBlog() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Blog</h1>
-          <p className="text-[#A0A0A0]">{blogPosts.length} articles publiés</p>
+          <p className="text-text-muted">{blogPosts.length} articles publiés</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouvel article', message: 'Ouverture de l\'éditeur d\'article…' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -1183,10 +1201,10 @@ export function AdminBlog() {
                 <img src={post.coverImage} alt={post.title} className="w-20 h-20 rounded-lg object-cover" />
                 <div>
                   <h3 className="font-semibold text-white mb-1">{post.title}</h3>
-                  <p className="text-sm text-[#A0A0A0] line-clamp-1">{post.excerpt}</p>
+                  <p className="text-sm text-text-muted line-clamp-1">{post.excerpt}</p>
                   <div className="flex gap-2 mt-2">
                     <Badge variant="primary">{post.category}</Badge>
-                    <span className="text-xs text-[#6B7280]">{formatDate(post.publishedAt)}</span>
+                    <span className="text-xs text-text-muted">{formatDate(post.publishedAt)}</span>
                   </div>
                 </div>
               </div>
@@ -1194,7 +1212,7 @@ export function AdminBlog() {
                 <Button variant="outline" size="sm">
                   <Edit className="w-4 h-4" />
                 </Button>
-                <button className="p-2 text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg">
+                <button className="p-2 text-error-light hover:bg-error-light/10 rounded-lg">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -1213,7 +1231,7 @@ export function AdminTestimonials() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Témoignages</h1>
-          <p className="text-[#A0A0A0]">{testimonials.length} témoignages</p>
+          <p className="text-text-muted">{testimonials.length} témoignages</p>
         </div>
         <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouveau témoignage', message: 'Ajoutez un nouveau témoignage client.' })}>
           <Plus className="w-4 h-4 mr-2" />
@@ -1230,17 +1248,17 @@ export function AdminTestimonials() {
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <h3 className="font-semibold text-white">{t.clientName}</h3>
-                    <p className="text-sm text-[#6B7280]">{t.role}, {t.company}</p>
+                    <p className="text-sm text-text-muted">{t.role}, {t.company}</p>
                   </div>
                   <Badge variant="success">Approuvé</Badge>
                 </div>
-                <p className="text-[#A0A0A0] italic mb-3">"{t.content}"</p>
+                <p className="text-text-muted italic mb-3">"{t.content}"</p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm">
                     <Edit className="w-4 h-4 mr-1" />
                     Modifier
                   </Button>
-                  <button className="p-2 text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg">
+                  <button className="p-2 text-error-light hover:bg-error-light/10 rounded-lg">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -1282,18 +1300,18 @@ export function AdminMessages() {
 
   if (!user) {
     return (
-      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
-        <p className="text-sm text-[#A0A0A0]">Chargement de la messagerie...</p>
+      <div className="min-h-screen p-6 bg-surface-alt text-white flex items-center justify-center">
+        <p className="text-sm text-text-muted">Chargement de la messagerie...</p>
       </div>
     );
   }
 
   if (isLoadingMessages) {
     return (
-      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
+      <div className="min-h-screen p-6 bg-surface-alt text-white flex items-center justify-center">
         <div className="text-center">
           <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-brand/20 border-t-brand animate-spin" />
-          <p className="text-sm text-[#A0A0A0]">Chargement de vos conversations...</p>
+          <p className="text-sm text-text-muted">Chargement de vos conversations...</p>
         </div>
       </div>
     );
@@ -1301,10 +1319,10 @@ export function AdminMessages() {
 
   if (messageError) {
     return (
-      <div className="min-h-screen p-6 bg-[#0A0A0A] text-white flex items-center justify-center">
-        <div className="max-w-lg rounded-3xl border border-[#2A2A2A] bg-[#111111] p-8 text-center">
+      <div className="min-h-screen p-6 bg-surface-alt text-white flex items-center justify-center">
+        <div className="max-w-lg rounded-3xl border border-border-dark bg-surface p-8 text-center">
           <h2 className="text-xl font-semibold text-white mb-3">Erreur de messagerie</h2>
-          <p className="text-sm text-[#A0A0A0] mb-6">{messageError}</p>
+          <p className="text-sm text-text-muted mb-6">{messageError}</p>
           <Button variant="primary" onClick={() => {
             setIsLoadingMessages(true);
             setMessageError(null);
@@ -1454,17 +1472,17 @@ export function AdminMessages() {
   const renderAttachmentPreview = (attachment: { id: string; name: string; type: string; size: number; url: string }) => {
     const isImage = attachment.type.startsWith('image/');
     return (
-      <div key={attachment.id} className="rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 flex items-center gap-3">
+      <div key={attachment.id} className="rounded-2xl border border-border-dark bg-surface p-3 flex items-center gap-3">
         {isImage ? (
           <img src={attachment.url} alt={attachment.name} className="w-16 h-16 rounded-lg object-cover" />
         ) : (
-          <div className="w-16 h-16 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] flex items-center justify-center text-[#6B7280] text-xs text-center px-2">
+          <div className="w-16 h-16 rounded-lg bg-surface-dark border border-border-dark flex items-center justify-center text-text-muted text-xs text-center px-2">
             {attachment.name.split('.').pop()?.toUpperCase() || 'FILE'}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-white truncate">{attachment.name}</p>
-          <p className="text-xs text-[#6B7280]">{(attachment.size / 1024).toFixed(1)} KB • {attachment.type || 'Fichier'}</p>
+          <p className="text-xs text-text-muted">{(attachment.size / 1024).toFixed(1)} KB • {attachment.type || 'Fichier'}</p>
         </div>
       </div>
     );
@@ -1481,21 +1499,21 @@ export function AdminMessages() {
               key={attachment.id}
               href={attachment.url}
               download={attachment.name}
-              className="block rounded-2xl border border-[#2A2A2A] bg-[#111111] p-3 text-[#E5E7EB] hover:border-brand transition"
+              className="block rounded-2xl border border-border-dark bg-surface p-3 text-text-secondary hover:border-brand transition"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#0E0E0E] border border-[#2A2A2A] flex items-center justify-center overflow-hidden">
+                <div className="w-12 h-12 rounded-xl bg-surface-dark border border-border-dark flex items-center justify-center overflow-hidden">
                   {isImage ? (
                     <img src={attachment.url} alt={attachment.name} className="w-full h-full object-cover" />
                   ) : (
-                    <File className="w-5 h-5 text-[#6B7280]" />
+                    <File className="w-5 h-5 text-text-muted" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{attachment.name}</p>
-                  <p className="text-xs text-[#6B7280]">{(attachment.size / 1024).toFixed(1)} KB</p>
+                  <p className="text-xs text-text-muted">{(attachment.size / 1024).toFixed(1)} KB</p>
                 </div>
-                <span className="text-xs text-[#6B7280]">Télécharger</span>
+                <span className="text-xs text-text-muted">Télécharger</span>
               </div>
             </a>
           );
@@ -1591,12 +1609,12 @@ export function AdminMessages() {
   const renderMobileListView = () => (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
       <div className="overflow-y-auto flex-1 space-y-1 px-2 py-3">
-        {convos.length === 0 && <p className="text-[#6B7280] text-sm text-center py-8">Aucune conversation</p>}
+        {convos.length === 0 && <p className="text-text-muted text-sm text-center py-8">Aucune conversation</p>}
         {convos.map((conv: typeof convos[0]) => (
           <button
             key={conv.id}
             onClick={() => openConversation(conv.id)}
-            className="w-full text-left p-3 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all active:bg-brand/10"
+            className="w-full text-left p-3 rounded-lg bg-surface-dark border border-border-dark hover:border-[#3A3A3A] transition-all active:bg-brand/10"
           >
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
@@ -1624,9 +1642,9 @@ export function AdminMessages() {
                     <span className="text-xs text-brand truncate">Écrit...</span>
                   </div>
                 ) : (
-                  <p className="text-xs text-[#A0A0A0] truncate">{conv.lastMessage}</p>
+                  <p className="text-xs text-text-muted truncate">{conv.lastMessage}</p>
                 )}
-                <p className="text-[10px] text-[#6B7280] mt-0.5">{formatDateTime(conv.lastMessageAt)}</p>
+                <p className="text-[10px] text-text-muted mt-0.5">{formatDateTime(conv.lastMessageAt)}</p>
               </div>
             </div>
           </button>
@@ -1639,31 +1657,31 @@ export function AdminMessages() {
     const currentConv = convos.find((c: typeof convos[0]) => c.id === activeConvId);
     return (
       <div className="flex flex-col h-[calc(100vh-6rem)]">
-        <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] space-y-3">
+        <div className="p-4 border-b border-border-dark bg-surface space-y-3">
           <div className="flex items-center gap-3">
-            <button onClick={() => { setActiveConvId(null); }} className="text-[#A0A0A0] hover:text-white transition-colors">
+            <button onClick={() => { setActiveConvId(null); }} className="text-text-muted hover:text-white transition-colors">
               <ArrowRight className="w-5 h-5 transform rotate-180" />
             </button>
             <div>
               <h3 className="font-semibold text-white text-sm">{currentConv?.subject}</h3>
-              <p className="text-xs text-[#6B7280]">{currentConv ? getOtherParticipants(currentConv) : ''}</p>
+              <p className="text-xs text-text-muted">{currentConv ? getOtherParticipants(currentConv) : ''}</p>
             </div>
           </div>
           <Input
             placeholder="Rechercher dans la conversation…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-[#131313]"
+            className="bg-surface-dark"
           />
         </div>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
           {visibleMessages.length === 0 ? (
-            <div className="py-12 text-center text-sm text-[#A0A0A0]">Aucun message trouvé pour «{searchTerm}».</div>
+            <div className="py-12 text-center text-sm text-text-muted">Aucun message trouvé pour «{searchTerm}».</div>
           ) : visibleMessages.map((m) => (
             <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                m.senderId === uid ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
+                m.senderId === uid ? 'bg-brand text-white' : 'bg-surface-dark border border-border-dark text-text-secondary'
               }`}>
                 {m.senderId !== uid && <p className="text-xs font-medium mb-1 opacity-70">{m.senderName}</p>}
                 <p className="text-sm whitespace-pre-line">{m.content}</p>
@@ -1682,14 +1700,14 @@ export function AdminMessages() {
             {attachmentFiles.map(renderAttachmentPreview)}
           </div>
         )}
-        <div className="p-3 border-t border-[#2A2A2A] flex flex-wrap items-center gap-2">
+        <div className="p-3 border-t border-border-dark flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2 flex-shrink-0">
             <div className="relative">
-              <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
+              <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-surface border border-border-dark text-text-muted hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                 <Smile className="w-5 h-5" />
               </button>
               {showEmojiPicker && (
-                <div className="absolute bottom-full left-0 mb-2 w-44 rounded-2xl bg-[#111111] border border-[#2A2A2A] p-2 shadow-xl z-20 grid grid-cols-4 gap-1">
+                <div className="absolute bottom-full left-0 mb-2 w-44 rounded-2xl bg-surface border border-border-dark p-2 shadow-xl z-20 grid grid-cols-4 gap-1">
                   {emojiList.map((emoji) => (
                     <button key={emoji} type="button" onClick={() => handleInsertEmoji(emoji)} className="rounded-xl p-2 text-sm hover:bg-[#1F1F1F] transition">
                       {emoji}
@@ -1698,7 +1716,7 @@ export function AdminMessages() {
                 </div>
               )}
             </div>
-            <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center">
+            <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-surface border border-border-dark text-text-muted hover:text-white transition-all flex items-center justify-center">
               <Paperclip className="w-5 h-5" />
             </button>
           </div>
@@ -1707,7 +1725,7 @@ export function AdminMessages() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder="Répondre…"
-            className="flex-1 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            className="flex-1 px-4 py-2.5 bg-surface-dark border border-border-dark rounded-full text-white placeholder:text-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
           <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 transition-all flex-shrink-0">
             <Send className="w-4 h-4" />
@@ -1719,26 +1737,26 @@ export function AdminMessages() {
 
   const renderMobileNewMessageView = () => (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
-      <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] flex items-center gap-3">
-        <button onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="text-[#A0A0A0] hover:text-white transition-colors">
+      <div className="p-4 border-b border-border-dark bg-surface flex items-center gap-3">
+        <button onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="text-text-muted hover:text-white transition-colors">
           <ArrowRight className="w-5 h-5 transform rotate-180" />
         </button>
         <h3 className="text-lg font-semibold text-white">Nouveau message</h3>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Destinataire <span className="text-[#EF4444]">*</span></label>
+          <label className="block text-sm font-medium text-text-muted mb-2">Destinataire <span className="text-error-light">*</span></label>
           <div className="space-y-2">
             {recipientOptions.map((r) => (
               <button key={r.id} type="button" onClick={() => setNewRecipientId(r.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-[#2A2A2A] bg-[#0A0A0A] active:border-[#3A3A3A]'}`}>
+                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-border-dark bg-surface-alt active:border-[#3A3A3A]'}`}>
                 <div className="relative flex-shrink-0">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map((n) => n[0]).join('')}</div>
                   {isUserOnline(r.id) && <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#10B981] rounded-full border border-[#0A0A0A]"></span>}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">{r.name}</p>
-                  <p className="text-xs text-[#6B7280]">{r.email}</p>
+                  <p className="text-xs text-text-muted">{r.email}</p>
                 </div>
               </button>
             ))}
@@ -1746,11 +1764,11 @@ export function AdminMessages() {
         </div>
         <Input label="Sujet" required placeholder="Ex: Question sur mon projet…" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} />
         <div>
-          <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Message <span className="text-[#EF4444]">*</span></label>
-          <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand resize-none" />
+          <label className="block text-sm font-medium text-text-muted mb-2">Message <span className="text-error-light">*</span></label>
+          <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-surface-dark border border-border-dark rounded-lg text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand resize-none" />
         </div>
       </div>
-      <div className="p-4 border-t border-[#2A2A2A] flex gap-2">
+      <div className="p-4 border-t border-border-dark flex gap-2">
         <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="flex-1">Annuler</Button>
         <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId} className="flex-1">
           <Send className="w-4 h-4 mr-2" />Envoyer
@@ -1764,7 +1782,7 @@ export function AdminMessages() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-1">Messages</h1>
-          <p className="text-[#A0A0A0]">{unreadCount} message(s) non lu(s) · {convos.length} conversation(s)</p>
+          <p className="text-text-muted">{unreadCount} message(s) non lu(s) · {convos.length} conversation(s)</p>
         </div>
         <Button variant="primary" size="sm" onClick={() => { setShowNew(true); setActiveConvId(null); }} className="hidden lg:inline-flex">
           <Send className="w-4 h-4 mr-2" />
@@ -1774,14 +1792,14 @@ export function AdminMessages() {
 
       <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-14rem)]">
         {/* Conversation List */}
-        <div className="overflow-y-auto space-y-2 lg:border-r lg:border-[#2A2A2A] lg:pr-4">
-          {convos.length === 0 && <p className="text-[#6B7280] text-sm text-center py-8">Aucune conversation</p>}
+        <div className="overflow-y-auto space-y-2 lg:border-r lg:border-border-dark lg:pr-4">
+          {convos.length === 0 && <p className="text-text-muted text-sm text-center py-8">Aucune conversation</p>}
           {convos.map((conv: typeof convos[0]) => (
             <button
               key={conv.id}
               onClick={() => openConversation(conv.id)}
               className={`w-full text-left p-4 rounded-xl border transition-all ${
-                activeConvId === conv.id ? 'bg-brand/10 border-brand/20' : 'bg-[#1A1A1A] border-[#2A2A2A] hover:border-[#3A3A3A]'
+                activeConvId === conv.id ? 'bg-brand/10 border-brand/20' : 'bg-surface-dark border-border-dark hover:border-[#3A3A3A]'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
@@ -1804,39 +1822,39 @@ export function AdminMessages() {
                   <span>Écrit...</span>
                 </p>
               ) : (
-                <p className="text-xs text-[#A0A0A0] truncate">{conv.lastMessage}</p>
+                <p className="text-xs text-text-muted truncate">{conv.lastMessage}</p>
               )}
-              <p className="text-[10px] text-[#6B7280] mt-1">{formatDateTime(conv.lastMessageAt)}</p>
+              <p className="text-[10px] text-text-muted mt-1">{formatDateTime(conv.lastMessageAt)}</p>
             </button>
           ))}
         </div>
 
         {/* Chat Area */}
-        <div className="lg:col-span-2 flex flex-col bg-[#0A0A0A] rounded-xl border border-[#2A2A2A] overflow-hidden">
+        <div className="lg:col-span-2 flex flex-col bg-surface-alt rounded-xl border border-border-dark overflow-hidden">
           {showNew ? (
             <div className="flex-1 flex flex-col p-6 overflow-y-auto">
               <h3 className="text-lg font-semibold text-white mb-4">Nouveau message</h3>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Destinataire <span className="text-[#EF4444]">*</span></label>
+                <label className="block text-sm font-medium text-text-muted mb-2">Destinataire <span className="text-error-light">*</span></label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                   {recipientOptions.map(r => (
                     <button key={r.id} type="button" onClick={() => setNewRecipientId(r.id)}
-                      className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-[#2A2A2A] bg-[#111111] hover:border-[#3A3A3A]'}`}>
+                      className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${newRecipientId === r.id ? 'border-brand bg-brand/10' : 'border-border-dark bg-surface hover:border-[#3A3A3A]'}`}>
                       <div className="relative flex-shrink-0">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-xs font-bold">{r.name.split(' ').map(n=>n[0]).join('')}</div>
                         <span className="absolute -bottom-0.5 -right-0.5">{isUserOnline(r.id) ? <OnlineBadge /> : <OfflineBadge />}</span>
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-white truncate">{r.name}</p>
-                        <p className="text-[10px] text-[#6B7280] truncate">{r.role === 'CLIENT' ? 'Client' : r.role === 'SUPER_ADMIN' ? 'Super Admin' : r.role === 'PROJECT_MANAGER' ? 'Chef de projet' : r.role === 'SALES_MANAGER' ? 'Commercial' : 'Équipe'}</p>
+                        <p className="text-[10px] text-text-muted truncate">{r.role === 'CLIENT' ? 'Client' : r.role === 'SUPER_ADMIN' ? 'Super Admin' : r.role === 'PROJECT_MANAGER' ? 'Chef de projet' : r.role === 'SALES_MANAGER' ? 'Commercial' : 'Équipe'}</p>
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
               <Input label="Sujet" required placeholder="Sujet du message…" value={newSubject} onChange={e => setNewSubject(e.target.value)} className="mb-4" />
-              <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Message <span className="text-[#EF4444]">*</span></label>
-              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-brand resize-none mb-4" />
+              <label className="block text-sm font-medium text-text-muted mb-2">Message <span className="text-error-light">*</span></label>
+              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-surface-dark border border-border-dark rounded-lg text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand resize-none mb-4" />
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }}>Annuler</Button>
                 <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId}>
@@ -1847,25 +1865,25 @@ export function AdminMessages() {
           ) : activeConvId ? (
             <>
               {/* Header */}
-              <div className="p-4 border-b border-[#2A2A2A] bg-[#111111] space-y-3">
+              <div className="p-4 border-b border-border-dark bg-surface space-y-3">
                 <div>
                   <h3 className="font-semibold text-white">{convos.find((c: typeof convos[0]) => c.id === activeConvId) ? getOtherParticipants(convos.find((c: typeof convos[0]) => c.id === activeConvId)!) : ''}</h3>
-                  <p className="text-xs text-[#6B7280]">{convos.find((c: typeof convos[0]) => c.id === activeConvId)?.subject}</p>
+                  <p className="text-xs text-text-muted">{convos.find((c: typeof convos[0]) => c.id === activeConvId)?.subject}</p>
                 </div>
                 <Input
                   placeholder="Rechercher dans la conversation…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-[#131313]"
+                  className="bg-surface-dark"
                 />
                 {otherParticipantTyping && (
-                  <div className="mt-3 inline-flex items-center gap-3 rounded-2xl bg-[#111111] px-4 py-3 border border-[#2A2A2A]">
+                  <div className="mt-3 inline-flex items-center gap-3 rounded-2xl bg-surface px-4 py-3 border border-border-dark">
                     <div className="flex items-center gap-1">
                       <span className="typing-dot bg-brand" />
                       <span className="typing-dot bg-brand" />
                       <span className="typing-dot bg-brand" />
                     </div>
-                    <span className="text-xs text-[#A0A0A0]">{convos.find(c => c.id === activeConvId)?.participants.find(p => p.id !== uid)?.name} écrit...</span>
+                    <span className="text-xs text-text-muted">{convos.find(c => c.id === activeConvId)?.participants.find(p => p.id !== uid)?.name} écrit...</span>
                   </div>
                 )}
               </div>
@@ -1873,11 +1891,11 @@ export function AdminMessages() {
               {/* Messages */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
                 {visibleMessages.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-[#A0A0A0]">Aucun message trouvé pour «{searchTerm}».</div>
+                  <div className="py-12 text-center text-sm text-text-muted">Aucun message trouvé pour «{searchTerm}».</div>
                 ) : visibleMessages.map(m => (
                   <div key={m.id} className={`flex ${m.senderId === uid ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                      m.senderId === uid ? 'bg-brand text-white' : 'bg-[#1A1A1A] border border-[#2A2A2A] text-[#E0E0E0]'
+                      m.senderId === uid ? 'bg-brand text-white' : 'bg-surface-dark border border-border-dark text-text-secondary'
                     }`}>
                       {m.senderId !== uid && <p className="text-xs font-medium mb-1 opacity-70">{m.senderName}</p>}
                       <p className="text-sm whitespace-pre-line">{m.content}</p>
@@ -1897,14 +1915,14 @@ export function AdminMessages() {
                   {attachmentFiles.map(renderAttachmentPreview)}
                 </div>
               )}
-              <div className="p-3 border-t border-[#2A2A2A] flex flex-wrap items-center gap-2">
+              <div className="p-3 border-t border-border-dark flex flex-wrap items-center gap-2">
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="relative">
-                    <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
+                    <button type="button" onClick={() => setShowEmojiPicker((prev) => !prev)} className="w-10 h-10 rounded-full bg-surface border border-border-dark text-text-muted hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                       <Smile className="w-5 h-5" />
                     </button>
                     {showEmojiPicker && (
-                      <div className="absolute bottom-full left-0 mb-2 w-44 rounded-2xl bg-[#111111] border border-[#2A2A2A] p-2 shadow-xl z-20 grid grid-cols-4 gap-1">
+                      <div className="absolute bottom-full left-0 mb-2 w-44 rounded-2xl bg-surface border border-border-dark p-2 shadow-xl z-20 grid grid-cols-4 gap-1">
                         {emojiList.map((emoji) => (
                           <button key={emoji} type="button" onClick={() => handleInsertEmoji(emoji)} className="rounded-xl p-2 text-sm hover:bg-[#1F1F1F] transition">
                             {emoji}
@@ -1913,7 +1931,7 @@ export function AdminMessages() {
                       </div>
                     )}
                   </div>
-                  <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-[#111111] border border-[#2A2A2A] text-[#A0A0A0] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
+                  <button type="button" onClick={handleAttachClick} className="w-10 h-10 rounded-full bg-surface border border-border-dark text-text-muted hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                     <Paperclip className="w-5 h-5" />
                   </button>
                 </div>
@@ -1922,7 +1940,7 @@ export function AdminMessages() {
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                   placeholder="Répondre…"
-                  className="flex-1 min-w-0 px-4 py-2.5 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full text-white placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="flex-1 min-w-0 px-4 py-2.5 bg-surface-dark border border-border-dark rounded-full text-white placeholder:text-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <button onClick={handleSend} disabled={!input.trim() && attachmentFiles.length === 0} className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 transition-all">
                   <Send className="w-4 h-4" />
@@ -1932,8 +1950,8 @@ export function AdminMessages() {
           ) : (
             <div className="flex-1 flex items-center justify-center text-center p-8">
               <div>
-                <MessageCircle className="w-12 h-12 text-[#6B7280] mx-auto mb-4" />
-                <p className="text-[#A0A0A0]">Sélectionnez une conversation pour répondre</p>
+                <MessageCircle className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                <p className="text-text-muted">Sélectionnez une conversation pour répondre</p>
               </div>
             </div>
           )}
@@ -1992,7 +2010,7 @@ export function AdminNewsletter() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Newsletter</h1>
-          <p className="text-[#A0A0A0]">{subscribers.length} abonnés</p>
+          <p className="text-text-muted">{subscribers.length} abonnés</p>
         </div>
         <Button variant="outline" onClick={downloadCsv}>
           Exporter CSV
@@ -2002,20 +2020,20 @@ export function AdminNewsletter() {
       <Card className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#0A0A0A] border-b border-[#2A2A2A]">
+            <thead className="bg-surface-alt border-b border-border-dark">
               <tr>
-                <th className="text-left p-4 text-sm font-medium text-[#A0A0A0]">Email</th>
-                <th className="text-left p-4 text-sm font-medium text-[#A0A0A0]">Prénom</th>
-                <th className="text-left p-4 text-sm font-medium text-[#A0A0A0]">Date d'inscription</th>
-                <th className="text-left p-4 text-sm font-medium text-[#A0A0A0]">Statut</th>
+                <th className="text-left p-4 text-sm font-medium text-text-muted">Email</th>
+                <th className="text-left p-4 text-sm font-medium text-text-muted">Prénom</th>
+                <th className="text-left p-4 text-sm font-medium text-text-muted">Date d'inscription</th>
+                <th className="text-left p-4 text-sm font-medium text-text-muted">Statut</th>
               </tr>
             </thead>
             <tbody>
               {subscribers.map((sub) => (
-                <tr key={sub.id} className="border-b border-[#2A2A2A]">
+                <tr key={sub.id} className="border-b border-border-dark">
                   <td className="p-4 text-white">{sub.email}</td>
-                  <td className="p-4 text-[#A0A0A0]">{sub.firstName || '-'}</td>
-                  <td className="p-4 text-[#A0A0A0]">{formatDate(sub.subscribedAt)}</td>
+                  <td className="p-4 text-text-muted">{sub.firstName || '-'}</td>
+                  <td className="p-4 text-text-muted">{formatDate(sub.subscribedAt)}</td>
                   <td className="p-4"><Badge variant="success">Actif</Badge></td>
                 </tr>
               ))}
@@ -2032,7 +2050,7 @@ export function AdminSettings() {
   return (
     <div className="p-6 lg:p-8 max-w-3xl">
       <h1 className="text-3xl font-bold text-white mb-2">Paramètres</h1>
-      <p className="text-[#A0A0A0] mb-8">Configurez votre site</p>
+      <p className="text-text-muted mb-8">Configurez votre site</p>
 
       <Card className="p-6 mb-6">
         <h2 className="text-xl font-semibold text-white mb-4">Informations entreprise</h2>
@@ -2085,7 +2103,7 @@ export function AdminQuoteRequestDetail() {
   const request = quoteRequests.find((r) => r.id === id);
 
   if (!request) {
-    return <div className="p-6 text-center text-[#A0A0A0]">Demande non trouvée</div>;
+    return <div className="p-6 text-center text-text-muted">Demande non trouvée</div>;
   }
 
   return (
@@ -2104,22 +2122,22 @@ export function AdminQuoteRequestDetail() {
         <Card>
           <h3 className="font-semibold text-white mb-4">Informations client</h3>
           <div className="space-y-2 text-sm">
-            <div><span className="text-[#6B7280]">Nom:</span> <span className="text-white">{request.fullName}</span></div>
-            <div><span className="text-[#6B7280]">Email:</span> <span className="text-white">{request.email}</span></div>
-            <div><span className="text-[#6B7280]">Téléphone:</span> <span className="text-white">{request.phone}</span></div>
-            {request.company && <div><span className="text-[#6B7280]">Entreprise:</span> <span className="text-white">{request.company}</span></div>}
-            <div><span className="text-[#6B7280]">Source:</span> <span className="text-white">{request.source}</span></div>
-            <div><span className="text-[#6B7280]">Reçu le:</span> <span className="text-white">{formatDateTime(request.createdAt)}</span></div>
+            <div><span className="text-text-muted">Nom:</span> <span className="text-white">{request.fullName}</span></div>
+            <div><span className="text-text-muted">Email:</span> <span className="text-white">{request.email}</span></div>
+            <div><span className="text-text-muted">Téléphone:</span> <span className="text-white">{request.phone}</span></div>
+            {request.company && <div><span className="text-text-muted">Entreprise:</span> <span className="text-white">{request.company}</span></div>}
+            <div><span className="text-text-muted">Source:</span> <span className="text-white">{request.source}</span></div>
+            <div><span className="text-text-muted">Reçu le:</span> <span className="text-white">{formatDateTime(request.createdAt)}</span></div>
           </div>
         </Card>
 
         <Card>
           <h3 className="font-semibold text-white mb-4">Projet</h3>
           <div className="space-y-2 text-sm">
-            <div><span className="text-[#6B7280]">Budget:</span> <span className="text-white">{request.budget}</span></div>
-            <div><span className="text-[#6B7280]">Délai:</span> <span className="text-white">{request.deadline}</span></div>
+            <div><span className="text-text-muted">Budget:</span> <span className="text-white">{request.budget}</span></div>
+            <div><span className="text-text-muted">Délai:</span> <span className="text-white">{request.deadline}</span></div>
             <div className="pt-2">
-              <span className="text-[#6B7280] block mb-2">Services:</span>
+              <span className="text-text-muted block mb-2">Services:</span>
               <div className="flex flex-wrap gap-2">
                 {request.services.map((s) => (
                   <Badge key={s} variant="default">{s}</Badge>
@@ -2132,7 +2150,7 @@ export function AdminQuoteRequestDetail() {
 
       <Card className="mt-6">
         <h3 className="font-semibold text-white mb-4">Description du projet</h3>
-        <p className="text-[#A0A0A0]">{request.description}</p>
+        <p className="text-text-muted">{request.description}</p>
       </Card>
 
       <div className="flex flex-wrap gap-3 mt-6">
@@ -2188,7 +2206,7 @@ export function AdminProjectDetail() {
   }, [project]);
 
   if (!project) {
-    return <div className="p-6 text-center text-[#A0A0A0]">Projet non trouvé</div>;
+    return <div className="p-6 text-center text-text-muted">Projet non trouvé</div>;
   }
 
   const statusConfig = getStatusConfig(status);
@@ -2235,7 +2253,7 @@ export function AdminProjectDetail() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{project.name}</h1>
-          <p className="text-[#A0A0A0]">{assignedClient ? `${assignedClient.firstName} ${assignedClient.lastName}` : project.clientName} · {project.serviceType}</p>
+          <p className="text-text-muted">{assignedClient ? `${assignedClient.firstName} ${assignedClient.lastName}` : project.clientName} · {project.serviceType}</p>
         </div>
         <Badge variant={statusConfig.variant} className="text-sm px-4 py-2">{statusConfig.label}</Badge>
       </div>
@@ -2279,7 +2297,7 @@ export function AdminProjectDetail() {
                 <Input type="date" value={estimatedEndDate} onChange={(e) => setEstimatedEndDate(e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Progression</label>
+                <label className="block text-sm font-medium text-text-muted mb-2">Progression</label>
                 <input
                   type="range"
                   min="0"
@@ -2288,14 +2306,14 @@ export function AdminProjectDetail() {
                   onChange={(e) => setProgress(Number(e.target.value))}
                   className="w-full accent-brand"
                 />
-                <div className="text-sm text-[#A0A0A0]">{progress}%</div>
+                <div className="text-sm text-text-muted">{progress}%</div>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3 mt-6">
               <Button variant="primary" onClick={handleSave} disabled={isSaving}>
                 Enregistrer les modifications
               </Button>
-              <Button variant="outline" onClick={handleDelete} className="text-[#EF4444]">
+              <Button variant="outline" onClick={handleDelete} className="text-error-light">
                 Supprimer le projet
               </Button>
             </div>
@@ -2305,7 +2323,7 @@ export function AdminProjectDetail() {
         <div className="space-y-6">
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Résumé du projet</h3>
-            <div className="space-y-3 text-sm text-[#A0A0A0]">
+            <div className="space-y-3 text-sm text-text-muted">
               <div className="flex justify-between">
                 <span>Client</span>
                 <span>{assignedClient ? `${assignedClient.firstName} ${assignedClient.lastName}` : project.clientName}</span>
@@ -2350,7 +2368,7 @@ export function AdminQuoteDetail() {
   const quote = quotes.find((q) => q.id === id);
 
   if (!quote) {
-    return <div className="p-6 text-center text-[#A0A0A0]">Devis non trouvé</div>;
+    return <div className="p-6 text-center text-text-muted">Devis non trouvé</div>;
   }
 
   return (
@@ -2363,7 +2381,7 @@ export function AdminQuoteDetail() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{quote.quoteNumber}</h1>
-          <p className="text-[#A0A0A0]">{quote.title} · {quote.clientName}</p>
+          <p className="text-text-muted">{quote.title} · {quote.clientName}</p>
         </div>
         <Badge variant={getStatusConfig(quote.status).variant} className="text-sm px-4 py-2">
           {getStatusConfig(quote.status).label}
@@ -2372,7 +2390,7 @@ export function AdminQuoteDetail() {
 
       <Card className="mb-6">
         <div className="text-4xl font-bold text-white mb-2">{formatCurrency(quote.total, quote.currency)}</div>
-        <p className="text-[#A0A0A0]">Émis le {formatDate(quote.issuedAt)} · Valide jusqu'au {formatDate(quote.validUntil)}</p>
+        <p className="text-text-muted">Émis le {formatDate(quote.issuedAt)} · Valide jusqu'au {formatDate(quote.validUntil)}</p>
       </Card>
 
       <div className="flex flex-wrap gap-3">
@@ -2405,7 +2423,7 @@ export function AdminInvoiceDetail() {
   const invoice = invoices.find((i) => i.id === id);
 
   if (!invoice) {
-    return <div className="p-6 text-center text-[#A0A0A0]">Facture non trouvée</div>;
+    return <div className="p-6 text-center text-text-muted">Facture non trouvée</div>;
   }
 
   return (
@@ -2418,7 +2436,7 @@ export function AdminInvoiceDetail() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{invoice.invoiceNumber}</h1>
-          <p className="text-[#A0A0A0]">{invoice.title} · {invoice.clientName}</p>
+          <p className="text-text-muted">{invoice.title} · {invoice.clientName}</p>
         </div>
         <Badge variant={getStatusConfig(invoice.status).variant} className="text-sm px-4 py-2">
           {getStatusConfig(invoice.status).label}
@@ -2427,8 +2445,8 @@ export function AdminInvoiceDetail() {
 
       <Card className="mb-6">
         <div className="text-4xl font-bold text-white mb-2">{formatCurrency(invoice.total, invoice.currency)}</div>
-        <p className="text-[#A0A0A0]">Payé: {formatCurrency(invoice.amountPaid, invoice.currency)}</p>
-        <p className="text-[#EF4444]">Reste dû: {formatCurrency(invoice.amountDue, invoice.currency)}</p>
+        <p className="text-text-muted">Payé: {formatCurrency(invoice.amountPaid, invoice.currency)}</p>
+        <p className="text-error-light">Reste dû: {formatCurrency(invoice.amountDue, invoice.currency)}</p>
       </Card>
 
       <div className="flex flex-wrap gap-3">
@@ -2485,11 +2503,11 @@ export function AdminTeam() {
 
   const getRoleBadge = (role: string) => {
     const colors: Record<string, string> = {
-      SUPER_ADMIN: 'bg-gradient-to-r from-[#EF4444] to-[#F59E0B] text-white',
+      SUPER_ADMIN: 'bg-gradient-to-r from-error-light to-warning text-white',
       ADMIN: 'bg-brand text-white',
       PROJECT_MANAGER: 'bg-[#3B82F6] text-white',
       SALES_MANAGER: 'bg-[#10B981] text-white',
-      CONTENT_MANAGER: 'bg-[#F59E0B] text-white',
+      CONTENT_MANAGER: 'bg-warning text-white',
       SUPPORT: 'bg-[#6B7280] text-white',
     };
     const labels: Record<string, string> = {
@@ -2501,7 +2519,7 @@ export function AdminTeam() {
       SUPPORT: 'Support',
     };
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[role] || 'bg-[#2A2A2A] text-white'}`}>
+      <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors[role] || 'bg-border-dark text-white'}`}>
         {labels[role] || role}
       </span>
     );
@@ -2517,7 +2535,7 @@ export function AdminTeam() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Équipe</h1>
-          <p className="text-[#A0A0A0]">
+          <p className="text-text-muted">
             {teamMembers.filter((m) => m.isActive).length} membres actifs · 
             {teamMembers.filter((m) => !m.isActive).length} inactifs
           </p>
@@ -2536,27 +2554,27 @@ export function AdminTeam() {
         <div className="flex flex-wrap gap-3">
           <div className="flex items-center gap-2">
             {getRoleBadge('SUPER_ADMIN')}
-            <span className="text-xs text-[#6B7280]">Accès total</span>
+            <span className="text-xs text-text-muted">Accès total</span>
           </div>
           <div className="flex items-center gap-2">
             {getRoleBadge('ADMIN')}
-            <span className="text-xs text-[#6B7280]">Gestion complète</span>
+            <span className="text-xs text-text-muted">Gestion complète</span>
           </div>
           <div className="flex items-center gap-2">
             {getRoleBadge('PROJECT_MANAGER')}
-            <span className="text-xs text-[#6B7280]">Projets & clients</span>
+            <span className="text-xs text-text-muted">Projets & clients</span>
           </div>
           <div className="flex items-center gap-2">
             {getRoleBadge('SALES_MANAGER')}
-            <span className="text-xs text-[#6B7280]">Devis & factures</span>
+            <span className="text-xs text-text-muted">Devis & factures</span>
           </div>
           <div className="flex items-center gap-2">
             {getRoleBadge('CONTENT_MANAGER')}
-            <span className="text-xs text-[#6B7280]">Contenu & blog</span>
+            <span className="text-xs text-text-muted">Contenu & blog</span>
           </div>
           <div className="flex items-center gap-2">
             {getRoleBadge('SUPPORT')}
-            <span className="text-xs text-[#6B7280]">Messages & support</span>
+            <span className="text-xs text-text-muted">Messages & support</span>
           </div>
         </div>
       </Card>
@@ -2564,7 +2582,7 @@ export function AdminTeam() {
       {/* Search */}
       <div className="mb-6">
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B7280]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
           <Input 
             placeholder="Rechercher un membre..."
             value={search}
@@ -2587,7 +2605,7 @@ export function AdminTeam() {
             <div className="flex items-start gap-4 mb-4">
               <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold ${
                 member.role === 'SUPER_ADMIN' 
-                  ? 'bg-gradient-to-br from-[#EF4444] to-[#F59E0B]' 
+                  ? 'bg-gradient-to-br from-error-light to-warning' 
                   : 'bg-gradient-to-br from-brand to-accent'
               }`}>
                 {member.firstName[0]}{member.lastName[0]}
@@ -2596,27 +2614,27 @@ export function AdminTeam() {
                 <h3 className="font-semibold text-white truncate">
                   {member.firstName} {member.lastName}
                 </h3>
-                <p className="text-sm text-[#A0A0A0] truncate">{member.email}</p>
+                <p className="text-sm text-text-muted truncate">{member.email}</p>
                 <div className="mt-2">
                   {getRoleBadge(member.role)}
                 </div>
               </div>
             </div>
 
-            <p className="text-sm text-[#6B7280] mb-3">{member.description}</p>
+            <p className="text-sm text-text-muted mb-3">{member.description}</p>
 
             <div className="mb-4">
-              <p className="text-xs text-[#6B7280] mb-2">Tâches assignées :</p>
+              <p className="text-xs text-text-muted mb-2">Tâches assignées :</p>
               <div className="flex flex-wrap gap-1">
                 {member.tasksAssigned.map((task, i) => (
-                  <span key={i} className="px-2 py-0.5 bg-[#2A2A2A] rounded text-xs text-[#A0A0A0]">
+                  <span key={i} className="px-2 py-0.5 bg-border-dark rounded text-xs text-text-muted">
                     {task}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="text-xs text-[#6B7280] mb-4 pt-3 border-t border-[#2A2A2A]">
+            <div className="text-xs text-text-muted mb-4 pt-3 border-t border-border-dark">
               <p>📞 {member.phone}</p>
               <p>🕐 Dernière connexion : {formatDateTime(member.lastLogin)}</p>
               <p>📅 Membre depuis : {formatDate(member.createdAt)}</p>
@@ -2629,7 +2647,7 @@ export function AdminTeam() {
                   Modifier
                 </Button>
                 {isSuperAdmin && (
-                  <button className="p-2 text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg">
+                  <button className="p-2 text-error-light hover:bg-error-light/10 rounded-lg">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
@@ -2637,7 +2655,7 @@ export function AdminTeam() {
             )}
 
             {member.role === 'SUPER_ADMIN' && member.id !== user?.id && (
-              <p className="text-xs text-center text-[#6B7280] italic">
+              <p className="text-xs text-center text-text-muted italic">
                 Super Admin - Non modifiable
               </p>
             )}
@@ -2651,11 +2669,11 @@ export function AdminTeam() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-lg bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden"
+            className="w-full max-w-lg bg-surface-dark rounded-2xl border border-border-dark overflow-hidden"
           >
-            <div className="p-6 border-b border-[#2A2A2A]">
+            <div className="p-6 border-b border-border-dark">
               <h2 className="text-xl font-bold text-white">Ajouter un membre</h2>
-              <p className="text-sm text-[#A0A0A0]">Inviter un nouveau membre dans l'équipe</p>
+              <p className="text-sm text-text-muted">Inviter un nouveau membre dans l'équipe</p>
             </div>
             
             <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
@@ -2677,22 +2695,22 @@ export function AdminTeam() {
                 rows={3}
               />
               <div>
-                <label className="block text-sm font-medium text-[#A0A0A0] mb-2">
+                <label className="block text-sm font-medium text-text-muted mb-2">
                   Tâches assignées
                 </label>
                 <Input placeholder="Ex: Gestion des projets, Suivi clients..." />
-                <p className="text-xs text-[#6B7280] mt-1">Séparez les tâches par des virgules</p>
+                <p className="text-xs text-text-muted mt-1">Séparez les tâches par des virgules</p>
               </div>
-              <div className="p-4 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A]">
+              <div className="p-4 bg-surface-alt rounded-lg border border-border-dark">
                 <h4 className="text-sm font-medium text-white mb-2">📧 Invitation par email</h4>
-                <p className="text-xs text-[#6B7280]">
+                <p className="text-xs text-text-muted">
                   Un email sera envoyé au nouveau membre avec un lien pour définir son mot de passe 
                   et accéder à l'espace d'administration.
                 </p>
               </div>
             </div>
 
-            <div className="p-6 border-t border-[#2A2A2A] flex justify-end gap-3">
+            <div className="p-6 border-t border-border-dark flex justify-end gap-3">
               <Button variant="outline" onClick={() => setShowAddModal(false)}>
                 Annuler
               </Button>
@@ -2711,11 +2729,11 @@ export function AdminTeam() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-lg bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden"
+            className="w-full max-w-lg bg-surface-dark rounded-2xl border border-border-dark overflow-hidden"
           >
-            <div className="p-6 border-b border-[#2A2A2A]">
+            <div className="p-6 border-b border-border-dark">
               <h2 className="text-xl font-bold text-white">Modifier le membre</h2>
-              <p className="text-sm text-[#A0A0A0]">
+              <p className="text-sm text-text-muted">
                 {selectedMember.firstName} {selectedMember.lastName}
               </p>
             </div>
@@ -2739,29 +2757,29 @@ export function AdminTeam() {
                 rows={3}
               />
               <div>
-                <label className="block text-sm font-medium text-[#A0A0A0] mb-2">
+                <label className="block text-sm font-medium text-text-muted mb-2">
                   Tâches assignées
                 </label>
                 <Input defaultValue={selectedMember.tasksAssigned.join(', ')} />
               </div>
               
-              <div className="flex items-center gap-3 p-4 bg-[#0A0A0A] rounded-lg border border-[#2A2A2A]">
+              <div className="flex items-center gap-3 p-4 bg-surface-alt rounded-lg border border-border-dark">
                 <input 
                   type="checkbox" 
                   defaultChecked={selectedMember.isActive}
-                  className="w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-brand focus:ring-brand"
+                  className="w-4 h-4 rounded border-border-dark bg-surface-dark text-brand focus:ring-brand"
                 />
                 <div>
                   <p className="text-sm font-medium text-white">Compte actif</p>
-                  <p className="text-xs text-[#6B7280]">
+                  <p className="text-xs text-text-muted">
                     Désactiver le compte empêche la connexion mais conserve les données
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 border-t border-[#2A2A2A] flex justify-between">
-              <Button variant="ghost" className="text-[#EF4444]" onClick={() => appStore.addToast({ type: 'info', title: 'Email envoyé', message: 'Un lien de réinitialisation a été envoyé.' })}>
+            <div className="p-6 border-t border-border-dark flex justify-between">
+              <Button variant="ghost" className="text-error-light" onClick={() => appStore.addToast({ type: 'info', title: 'Email envoyé', message: 'Un lien de réinitialisation a été envoyé.' })}>
                 Réinitialiser mot de passe
               </Button>
               <div className="flex gap-3">
@@ -2799,15 +2817,15 @@ export function AdminTeamPermissions() {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Permissions des rôles</h1>
-      <p className="text-[#A0A0A0] mb-8">Vue d'ensemble des permissions par rôle</p>
+      <p className="text-text-muted mb-8">Vue d'ensemble des permissions par rôle</p>
 
       <Card className="p-0 overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-[#0A0A0A]">
+          <thead className="bg-surface-alt">
             <tr>
-              <th className="text-left p-4 text-[#A0A0A0] font-medium border-b border-[#2A2A2A]">Permission</th>
+              <th className="text-left p-4 text-text-muted font-medium border-b border-border-dark">Permission</th>
               {roles.map(role => (
-                <th key={role} className="text-center p-4 text-[#A0A0A0] font-medium border-b border-[#2A2A2A]">
+                <th key={role} className="text-center p-4 text-text-muted font-medium border-b border-border-dark">
                   {ROLE_LABELS[role as UserRole]}
                 </th>
               ))}
@@ -2816,23 +2834,23 @@ export function AdminTeamPermissions() {
           <tbody>
             {permissions.map((cat) => (
               <>
-                <tr key={cat.category} className="bg-[#1A1A1A]">
-                  <td colSpan={7} className="p-3 font-semibold text-white border-b border-[#2A2A2A]">
+                <tr key={cat.category} className="bg-surface-dark">
+                  <td colSpan={7} className="p-3 font-semibold text-white border-b border-border-dark">
                     {cat.category}
                   </td>
                 </tr>
                 {cat.perms.map(perm => (
-                  <tr key={perm} className="border-b border-[#2A2A2A] hover:bg-[#1A1A1A]">
-                    <td className="p-3 text-[#A0A0A0]">{perm}</td>
+                  <tr key={perm} className="border-b border-border-dark hover:bg-surface-dark">
+                    <td className="p-3 text-text-muted">{perm}</td>
                     {roles.map(role => (
                       <td key={role} className="text-center p-3">
                         {/* Simplified check - in real app would use ROLE_PERMISSIONS */}
                         {role === 'SUPER_ADMIN' || (role === 'ADMIN' && !perm.includes('team.create')) ? (
-                          <CheckCircle className="w-5 h-5 text-[#10B981] mx-auto" />
+                          <CheckCircle className="w-5 h-5 text-success mx-auto" />
                         ) : perm.includes('view') ? (
-                          <CheckCircle className="w-5 h-5 text-[#10B981] mx-auto" />
+                          <CheckCircle className="w-5 h-5 text-success mx-auto" />
                         ) : (
-                          <span className="text-[#6B7280]">—</span>
+                          <span className="text-text-muted">—</span>
                         )}
                       </td>
                     ))}

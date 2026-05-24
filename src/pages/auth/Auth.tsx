@@ -308,13 +308,13 @@ export function Register() {
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-12 flex items-center justify-center px-6 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A] relative overflow-hidden">
+    <div className="min-h-screen pt-20 pb-12 flex items-center justify-center px-6 bg-gradient-to-br from-surface-alt via-[#111111] to-surface-alt relative overflow-hidden">
       <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-[128px]"></div>
 
       {/* Bouton retour */}
       <button
         onClick={handleGoBack}
-        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-[#A0A0A0] hover:text-white hover:border-brand transition-all"
+        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-surface-dark border border-border-dark rounded-lg text-text-muted hover:text-white hover:border-brand transition-all"
       >
         <ArrowRight className="w-4 h-4 rotate-180" />
         <span className="text-sm">Retour</span>
@@ -330,7 +330,7 @@ export function Register() {
             <Logo logoClassName="h-12 w-auto sm:h-14" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Créer un compte</h1>
-          <p className="text-[#A0A0A0]">Rejoignez Myms et suivez vos projets</p>
+          <p className="text-text-muted">Rejoignez Myms et suivez vos projets</p>
         </div>
 
         {/* Account Type Selector */}
@@ -341,16 +341,16 @@ export function Register() {
             className={`p-6 rounded-xl border-2 transition-all ${
               accountType === 'INDIVIDUAL'
                 ? 'border-brand bg-brand/10'
-                : 'border-[#2A2A2A] bg-[#1A1A1A] hover:border-[#3A3A3A]'
+                : 'border-border-dark bg-surface-dark hover:border-[#3A3A3A]'
             }`}
           >
             <User className={`w-10 h-10 mx-auto mb-3 ${
-              accountType === 'INDIVIDUAL' ? 'text-brand' : 'text-[#6B7280]'
+              accountType === 'INDIVIDUAL' ? 'text-brand' : 'text-text-muted'
             }`} />
             <h3 className={`font-semibold mb-1 ${
-              accountType === 'INDIVIDUAL' ? 'text-white' : 'text-[#A0A0A0]'
+              accountType === 'INDIVIDUAL' ? 'text-white' : 'text-text-muted'
             }`}>Particulier</h3>
-            <p className="text-xs text-[#6B7280]">Compte personnel</p>
+            <p className="text-xs text-text-muted">Compte personnel</p>
           </button>
 
           <button
@@ -359,16 +359,16 @@ export function Register() {
             className={`p-6 rounded-xl border-2 transition-all ${
               accountType === 'COMPANY'
                 ? 'border-brand bg-brand/10'
-                : 'border-[#2A2A2A] bg-[#1A1A1A] hover:border-[#3A3A3A]'
+                : 'border-border-dark bg-surface-dark hover:border-[#3A3A3A]'
             }`}
           >
             <Building2 className={`w-10 h-10 mx-auto mb-3 ${
-              accountType === 'COMPANY' ? 'text-brand' : 'text-[#6B7280]'
+              accountType === 'COMPANY' ? 'text-brand' : 'text-text-muted'
             }`} />
             <h3 className={`font-semibold mb-1 ${
-              accountType === 'COMPANY' ? 'text-white' : 'text-[#A0A0A0]'
+              accountType === 'COMPANY' ? 'text-white' : 'text-text-muted'
             }`}>Entreprise</h3>
-            <p className="text-xs text-[#6B7280]">Compte professionnel</p>
+            <p className="text-xs text-text-muted">Compte professionnel</p>
           </button>
         </div>
 
@@ -387,13 +387,13 @@ export function Register() {
                   </div>
                   <div>
                     <h2 className="font-semibold text-white">Compte Particulier</h2>
-                    <p className="text-xs text-[#6B7280]">Informations personnelles</p>
+                    <p className="text-xs text-text-muted">Informations personnelles</p>
                   </div>
                 </div>
 
                 <form onSubmit={individualForm.handleSubmit(onSubmitIndividual)} className="space-y-4">
                   {error && (
-                    <div className="flex items-center gap-2 p-3 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-lg text-[#EF4444] text-sm">
+                    <div className="flex items-center gap-2 p-3 bg-error-light/10 border border-[#EF4444]/30 rounded-lg text-error-light text-sm">
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       {error}
                     </div>
@@ -464,9 +464,9 @@ export function Register() {
                     <input
                       type="checkbox"
                       {...individualForm.register('acceptTerms')}
-                      className="mt-1 w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-brand focus:ring-brand"
+                      className="mt-1 w-4 h-4 rounded border-border-dark bg-surface-dark text-brand focus:ring-brand"
                     />
-                    <span className="text-sm text-[#A0A0A0]">
+                    <span className="text-sm text-text-muted">
                       J'accepte les{' '}
                       <Link to="/conditions-generales-de-vente" className="text-brand hover:underline">
                         conditions générales
@@ -478,7 +478,7 @@ export function Register() {
                     </span>
                   </label>
                   {individualForm.formState.errors.acceptTerms && (
-                    <p className="text-sm text-[#EF4444]">{individualForm.formState.errors.acceptTerms.message}</p>
+                    <p className="text-sm text-error-light">{individualForm.formState.errors.acceptTerms.message}</p>
                   )}
 
                   <Button type="submit" variant="primary" className="w-full" size="lg" isLoading={isLoading}>
@@ -497,17 +497,17 @@ export function Register() {
                 {/* Company Registration - Step Indicator */}
                 <div className="flex items-center justify-center gap-2 mb-6">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    step >= 1 ? 'bg-brand text-white' : 'bg-[#2A2A2A] text-[#6B7280]'
+                    step >= 1 ? 'bg-brand text-white' : 'bg-border-dark text-text-muted'
                   }`}>1</div>
-                  <div className={`w-16 h-1 rounded ${step >= 2 ? 'bg-brand' : 'bg-[#2A2A2A]'}`} />
+                  <div className={`w-16 h-1 rounded ${step >= 2 ? 'bg-brand' : 'bg-border-dark'}`} />
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    step >= 2 ? 'bg-brand text-white' : 'bg-[#2A2A2A] text-[#6B7280]'
+                    step >= 2 ? 'bg-brand text-white' : 'bg-border-dark text-text-muted'
                   }`}>2</div>
                 </div>
 
                 <form onSubmit={companyForm.handleSubmit(onSubmitCompany)} className="space-y-4">
                   {error && (
-                    <div className="flex items-center gap-2 p-3 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-lg text-[#EF4444] text-sm">
+                    <div className="flex items-center gap-2 p-3 bg-error-light/10 border border-[#EF4444]/30 rounded-lg text-error-light text-sm">
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       {error}
                     </div>
@@ -525,7 +525,7 @@ export function Register() {
                         </div>
                         <div>
                           <h2 className="font-semibold text-white">Informations de l'entreprise</h2>
-                          <p className="text-xs text-[#6B7280]">Étape 1 sur 2</p>
+                          <p className="text-xs text-text-muted">Étape 1 sur 2</p>
                         </div>
                       </div>
 
@@ -597,7 +597,7 @@ export function Register() {
                         </div>
                         <div>
                           <h2 className="font-semibold text-white">Responsable du compte</h2>
-                          <p className="text-xs text-[#6B7280]">Étape 2 sur 2</p>
+                          <p className="text-xs text-text-muted">Étape 2 sur 2</p>
                         </div>
                       </div>
 
@@ -664,9 +664,9 @@ export function Register() {
                         <input
                           type="checkbox"
                           {...companyForm.register('acceptTerms')}
-                          className="mt-1 w-4 h-4 rounded border-[#2A2A2A] bg-[#1A1A1A] text-brand focus:ring-brand"
+                          className="mt-1 w-4 h-4 rounded border-border-dark bg-surface-dark text-brand focus:ring-brand"
                         />
-                        <span className="text-sm text-[#A0A0A0]">
+                        <span className="text-sm text-text-muted">
                           J'accepte les{' '}
                           <Link to="/conditions-generales-de-vente" className="text-brand hover:underline">
                             conditions générales
@@ -678,7 +678,7 @@ export function Register() {
                         </span>
                       </label>
                       {companyForm.formState.errors.acceptTerms && (
-                        <p className="text-sm text-[#EF4444]">{companyForm.formState.errors.acceptTerms.message}</p>
+                        <p className="text-sm text-error-light">{companyForm.formState.errors.acceptTerms.message}</p>
                       )}
 
                       <div className="flex gap-3">
@@ -703,7 +703,7 @@ export function Register() {
             )}
           </AnimatePresence>
 
-          <div className="mt-6 text-center text-[#A0A0A0]">
+          <div className="mt-6 text-center text-text-muted">
             Déjà un compte ?{' '}
             <Link
               to="/auth/connexion"
@@ -751,13 +751,13 @@ export function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center px-6 bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A] relative overflow-hidden">
+    <div className="min-h-screen pt-20 flex items-center justify-center px-6 bg-gradient-to-br from-surface-alt via-[#111111] to-surface-alt relative overflow-hidden">
       <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-[128px]"></div>
 
       {/* Bouton retour */}
       <button
         onClick={handleGoBack}
-        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-[#A0A0A0] hover:text-white hover:border-brand transition-all"
+        className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-surface-dark border border-border-dark rounded-lg text-text-muted hover:text-white hover:border-brand transition-all"
       >
         <ArrowRight className="w-4 h-4 rotate-180" />
         <span className="text-sm">Retour</span>
@@ -775,18 +775,18 @@ export function ForgotPassword() {
 
           {isSubmitted ? (
             <>
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#10B981]/10 flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-[#10B981]" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/10 flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-success" />
               </div>
               <h1 className="text-3xl font-bold text-white mb-2">Email envoyé !</h1>
-              <p className="text-[#A0A0A0]">
+              <p className="text-text-muted">
                 Si un compte existe avec cette adresse, vous recevrez un email de réinitialisation.
               </p>
             </>
           ) : (
             <>
               <h1 className="text-3xl font-bold text-white mb-2">Mot de passe oublié ?</h1>
-              <p className="text-[#A0A0A0]">
+              <p className="text-text-muted">
                 Entrez votre email et nous vous enverrons un lien de réinitialisation.
               </p>
             </>

@@ -17,7 +17,7 @@ export function Portfolio() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -29,11 +29,11 @@ export function Portfolio() {
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Nos{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 réalisations
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               Découvrez nos projets récents et voyez comment nous aidons 
               nos clients à se démarquer avec des créations uniques.
             </p>
@@ -42,7 +42,7 @@ export function Portfolio() {
       </section>
 
       {/* Filter */}
-      <section className="py-8 bg-[#0A0A0A] border-b border-[#2A2A2A] sticky top-20 z-40 backdrop-blur-md bg-[#0A0A0A]/90">
+      <section className="py-8 bg-surface-alt border-b border-border-dark sticky top-20 z-40 backdrop-blur-md bg-surface-alt/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-3">
             {portfolioCategories.map((category) => (
@@ -52,7 +52,7 @@ export function Portfolio() {
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                   activeCategory === category
                     ? 'bg-brand text-white'
-                    : 'bg-[#1A1A1A] text-[#A0A0A0] hover:text-white border border-[#2A2A2A] hover:border-brand'
+                    : 'bg-surface-dark text-text-muted hover:text-white border border-border-dark hover:border-brand'
                 }`}
               >
                 {category}
@@ -63,7 +63,7 @@ export function Portfolio() {
       </section>
 
       {/* Projects Grid */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <AnimatePresence mode="wait">
             <motion.div
@@ -82,14 +82,14 @@ export function Portfolio() {
                   transition={{ delay: index * 0.1 }}
                 >
                   <Link to={`/portfolio/${project.slug}`}>
-                    <div className="group relative overflow-hidden rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:border-brand/20 transition-all">
+                    <div className="group relative overflow-hidden rounded-xl bg-surface-dark border border-border-dark hover:border-brand/20 transition-all">
                       <div className="aspect-[4/3] overflow-hidden">
                         <img 
                           src={project.coverImage} 
                           alt={project.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                        <div className="absolute inset-0 bg-gradient-to-t from-surface-alt via-[#0A0A0A]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                           <span className="inline-flex items-center gap-2 text-white font-medium">
                             Voir le projet
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -99,13 +99,13 @@ export function Portfolio() {
                       <div className="p-6">
                         <div className="flex items-center justify-between mb-2">
                           <Badge variant="primary">{project.category}</Badge>
-                          <span className="text-sm text-[#6B7280]">{project.date}</span>
+                          <span className="text-sm text-text-muted">{project.date}</span>
                         </div>
                         <h3 className="text-lg font-semibold text-white group-hover:text-brand transition-colors">
                           {project.title}
                         </h3>
                         {project.client && (
-                          <p className="text-sm text-[#6B7280] mt-1">Client: {project.client}</p>
+                          <p className="text-sm text-text-muted mt-1">Client: {project.client}</p>
                         )}
                       </div>
                     </div>
@@ -117,14 +117,14 @@ export function Portfolio() {
 
           {filteredProjects.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-[#A0A0A0]">Aucun projet trouvé dans cette catégorie.</p>
+              <p className="text-text-muted">Aucun projet trouvé dans cette catégorie.</p>
             </div>
           )}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-[#111111]">
+      <section className="py-20 bg-surface">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -134,7 +134,7 @@ export function Portfolio() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Vous avez un projet similaire ?
             </h2>
-            <p className="text-xl text-[#A0A0A0] mb-10">
+            <p className="text-xl text-text-muted mb-10">
               Parlons de votre projet et créons ensemble quelque chose d'unique.
             </p>
             <Link to="/devis">
@@ -173,7 +173,7 @@ export function PortfolioDetail() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -186,7 +186,7 @@ export function PortfolioDetail() {
             
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <Badge variant="primary">{project.category}</Badge>
-              <div className="flex items-center gap-2 text-[#6B7280]">
+              <div className="flex items-center gap-2 text-text-muted">
                 <Calendar className="w-4 h-4" />
                 {project.date}
               </div>
@@ -197,7 +197,7 @@ export function PortfolioDetail() {
             </h1>
             
             {project.client && (
-              <p className="text-xl text-[#A0A0A0]">
+              <p className="text-xl text-text-muted">
                 Client: <span className="text-white">{project.client}</span>
               </p>
             )}
@@ -206,7 +206,7 @@ export function PortfolioDetail() {
       </section>
 
       {/* Main Image */}
-      <section className="bg-[#0A0A0A]">
+      <section className="bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
@@ -224,30 +224,30 @@ export function PortfolioDetail() {
       </section>
 
       {/* Content */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-12">
               <div>
                 <h2 className="text-2xl font-bold text-white mb-4">Contexte</h2>
-                <p className="text-[#A0A0A0]">{project.context}</p>
+                <p className="text-text-muted">{project.context}</p>
               </div>
               
               <div>
                 <h2 className="text-2xl font-bold text-white mb-4">Objectif</h2>
-                <p className="text-[#A0A0A0]">{project.objective}</p>
+                <p className="text-text-muted">{project.objective}</p>
               </div>
               
               <div>
                 <h2 className="text-2xl font-bold text-white mb-4">Solution</h2>
-                <p className="text-[#A0A0A0]">{project.solution}</p>
+                <p className="text-text-muted">{project.solution}</p>
               </div>
               
               {project.result && (
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-4">Résultat</h2>
-                  <p className="text-[#A0A0A0]">{project.result}</p>
+                  <p className="text-text-muted">{project.result}</p>
                 </div>
               )}
             </div>
@@ -271,17 +271,17 @@ export function PortfolioDetail() {
       </section>
 
       {/* Navigation */}
-      <section className="py-12 bg-[#111111] border-t border-[#2A2A2A]">
+      <section className="py-12 bg-surface border-t border-border-dark">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-center">
             {prevProject ? (
               <Link 
                 to={`/portfolio/${prevProject.slug}`}
-                className="flex items-center gap-3 text-[#A0A0A0] hover:text-white transition-colors group"
+                className="flex items-center gap-3 text-text-muted hover:text-white transition-colors group"
               >
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                 <div>
-                  <span className="text-sm text-[#6B7280] block">Projet précédent</span>
+                  <span className="text-sm text-text-muted block">Projet précédent</span>
                   <span className="font-medium">{prevProject.title}</span>
                 </div>
               </Link>
@@ -290,10 +290,10 @@ export function PortfolioDetail() {
             {nextProject && (
               <Link 
                 to={`/portfolio/${nextProject.slug}`}
-                className="flex items-center gap-3 text-[#A0A0A0] hover:text-white transition-colors group text-right"
+                className="flex items-center gap-3 text-text-muted hover:text-white transition-colors group text-right"
               >
                 <div>
-                  <span className="text-sm text-[#6B7280] block">Projet suivant</span>
+                  <span className="text-sm text-text-muted block">Projet suivant</span>
                   <span className="font-medium">{nextProject.title}</span>
                 </div>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

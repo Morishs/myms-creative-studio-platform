@@ -19,7 +19,7 @@ export function Services() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -31,11 +31,11 @@ export function Services() {
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Des solutions créatives pour{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#F59E0B]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
                 chaque besoin
               </span>
             </h1>
-            <p className="text-xl text-[#A0A0A0]">
+            <p className="text-xl text-text-muted">
               Du logo à la gestion complète de vos réseaux sociaux, nous proposons une gamme 
               complète de services pour développer votre présence visuelle.
             </p>
@@ -44,7 +44,7 @@ export function Services() {
       </section>
 
       {/* Services Grid */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <div className="space-y-32">
             {services.map((service, index) => (
@@ -70,7 +70,7 @@ export function Services() {
                     {service.title}
                   </h2>
                   
-                  <p className="text-lg text-[#A0A0A0] mb-8">
+                  <p className="text-lg text-text-muted mb-8">
                     {service.description}
                   </p>
                   
@@ -78,8 +78,8 @@ export function Services() {
                     <h4 className="text-white font-semibold mb-4">Ce qui est inclus :</h4>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {service.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-3 text-[#A0A0A0]">
-                          <Check className="w-5 h-5 text-[#10B981] flex-shrink-0" />
+                        <li key={feature} className="flex items-center gap-3 text-text-muted">
+                          <Check className="w-5 h-5 text-success flex-shrink-0" />
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -95,13 +95,13 @@ export function Services() {
                 </div>
                 
                 <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
-                  <Card className="aspect-square flex items-center justify-center bg-gradient-to-br from-brand/10 to-[#F59E0B]/10 border-brand/20">
+                  <Card className="aspect-square flex items-center justify-center bg-gradient-to-br from-brand/10 to-warning/10 border-brand/20">
                     <div className="text-center p-8">
                       <div className="w-24 h-24 mx-auto rounded-2xl bg-brand/10 flex items-center justify-center text-brand mb-6">
                         {iconMap[service.icon]}
                       </div>
                       <h3 className="text-2xl font-bold text-white mb-2">{service.title}</h3>
-                      <p className="text-[#A0A0A0]">{service.shortDescription}</p>
+                      <p className="text-text-muted">{service.shortDescription}</p>
                     </div>
                   </Card>
                 </div>
@@ -169,7 +169,7 @@ export function ServiceDetail() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="py-20 md:py-32 bg-gradient-to-b from-[#111111] to-[#0A0A0A]">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-surface to-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -191,7 +191,7 @@ export function ServiceDetail() {
               {service.title}
             </h1>
             
-            <p className="text-xl text-[#A0A0A0] mb-8">
+            <p className="text-xl text-text-muted mb-8">
               {service.description}
             </p>
             
@@ -203,7 +203,7 @@ export function ServiceDetail() {
       </section>
 
       {/* Features */}
-      <section className="py-20 bg-[#0A0A0A]">
+      <section className="py-20 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-6">
           <SectionTitle 
             title="Ce qui est inclus"
@@ -222,7 +222,7 @@ export function ServiceDetail() {
               >
                 <Card hover className="h-full">
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-[#10B981]/10 flex items-center justify-center text-[#10B981] flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success flex-shrink-0">
                       <Check className="w-5 h-5" />
                     </div>
                     <div>
@@ -237,7 +237,7 @@ export function ServiceDetail() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-[#111111]">
+      <section className="py-20 bg-surface">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -247,7 +247,7 @@ export function ServiceDetail() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Intéressé par ce service ?
             </h2>
-            <p className="text-xl text-[#A0A0A0] mb-10">
+            <p className="text-xl text-text-muted mb-10">
               Demandez un devis personnalisé et recevez une réponse sous 48h.
             </p>
             <Link to="/devis">

@@ -1,0 +1,35 @@
+{
+  "users": [
+    { "id": "admin-1", "name": "Admin Myms", "email": "admin@myms.com", "role": "SUPER_ADMIN" },
+    { "id": "admin-2", "name": "Marie Diallo", "email": "manager@myms.com", "role": "PROJECT_MANAGER" },
+    { "id": "admin-3", "name": "Amadou Ba", "email": "sales@myms.com", "role": "SALES_MANAGER" },
+    { "id": "client-1", "name": "Sophie Martin", "email": "client@demo.com", "role": "CLIENT" }
+  ],
+  "conversations": [
+    {
+      "id": "conv-1",
+      "subject": "Projet logo Café Lumière",
+      "participantIds": ["client-1","admin-1"],
+      "participants": [
+        {"id":"client-1","name":"Sophie Martin","email":"client@demo.com"},
+        {"id":"admin-1","name":"Admin Myms","email":"admin@myms.com"}
+      ],
+      "lastMessage": "Les fichiers finaux sont prêts !",
+      "lastMessageAt": "2024-01-01T00:00:00.000Z",
+      "lastSenderId": "admin-1",
+      "unread": {"client-1":1,"admin-1":0},
+      "createdAt": "2023-12-01T00:00:00.000Z"
+    }
+  ],
+  "messages": [
+    { "id": "msg-1", "conversationId": "conv-1", "senderId": "admin-1", "senderName": "Admin Myms", "content": "Bonjour Sophie !", "createdAt": "2024-01-01T00:00:00.000Z", "isRead": true, "status": "read" }
+  ],
+  "notifications": [],
+  "quoteRequests": [],
+  "projects": [],
+  "quotes": [],
+  "invoices": [],
+  "teamMembers": [],
+  "newsletterEmails": [],
+  "contactMessages": []
+}
