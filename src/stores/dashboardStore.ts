@@ -46,6 +46,7 @@ export interface DashboardQuote {
   issuedAt: string;
   validUntil: string;
   notes?: string;
+  lineItems?: Array<{ id: string; description: string; quantity: number; unitPrice: number }>;
 }
 
 export interface DashboardInvoice {

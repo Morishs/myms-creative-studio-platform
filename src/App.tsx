@@ -33,7 +33,7 @@ import {
 // Admin pages
 import {
   AdminLayout, AdminDashboard, AdminClients, AdminQuoteRequests, AdminQuoteRequestDetail,
-  AdminQuotes, AdminQuoteDetail, AdminInvoices, AdminInvoiceDetail,
+  AdminQuotes, AdminQuoteCreate, AdminQuoteDetail, AdminInvoices, AdminInvoiceDetail,
   AdminProjects, AdminProjectCreate, AdminProjectDetail, AdminPortfolio, AdminServices, AdminResources,
   AdminBlog, AdminTestimonials, AdminMessages, AdminNewsletter, AdminSettings,
   AdminTeam, AdminTeamPermissions
@@ -95,6 +95,7 @@ export default function App() {
           <Route path="/admin/demandes" element={<AdminLayout><AdminQuoteRequests /></AdminLayout>} />
           <Route path="/admin/demandes/:id" element={<AdminLayout><AdminQuoteRequestDetail /></AdminLayout>} />
           <Route path="/admin/devis" element={<AdminLayout><AdminQuotes /></AdminLayout>} />
+          <Route path="/admin/devis/nouveau" element={<AdminLayout><AdminQuoteCreate /></AdminLayout>} />
           <Route path="/admin/devis/:id" element={<AdminLayout><AdminQuoteDetail /></AdminLayout>} />
           <Route path="/admin/factures" element={<AdminLayout><AdminInvoices /></AdminLayout>} />
           <Route path="/admin/factures/:id" element={<AdminLayout><AdminInvoiceDetail /></AdminLayout>} />

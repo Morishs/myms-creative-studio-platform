@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from 'react';
-import { Link, useParams, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useParams, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, Users, FileText, Receipt, FolderKanban, 
@@ -55,6 +55,13 @@ const projectStatusOptions = [
   { value: 'COMPLETED', label: 'Terminé' },
   { value: 'CANCELLED', label: 'Annulé' },
 ];
+
+interface QuoteLineItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+}
 
 const projectPriorityOptions = [
   { value: 'LOW', label: 'Basse' },
@@ -765,7 +772,7 @@ export function AdminQuotes() {
           <h1 className="text-3xl font-bold text-white mb-2">Devis</h1>
           <p className="text-text-muted">{quotes.length} devis au total</p>
         </div>
-        <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouveau devis', message: 'Ouverture de l\'éditeur de devis…' })}>
+        <Button variant="primary" onClick={() => navigate('/admin/devis/nouveau')}>
           <Plus className="w-4 h-4 mr-2" />
           Nouveau devis
         </Button>
@@ -2093,7 +2100,14 @@ export function AdminSettings() {
 // ===== DETAIL PAGES =====
 export function AdminQuoteRequestDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [quoteRequests, setQuoteRequests] = useState(appStore.getState().quoteRequests);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = appStore.subscribe(() => setQuoteRequests(appStore.getState().quoteRequests));
@@ -2106,39 +2120,30 @@ export function AdminQuoteRequestDetail() {
     ? clients.find((client) => client.email.toLowerCase() === request.email.toLowerCase())
     : undefined;
 
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [isCreatingQuote, setIsCreatingQuote] = useState(false);
-  const [emailSubject, setEmailSubject] = useState(() =>
-    request ? `Réponse à votre demande de devis #${request.id}` : ''
-  );
-  const [emailBody, setEmailBody] = useState(() =>
-    request
-      ? `Bonjour ${request.fullName},\n\nMerci pour votre demande de devis. Voici les informations concernant votre projet :\n\n- Nom : ${request.fullName}\n- Email : ${request.email}\n- Téléphone : ${request.phone}\n- Services demandés : ${request.services.join(', ')}\n- Budget : ${request.budget || 'Non précisé'}\n- Délai : ${request.deadline || 'Non précisé'}\n\nJe reviens vers vous rapidement avec une proposition formelle.\n\nCordialement,\nL'équipe Myms`
-      : ''
-  );
+  useEffect(() => {
+    if (!request) return;
+    setEmailSubject(`Réponse à votre demande de devis #${request.id}`);
+    setEmailBody(`Bonjour ${request.fullName},\n\nMerci pour votre demande de devis. Voici les informations que nous avons reçues :\n\n- Service : ${request.services.join(', ')}\n- Budget : ${request.budget || 'Non précisé'}\n- Délai : ${request.deadline || 'Non précisé'}\n- Description : ${request.description}\n\nJe reviens vers vous rapidement avec une proposition détaillée.\n\nCordialement,\n${user?.firstName || "L'équipe Myms"}`);
+  }, [request, user]);
 
-  const [quoteTitle, setQuoteTitle] = useState(() =>
-    request ? `Devis ${request.services.join(', ')}` : ''
-  );
-  const [quoteTotal, setQuoteTotal] = useState(0);
-  const [quoteCurrency, setQuoteCurrency] = useState('EUR');
-  const [quoteValidUntil, setQuoteValidUntil] = useState(() =>
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-  );
-  const [quoteStatus, setQuoteStatus] = useState('SENT');
-  const [quoteNotes, setQuoteNotes] = useState(
-    request
-      ? `Client intéressé par ${request.services.join(', ')}. ${request.description}`
-      : ''
-  );
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const getConversation = () => {
+    if (!request || !user) return null;
+    const adminId = user.id;
+    const clientId = matchedClient?.id || request.clientId || `client-${request.email}`;
+    return messageStore.getState().conversations.find((conv) => {
+      const participants = new Set(conv.participantIds);
+      return participants.has(adminId) && participants.has(clientId);
+    });
+  };
 
-  const handleSendEmail = () => {
-    if (!request?.email) {
-      setEmailError('Adresse email client manquante.');
+  const handleSendEmail = async () => {
+    if (!request || !user) {
+      setEmailError('Impossible d’envoyer le message.');
+      return;
+    }
+
+    if (!emailSubject.trim() || !emailBody.trim()) {
+      setEmailError('Le sujet et le message sont requis.');
       return;
     }
 
@@ -2146,66 +2151,61 @@ export function AdminQuoteRequestDetail() {
     setEmailError(null);
 
     try {
-      const subject = encodeURIComponent(emailSubject);
-      const body = encodeURIComponent(emailBody);
-      window.location.href = `mailto:${request.email}?subject=${subject}&body=${body}`;
+      const adminId = user.id;
+      const clientId = matchedClient?.id || request.clientId || `client-${request.email}`;
+      const adminParticipant = { id: adminId, name: `${user.firstName} ${user.lastName}`.trim() || 'Admin Myms', email: user.email };
+      const clientParticipant = matchedClient
+        ? { id: matchedClient.id, name: `${matchedClient.firstName} ${matchedClient.lastName}`.trim(), email: matchedClient.email }
+        : { id: clientId, name: request.fullName, email: request.email };
+
+      const existingConversation = getConversation();
+      let conversationId = existingConversation?.id;
+
+      if (!conversationId) {
+        const conversation = messageStore.createConversation({
+          subject: `Réponse devis #${request.id}`,
+          participants: [adminParticipant, clientParticipant],
+          firstMessage: emailBody,
+          senderId: adminId,
+          senderName: adminParticipant.name,
+        });
+        conversationId = conversation.id;
+      } else {
+        messageStore.sendMessage({
+          conversationId,
+          senderId: adminId,
+          senderName: adminParticipant.name,
+          content: emailBody,
+        });
+      }
+
       appStore.updateQuoteRequest(request.id, { status: 'RESPONDED' });
+      if (matchedClient?.id || request.clientId || request.email) {
+        notificationStore.add({
+          userId: matchedClient?.id || request.clientId || request.email || 'client-unknown',
+          type: 'message',
+          title: 'Réponse à votre demande',
+          description: `Votre demande de devis #${request.id} a reçu une réponse.`,
+          link: '/client/messages',
+        });
+      }
       appStore.addToast({
         type: 'success',
-        title: 'Email prêt',
-        message: `Mailto prêt pour ${request.email}.`,
+        title: 'Message envoyé',
+        message: 'Votre réponse a bien été enregistrée dans la messagerie interne.',
       });
+      setIsEmailModalOpen(false);
     } catch (error) {
-      setEmailError('Impossible de préparer l’email.');
+      setEmailError('Une erreur est survenue lors de l’envoi.');
     } finally {
       setIsSendingEmail(false);
-      setIsEmailModalOpen(false);
     }
   };
 
-  const handleCreateQuote = () => {
+  const handleOpenCreateQuotePage = () => {
     if (!request) return;
-    if (!quoteTitle.trim()) {
-      setQuoteError('Le titre du devis est requis.');
-      return;
-    }
-
-    setIsCreatingQuote(true);
-    setQuoteError(null);
-
-    const clientId = matchedClient?.id || (request.clientId && request.clientId !== 'guest' ? request.clientId : `guest-${Date.now()}`);
-    const quoteNumber = `Q-${Date.now().toString().slice(-6)}`;
-    const newQuote = {
-      id: `quote-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      clientId,
-      clientName: request.fullName,
-      quoteNumber,
-      title: quoteTitle,
-      total: Number(quoteTotal),
-      currency: quoteCurrency,
-      status: quoteStatus,
-      issuedAt: new Date().toISOString(),
-      validUntil: new Date(quoteValidUntil).toISOString(),
-      notes: quoteNotes,
-    };
-
-    dashboardStore.addQuote(newQuote);
-    appStore.updateQuoteRequest(request.id, { status: 'CONVERTED' });
-    notificationStore.add({
-      userId: matchedClient?.id || request.clientId,
-      type: 'quote',
-      title: 'Votre devis est prêt',
-      description: `Votre demande de devis a été convertie en ${quoteNumber}.`,
-      link: '/client/devis',
-    });
-    appStore.addToast({
-      type: 'success',
-      title: 'Devis créé',
-      message: 'La demande est maintenant convertie en devis et le tableau de bord est mis à jour.',
-    });
-
-    setIsCreatingQuote(false);
-    setIsQuoteModalOpen(false);
+    appStore.updateQuoteRequest(request.id, { status: 'IN_PROGRESS' });
+    navigate(`/admin/devis/nouveau?requestId=${encodeURIComponent(request.id)}`);
   };
 
   const handleMarkAsProcessed = () => {
@@ -2214,7 +2214,7 @@ export function AdminQuoteRequestDetail() {
     appStore.addToast({
       type: 'success',
       title: 'Demandé traitée',
-      message: 'Le statut de la demande est passé à traité.',
+      message: 'Le statut de la demande est passé à traitée.',
     });
   };
 
@@ -2274,7 +2274,7 @@ export function AdminQuoteRequestDetail() {
           <Send className="w-4 h-4 mr-2" />
           Répondre par email
         </Button>
-        <Button variant="outline" onClick={() => setIsQuoteModalOpen(true)}>
+        <Button variant="outline" onClick={handleOpenCreateQuotePage}>
           <FileText className="w-4 h-4 mr-2" />
           Créer un devis
         </Button>
@@ -2315,47 +2315,220 @@ export function AdminQuoteRequestDetail() {
         </div>
       )}
 
-      {isQuoteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-3xl rounded-3xl border border-border-dark bg-surface shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border-dark">
-              <div>
-                <h2 className="text-xl font-semibold text-white">Créer un devis</h2>
-                <p className="text-sm text-text-muted">Générez un devis lié à cette demande et mettez-la à jour automatiquement.</p>
-              </div>
-              <button onClick={() => setIsQuoteModalOpen(false)} className="text-text-muted hover:text-white">Fermer</button>
-            </div>
-            <div className="grid gap-4 p-6 md:grid-cols-2">
-              <Input label="Titre du devis" value={quoteTitle} onChange={(event) => setQuoteTitle(event.target.value)} />
-              <Input label="Montant total" type="number" value={quoteTotal} onChange={(event) => setQuoteTotal(Number(event.target.value))} />
-              <Input label="Devise" value={quoteCurrency} onChange={(event) => setQuoteCurrency(event.target.value)} />
-              <Input label="Valide jusqu'au" type="date" value={quoteValidUntil} onChange={(event) => setQuoteValidUntil(event.target.value)} />
-              <Select label="Statut du devis" value={quoteStatus} onChange={(event) => setQuoteStatus(event.target.value)}>
-                <option value="SENT">Envoyé</option>
-                <option value="DRAFT">Brouillon</option>
-                <option value="VIEWED">Consulté</option>
-                <option value="ACCEPTED">Accepté</option>
-                <option value="REFUSED">Refusé</option>
-              </Select>
-              <div className="space-y-2 md:col-span-2">
-                <label className="block text-sm font-medium text-text-muted">Conditions</label>
-                <Textarea
-                  value={quoteNotes}
-                  onChange={(event) => setQuoteNotes(event.target.value)}
-                  rows={5}
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-3 px-6 py-4 border-t border-border-dark">
-              {quoteError && <p className="text-sm text-error-light flex-1">{quoteError}</p>}
-              <Button variant="outline" onClick={() => setIsQuoteModalOpen(false)}>Annuler</Button>
-              <Button variant="primary" onClick={handleCreateQuote} disabled={isCreatingQuote}>
-                {isCreatingQuote ? 'Création en cours...' : 'Créer le devis'}
-              </Button>
+    </div>
+  );
+}
+
+export function AdminQuoteCreate() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestId = searchParams.get('requestId');
+  const [quoteRequests, setQuoteRequests] = useState(appStore.getState().quoteRequests);
+  const [lineItems, setLineItems] = useState<QuoteLineItem[]>(() => [{ id: `item-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }]);
+  const [taxRate, setTaxRate] = useState(20);
+  const [quoteTitle, setQuoteTitle] = useState('');
+  const [clientName, setClientName] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
+  const [requestReference, setRequestReference] = useState('');
+  const [serviceDetail, setServiceDetail] = useState('');
+  const [budget, setBudget] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [validUntil, setValidUntil] = useState(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+  const [status, setStatus] = useState('SENT');
+  const [notes, setNotes] = useState('');
+  const [conditions, setConditions] = useState('Paiement à réception de facture. Validité du devis 7 jours.');
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = appStore.subscribe(() => setQuoteRequests(appStore.getState().quoteRequests));
+    return unsubscribe;
+  }, []);
+
+  const request = requestId ? quoteRequests.find((req) => req.id === requestId) : undefined;
+
+  useEffect(() => {
+    if (!request) return;
+    setClientName(request.fullName);
+    setClientEmail(request.email);
+    setRequestReference(request.id);
+    setServiceDetail(request.services.join(', '));
+    setBudget(request.budget || '');
+    setDeadline(request.deadline || '');
+    setQuoteTitle(`Devis ${request.services.join(', ')}`);
+    setNotes(`Demande enregistrée : ${request.description}`);
+  }, [request]);
+
+  const totalWithoutTax = lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+  const totalWithTax = totalWithoutTax * (1 + taxRate / 100);
+
+  const handleLineItemChange = (id: string, field: keyof QuoteLineItem, value: string | number) => {
+    setLineItems((current) => current.map((item) => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const handleAddLine = () => {
+    setLineItems((current) => [...current, { id: `item-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }]);
+  };
+
+  const handleRemoveLine = (id: string) => {
+    setLineItems((current) => current.filter((item) => item.id !== id));
+  };
+
+  const handleSubmit = () => {
+    if (!clientName.trim() || !clientEmail.trim()) {
+      setErrorMessage('Le nom et l’email du client sont requis.');
+      return;
+    }
+    if (!quoteTitle.trim()) {
+      setErrorMessage('Le titre du devis est requis.');
+      return;
+    }
+    if (lineItems.some((item) => !item.description.trim() || item.quantity < 1 || item.unitPrice < 0)) {
+      setErrorMessage('Chaque ligne doit contenir une description, une quantité et un prix unitaire valides.');
+      return;
+    }
+
+    setIsSaving(true);
+    setErrorMessage(null);
+
+    const clientId = request?.clientId || `client-${Date.now()}`;
+    const quoteNumber = `Q-${Date.now().toString().slice(-6)}`;
+    const newQuote = {
+      id: `quote-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      clientId,
+      clientName,
+      quoteNumber,
+      title: quoteTitle,
+      total: Math.round(totalWithTax),
+      currency: 'EUR',
+      status,
+      issuedAt: new Date().toISOString(),
+      validUntil: new Date(validUntil).toISOString(),
+      notes: `${notes}\n\nConditions : ${conditions}`,
+      lineItems,
+    };
+
+    dashboardStore.addQuote(newQuote);
+    if (request) {
+      appStore.updateQuoteRequest(request.id, { status: 'CONVERTED' });
+    }
+    if (request?.clientId || request?.email) {
+      notificationStore.add({
+        userId: request?.clientId || `client-${Date.now()}`,
+        type: 'quote',
+        title: 'Nouveau devis disponible',
+        description: `Un devis a été créé pour votre demande ${request?.id || requestReference}.`,
+        link: '/client/devis',
+      });
+    }
+    appStore.addToast({
+      type: 'success',
+      title: 'Devis enregistré',
+      message: 'Le devis est créé et synchronisé avec le tableau de bord client et admin.',
+    });
+    setIsSaving(false);
+    navigate('/admin/devis');
+  };
+
+  return (
+    <div className="p-6 lg:p-8 max-w-6xl mx-auto">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Créer un devis</h1>
+          <p className="text-text-muted">Générez un devis professionnel à partir de la demande de devis sélectionnée.</p>
+        </div>
+        <Button variant="outline" onClick={() => navigate('/admin/devis')}>Retour à la liste des devis</Button>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold text-white">Informations client</h2>
+            <p className="text-text-muted">Prérempli depuis la demande de devis.</p>
+          </div>
+          <Input label="Nom du client" value={clientName} onChange={(event) => setClientName(event.target.value)} />
+          <Input label="Email du client" value={clientEmail} onChange={(event) => setClientEmail(event.target.value)} />
+          <Input label="Référence demande" value={requestReference} readOnly />
+          <Input label="Service demandé" value={serviceDetail} onChange={(event) => setServiceDetail(event.target.value)} />
+          <Input label="Budget estimé" value={budget} onChange={(event) => setBudget(event.target.value)} />
+          <Input label="Délai demandé" value={deadline} onChange={(event) => setDeadline(event.target.value)} />
+        </Card>
+
+        <Card className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold text-white">Résumé du devis</h2>
+            <p className="text-text-muted">Lignes, taxes et conditions.</p>
+          </div>
+          <Input label="Titre du devis" value={quoteTitle} onChange={(event) => setQuoteTitle(event.target.value)} />
+          <Select label="Statut" value={status} onChange={(event) => setStatus(event.target.value)}>
+            <option value="DRAFT">Brouillon</option>
+            <option value="SENT">Envoyé</option>
+            <option value="VIEWED">Consulté</option>
+            <option value="ACCEPTED">Accepté</option>
+            <option value="REFUSED">Refusé</option>
+          </Select>
+          <Input label="Valide jusqu'au" type="date" value={validUntil} onChange={(event) => setValidUntil(event.target.value)} />
+          <div>
+            <label className="block text-sm font-medium text-text-muted">Lignes de devis</label>
+            <div className="space-y-3">
+              {lineItems.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-border-dark bg-surface-alt p-4">
+                  <div className="flex flex-wrap gap-3">
+                    <Input
+                      label="Description"
+                      value={item.description}
+                      onChange={(event) => handleLineItemChange(item.id, 'description', event.target.value)}
+                    />
+                    <Input
+                      label="Quantité"
+                      type="number"
+                      value={item.quantity}
+                      onChange={(event) => handleLineItemChange(item.id, 'quantity', Number(event.target.value))}
+                    />
+                    <Input
+                      label="Prix unitaire"
+                      type="number"
+                      value={item.unitPrice}
+                      onChange={(event) => handleLineItemChange(item.id, 'unitPrice', Number(event.target.value))}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm text-text-muted">
+                    <span>Sous-total : {formatCurrency(item.quantity * item.unitPrice)}</span>
+                    <Button variant="ghost" onClick={() => handleRemoveLine(item.id)}>
+                      Supprimer
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button variant="outline" onClick={handleAddLine}>Ajouter une ligne</Button>
             </div>
           </div>
+          <Input label="Taux de taxe (%)" type="number" value={taxRate} onChange={(event) => setTaxRate(Number(event.target.value))} />
+          <div className="rounded-2xl border border-border-dark bg-surface-alt p-4 text-sm text-text-muted">
+            <p>Sous-total : {formatCurrency(totalWithoutTax)}</p>
+            <p>Taxes ({taxRate}%): {formatCurrency(totalWithoutTax * (taxRate / 100))}</p>
+            <p className="mt-2 font-semibold text-white">Total TTC : {formatCurrency(totalWithTax)}</p>
+          </div>
+        </Card>
+      </div>
+
+      <Card className="mt-6 space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-white">Notes et conditions</h2>
+          <p className="text-text-muted">Ajoutez des détails contractuels.</p>
         </div>
-      )}
+        <Textarea label="Notes" value={notes} onChange={(event) => setNotes(event.target.value)} rows={5} />
+        <Textarea label="Conditions" value={conditions} onChange={(event) => setConditions(event.target.value)} rows={5} />
+      </Card>
+
+      {errorMessage && <p className="mt-4 text-sm text-error-light">{errorMessage}</p>}
+
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <Button variant="outline" onClick={() => navigate('/admin/devis')}>Annuler</Button>
+        <Button variant="primary" onClick={handleSubmit} disabled={isSaving}>
+          {isSaving ? 'Enregistrement en cours...' : 'Enregistrer le devis'}
+        </Button>
+      </div>
     </div>
   );
 }
