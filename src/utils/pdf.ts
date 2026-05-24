@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { formatCurrency, formatDate, formatDateTime } from '../data/mockData';
 import { companyInfo } from '../data';
-import type { DashboardQuote } from '../stores/dashboardStore';
+import type { DashboardInvoice, DashboardQuote } from '../stores/dashboardStore';
 
 const PRIMARY_COLOR = '#0D6EFD';
 const TEXT_COLOR = '#1F2937';
@@ -160,13 +160,8 @@ function drawInfoBoxes(doc: jsPDF, quote: DashboardQuote) {
   doc.text(quote.clientName, margin + 12, 198);
 
   doc.setFont('helvetica', 'normal');
-  const clientLines = [
-    quote.clientEmail || 'Email non renseigné',
-    quote.clientId || 'Référence client non précisée',
-  ].filter(Boolean);
-
   if (quote.clientEmail) doc.text(quote.clientEmail, margin + 12, 214);
-  if (quote.clientId) doc.text(`Référence : ${quote.clientId}`, margin + 12, 230);
+  if (quote.clientId) doc.text(`Référence client : ${quote.clientId}`, margin + 12, 230);
 
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(SECONDARY_TEXT);
@@ -183,7 +178,45 @@ function drawInfoBoxes(doc: jsPDF, quote: DashboardQuote) {
   }
 }
 
-function drawServicesTable(doc: jsPDF, quote: DashboardQuote) {
+function drawInvoiceInfoBoxes(doc: jsPDF, invoice: DashboardInvoice) {
+  const margin = 40;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const boxWidth = (pageWidth - margin * 2 - 20) / 2;
+  const boxHeight = 110;
+
+  doc.setDrawColor('#E5E7EB');
+  doc.setFillColor('#F9FAFB');
+  doc.roundedRect(margin, 165, boxWidth, boxHeight, 8, 8, 'FD');
+  doc.roundedRect(margin + boxWidth + 20, 165, boxWidth, boxHeight, 8, 8, 'FD');
+
+  doc.setFontSize(9);
+  doc.setTextColor(SECONDARY_TEXT);
+  doc.text('Informations client', margin + 12, 183);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(TEXT_COLOR);
+  doc.setFontSize(11);
+  doc.text(invoice.clientName, margin + 12, 198);
+
+  doc.setFont('helvetica', 'normal');
+  if (invoice.clientEmail) doc.text(invoice.clientEmail, margin + 12, 214);
+  if (invoice.clientId) doc.text(`Référence client : ${invoice.clientId}`, margin + 12, 230);
+  if (invoice.paymentMethod) doc.text(`Paiement : ${invoice.paymentMethod}`, margin + 12, 246);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(SECONDARY_TEXT);
+  doc.text('Informations de la facture', margin + boxWidth + 20 + 12, 183);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(TEXT_COLOR);
+
+  doc.text(`N° ${invoice.invoiceNumber}`, margin + boxWidth + 20 + 12, 198);
+  doc.text(`Émise le ${formatDate(invoice.issuedAt)}`, margin + boxWidth + 20 + 12, 214);
+  doc.text(`Échéance : ${formatDate(invoice.dueDate)}`, margin + boxWidth + 20 + 12, 230);
+  if (invoice.quoteNumber) {
+    doc.text(`Devis lié : ${invoice.quoteNumber}`, margin + boxWidth + 20 + 12, 246);
+  }
+}
+
+function drawServicesTable(doc: jsPDF, quote: DashboardQuote | DashboardInvoice) {
   const margin = 40;
   const startY = 290;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -298,6 +331,21 @@ export async function createQuotePdf(quote: DashboardQuote): Promise<Blob> {
   return doc.output('blob');
 }
 
+export async function createInvoicePdf(invoice: DashboardInvoice): Promise<Blob> {
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const logoDataUrl = await loadImageDataUrl('/Logo_pdf.svg');
+
+  doc.setFillColor('#ffffff');
+  doc.rect(0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), 'F');
+
+  drawHeader(doc, logoDataUrl, 'Facture');
+  drawInvoiceInfoBoxes(doc, invoice);
+  drawServicesTable(doc, invoice);
+  drawFooter(doc, invoice);
+
+  return doc.output('blob');
+}
+
 export async function downloadQuotePdf(quote: DashboardQuote) {
   const blob = await createQuotePdf(quote);
   const url = URL.createObjectURL(blob);
@@ -311,8 +359,28 @@ export async function downloadQuotePdf(quote: DashboardQuote) {
   return blob;
 }
 
+export async function downloadInvoicePdf(invoice: DashboardInvoice) {
+  const blob = await createInvoicePdf(invoice);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${invoice.invoiceNumber}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return blob;
+}
+
 export async function previewQuotePdf(quote: DashboardQuote) {
   const blob = await createQuotePdf(quote);
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  return url;
+}
+
+export async function previewInvoicePdf(invoice: DashboardInvoice) {
+  const blob = await createInvoicePdf(invoice);
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank');
   return url;

@@ -22,7 +22,7 @@ import {
   formatCurrency, formatDate, 
   formatDateTime, getStatusConfig
 } from '../../data/mockData';
-import { downloadQuotePdf } from '../../utils/pdf';
+import { downloadInvoicePdf, downloadQuotePdf } from '../../utils/pdf';
 
 const emptyClientFiles: any[] = [];
 const emptyClientPurchases: any[] = [];
@@ -1013,14 +1013,29 @@ export function ClientInvoiceDetail() {
           <thead>
             <tr className="border-b-2 border-gray-900">
               <th className="text-left py-3 text-sm font-semibold">Désignation</th>
+              <th className="text-center py-3 text-sm font-semibold">Quantité</th>
+              <th className="text-right py-3 text-sm font-semibold">Prix unitaire</th>
               <th className="text-right py-3 text-sm font-semibold">Total</th>
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-gray-200">
-              <td className="py-4 font-medium">{invoice.title}</td>
-              <td className="text-right py-4">{formatCurrency(invoice.total, invoice.currency)}</td>
-            </tr>
+            {(invoice.lineItems && invoice.lineItems.length > 0) ? (
+              invoice.lineItems.map((item) => (
+                <tr key={item.id} className="border-b border-gray-200">
+                  <td className="py-4 font-medium">{item.description}</td>
+                  <td className="py-4 text-center text-gray-600">{item.quantity}</td>
+                  <td className="py-4 text-right text-gray-600">{formatCurrency(item.unitPrice, invoice.currency)}</td>
+                  <td className="py-4 text-right font-semibold">{formatCurrency(item.quantity * item.unitPrice, invoice.currency)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr className="border-b border-gray-200">
+                <td className="py-4 font-medium">{invoice.title}</td>
+                <td className="py-4 text-center text-gray-600">1</td>
+                <td className="py-4 text-right text-gray-600">{formatCurrency(invoice.total, invoice.currency)}</td>
+                <td className="py-4 text-right font-semibold">{formatCurrency(invoice.total, invoice.currency)}</td>
+              </tr>
+            )}
           </tbody>
         </table>
 
@@ -1054,9 +1069,9 @@ export function ClientInvoiceDetail() {
             💳 Payer en ligne
           </Button>
         )}
-        <Button variant="outline" size="lg" onClick={() => {
+        <Button variant="outline" size="lg" onClick={async () => {
           appStore.addToast({ type: 'info', title: 'PDF généré', message: 'Le téléchargement de la facture va commencer.' });
-          window.print();
+          await downloadInvoicePdf(invoice);
         }}>
           <DownloadIcon className="w-5 h-5 mr-2" />
           Télécharger PDF

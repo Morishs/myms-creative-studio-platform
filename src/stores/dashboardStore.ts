@@ -56,7 +56,10 @@ export interface DashboardQuote {
 export interface DashboardInvoice {
   id: string;
   clientId: string;
+  clientEmail?: string;
   clientName: string;
+  quoteId?: string;
+  quoteNumber?: string;
   invoiceNumber: string;
   title: string;
   total: number;
@@ -64,8 +67,11 @@ export interface DashboardInvoice {
   amountDue: number;
   currency: string;
   status: string;
+  paymentMethod?: string;
   issuedAt: string;
   dueDate: string;
+  notes?: string;
+  lineItems?: Array<{ id: string; description: string; quantity: number; unitPrice: number }>;
 }
 
 export interface NewsletterSubscriber {
@@ -189,6 +195,21 @@ export const dashboardStore = {
     saveState(INVOICES_KEY, [...invoices, invoice]);
     notify();
     apiCreateInvoice(invoice).catch(() => undefined);
+  },
+
+  updateInvoice: (id: string, updates: Partial<DashboardInvoice>) => {
+    const invoices = loadState<DashboardInvoice[]>(INVOICES_KEY);
+    const updatedInvoices = invoices.map((invoice) => invoice.id === id ? { ...invoice, ...updates } : invoice);
+    saveState<DashboardInvoice[]>(INVOICES_KEY, updatedInvoices);
+    notify();
+    apiGetInvoices().catch(() => undefined);
+  },
+
+  deleteInvoice: (id: string) => {
+    const invoices = loadState<DashboardInvoice[]>(INVOICES_KEY);
+    const remainingInvoices = invoices.filter((invoice) => invoice.id !== id);
+    saveState(INVOICES_KEY, remainingInvoices);
+    notify();
   },
 
   getNewsletterSubscribers: (): NewsletterSubscriber[] => loadState<NewsletterSubscriber[]>(NEWSLETTER_KEY),

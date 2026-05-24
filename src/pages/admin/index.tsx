@@ -27,7 +27,25 @@ import {
   formatCurrency, formatDate, formatDateTime, getStatusConfig
 } from '../../data/mockData';
 import { services, portfolioProjects, resources, blogPosts, testimonials } from '../../data';
-import { createQuotePdf, downloadQuotePdf } from '../../utils/pdf';
+import { createQuotePdf, downloadInvoicePdf, downloadQuotePdf } from '../../utils/pdf';
+
+const invoiceStatusOptions = [
+  { value: 'DRAFT', label: 'Brouillon' },
+  { value: 'SENT', label: 'Envoyée' },
+  { value: 'PENDING', label: 'En attente' },
+  { value: 'PARTIALLY_PAID', label: 'Partiellement payée' },
+  { value: 'PAID', label: 'Payée' },
+  { value: 'OVERDUE', label: 'En retard' },
+  { value: 'CANCELLED', label: 'Annulée' },
+];
+
+const paymentMethodOptions = [
+  { value: 'VIREMENT', label: 'Virement bancaire' },
+  { value: 'CARTE', label: 'Carte bancaire' },
+  { value: 'CHEQUE', label: 'Chèque' },
+  { value: 'ESPECES', label: 'Espèces' },
+  { value: 'PAYPAL', label: 'PayPal' },
+];
 
 // ===== ADMIN LAYOUT =====
 const adminNavItems = [
@@ -834,47 +852,438 @@ export function AdminQuotes() {
 
 // ===== ADMIN INVOICES =====
 export function AdminInvoices() {
+  const { user } = useAuth();
+  const clients = getClients();
+  const quotes = dashboardStore.getQuotes();
   const [invoices, setInvoices] = useState(dashboardStore.getInvoices());
+  const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [sourceQuoteId, setSourceQuoteId] = useState('');
+  const [formState, setFormState] = useState({
+    clientId: '',
+    clientEmail: '',
+    clientName: '',
+    title: '',
+    invoiceNumber: `MYMS-FAC-${Date.now()}`,
+    quoteId: '',
+    quoteNumber: '',
+    status: 'DRAFT',
+    paymentMethod: 'VIREMENT',
+    issuedAt: new Date().toISOString().slice(0, 10),
+    dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    notes: 'Merci de régler selon les conditions de paiement indiquées.',
+    lineItems: [{ id: `li-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }],
+  });
 
   useEffect(() => {
     const unsubscribe = dashboardStore.subscribe(() => setInvoices(dashboardStore.getInvoices()));
     return unsubscribe;
   }, []);
 
+  const acceptedQuotes = quotes.filter((quote) => ['ACCEPTED', 'CONVERTED'].includes(quote.status));
+  const outstandingInvoices = invoices.filter((invoice) => invoice.status !== 'PAID');
+
+  const updateForm = (key: string, value: string | number) => {
+    setFormState((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateLineItem = (index: number, key: keyof typeof formState.lineItems[0], value: string | number) => {
+    setFormState((prev) => {
+      const lineItems = [...prev.lineItems];
+      lineItems[index] = { ...lineItems[index], [key]: value } as typeof lineItems[number];
+      return { ...prev, lineItems };
+    });
+  };
+
+  const addLineItem = () => {
+    setFormState((prev) => ({
+      ...prev,
+      lineItems: [...prev.lineItems, { id: `li-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }],
+    }));
+  };
+
+  const removeLineItem = (index: number) => {
+    setFormState((prev) => ({
+      ...prev,
+      lineItems: prev.lineItems.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const resetForm = () => {
+    setEditingInvoiceId(null);
+    setSourceQuoteId('');
+    setFormState({
+      clientId: '',
+      clientEmail: '',
+      clientName: '',
+      title: '',
+      invoiceNumber: `MYMS-FAC-${Date.now()}`,
+      quoteId: '',
+      quoteNumber: '',
+      status: 'DRAFT',
+      paymentMethod: 'VIREMENT',
+      issuedAt: new Date().toISOString().slice(0, 10),
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      notes: 'Merci de régler selon les conditions de paiement indiquées.',
+      lineItems: [{ id: `li-${Date.now()}`, description: '', quantity: 1, unitPrice: 0 }],
+    });
+  };
+
+  const selectClient = (clientId: string) => {
+    const client = clients.find((c) => c.id === clientId);
+    if (!client) return;
+    setFormState((prev) => ({
+      ...prev,
+      clientId: client.id,
+      clientEmail: client.email,
+      clientName: `${client.firstName} ${client.lastName}`,
+    }));
+  };
+
+  const fillFromQuote = (quoteId: string) => {
+    const quote = quotes.find((item) => item.id === quoteId);
+    if (!quote) return;
+    const client = clients.find((clientItem) => clientItem.id === quote.clientId);
+    setSourceQuoteId(quoteId);
+    setFormState({
+      clientId: quote.clientId,
+      clientEmail: quote.clientEmail || (client?.email ?? ''),
+      clientName: quote.clientName,
+      title: quote.title,
+      invoiceNumber: `MYMS-FAC-${Date.now()}`,
+      quoteId: quote.id,
+      quoteNumber: quote.quoteNumber,
+      status: 'SENT',
+      paymentMethod: 'VIREMENT',
+      issuedAt: new Date().toISOString().slice(0, 10),
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      notes: `Facture générée automatiquement depuis le devis ${quote.quoteNumber}.`,
+      lineItems: quote.lineItems?.map((item) => ({ ...item })) ?? [{ id: `li-${Date.now()}`, description: quote.title, quantity: 1, unitPrice: quote.total }],
+    });
+    setShowForm(true);
+  };
+
+  const computeTotals = () => {
+    const total = formState.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+    return { total, amountPaid: formState.status === 'PAID' ? total : 0, amountDue: formState.status === 'PAID' ? 0 : total };
+  };
+
+  const saveInvoice = () => {
+    if (!formState.clientId) {
+      appStore.addToast({ type: 'error', title: 'Client requis', message: 'Veuillez sélectionner un client avant de sauvegarder.' });
+      return;
+    }
+    setIsSubmitting(true);
+    const client = clients.find((c) => c.id === formState.clientId);
+    const totals = computeTotals();
+    const invoice = {
+      id: editingInvoiceId ?? `invoice-${Date.now()}`,
+      clientId: formState.clientId,
+      clientEmail: formState.clientEmail,
+      clientName: formState.clientName,
+      quoteId: formState.quoteId,
+      quoteNumber: formState.quoteNumber,
+      invoiceNumber: formState.invoiceNumber,
+      title: formState.title || `Facture ${formState.invoiceNumber}`,
+      currency: (client?.currency as string) || 'EUR',
+      status: formState.status,
+      paymentMethod: formState.paymentMethod,
+      issuedAt: formState.issuedAt,
+      dueDate: formState.dueDate,
+      notes: formState.notes,
+      lineItems: formState.lineItems,
+      total: totals.total,
+      amountPaid: totals.amountPaid,
+      amountDue: totals.amountDue,
+    };
+
+    if (editingInvoiceId) {
+      dashboardStore.updateInvoice(editingInvoiceId, invoice);
+      appStore.addToast({ type: 'success', title: 'Facture mise à jour', message: `La facture ${invoice.invoiceNumber} a été enregistrée.` });
+    } else {
+      dashboardStore.addInvoice(invoice);
+      appStore.addToast({ type: 'success', title: 'Facture créée', message: `La facture ${invoice.invoiceNumber} a bien été ajoutée.` });
+    }
+
+    if (invoice.status === 'SENT' && invoice.clientId) {
+      notificationStore.add({
+        userId: invoice.clientId,
+        type: 'invoice',
+        title: 'Nouvelle facture disponible',
+        description: `Votre facture ${invoice.invoiceNumber} est disponible dans votre espace client.`,
+        link: '/client/factures',
+      });
+    }
+
+    resetForm();
+    setShowForm(false);
+    setIsSubmitting(false);
+  };
+
+  const handleEditInvoice = (invoiceId: string) => {
+    const invoice = invoices.find((item) => item.id === invoiceId);
+    if (!invoice) return;
+    setEditingInvoiceId(invoice.id);
+    setSourceQuoteId(invoice.quoteId || '');
+    setFormState({
+      clientId: invoice.clientId,
+      clientEmail: invoice.clientEmail || '',
+      clientName: invoice.clientName,
+      title: invoice.title,
+      invoiceNumber: invoice.invoiceNumber,
+      quoteId: invoice.quoteId || '',
+      quoteNumber: invoice.quoteNumber || '',
+      status: invoice.status,
+      paymentMethod: invoice.paymentMethod || 'VIREMENT',
+      issuedAt: invoice.issuedAt,
+      dueDate: invoice.dueDate,
+      notes: invoice.notes || '',
+      lineItems: invoice.lineItems?.map((item) => ({ ...item })) ?? [{ id: `li-${Date.now()}`, description: invoice.title, quantity: 1, unitPrice: invoice.total }],
+    });
+    setShowForm(true);
+  };
+
+  const handleDeleteInvoice = (invoiceId: string) => {
+    if (!window.confirm('Supprimer cette facture ? Cette action est irréversible.')) return;
+    dashboardStore.deleteInvoice(invoiceId);
+    appStore.addToast({ type: 'success', title: 'Facture supprimée', message: 'La facture a bien été supprimée.' });
+  };
+
+  const handleMarkPaid = (invoiceId: string) => {
+    const invoice = invoices.find((item) => item.id === invoiceId);
+    if (!invoice) return;
+    dashboardStore.updateInvoice(invoiceId, { status: 'PAID', amountPaid: invoice.total, amountDue: 0 });
+    appStore.addToast({ type: 'success', title: 'Facture réglée', message: `La facture ${invoice.invoiceNumber} est marquée comme payée.` });
+    if (invoice.clientId) {
+      notificationStore.add({
+        userId: invoice.clientId,
+        type: 'invoice',
+        title: 'Facture payée',
+        description: `Votre facture ${invoice.invoiceNumber} a été réglée. Merci !`,
+        link: '/client/factures',
+      });
+    }
+  };
+
+  const handleSendInvoice = (invoiceId: string) => {
+    const invoice = invoices.find((item) => item.id === invoiceId);
+    if (!invoice || !user) return;
+    const subject = `Facture ${invoice.invoiceNumber}`;
+    const content = `Bonjour ${invoice.clientName},\n\nVotre facture ${invoice.invoiceNumber} est prête. Montant dû : ${formatCurrency(invoice.amountDue, invoice.currency)}. Vous pouvez la consulter dans votre espace client.`;
+
+    const existingConv = messageStore.getUserConversations(user.id).find((conversation) => conversation.participantIds.includes(invoice.clientId));
+    if (existingConv) {
+      messageStore.sendMessage({
+        conversationId: existingConv.id,
+        senderId: user.id,
+        senderName: `${user.firstName} ${user.lastName}`,
+        content,
+      });
+    } else {
+      messageStore.createConversation({
+        subject,
+        participants: [
+          { id: user.id, name: `${user.firstName} ${user.lastName}`, email: user.email },
+          { id: invoice.clientId, name: invoice.clientName, email: invoice.clientEmail || '' },
+        ],
+        firstMessage: content,
+        senderId: user.id,
+        senderName: `${user.firstName} ${user.lastName}`,
+      });
+    }
+
+    dashboardStore.updateInvoice(invoiceId, { status: 'SENT' });
+    notificationStore.add({
+      userId: invoice.clientId,
+      type: 'invoice',
+      title: 'Facture envoyée',
+      description: `La facture ${invoice.invoiceNumber} vous a été envoyée par message interne.`,
+      link: '/client/factures',
+    });
+    appStore.addToast({ type: 'success', title: 'Facture envoyée', message: `La facture ${invoice.invoiceNumber} a été envoyée.` });
+  };
+
+  const renderInvoiceForm = () => {
+    return (
+      <Card className="mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white">{editingInvoiceId ? 'Modifier la facture' : 'Nouvelle facture'}</h2>
+            <p className="text-text-muted">Créez ou mettez à jour une facture connectée au reste du tableau de bord.</p>
+          </div>
+          <Button variant="secondary" onClick={() => { resetForm(); setShowForm(false); }}>
+            Annuler
+          </Button>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2 mb-6">
+          <Select
+            label="Client"
+            value={formState.clientId}
+            onChange={(event) => selectClient(event.target.value)}
+            options={clients.map((client) => ({ value: client.id, label: `${client.firstName} ${client.lastName}` }))}
+          />
+          <Input
+            label="Numéro de facture"
+            value={formState.invoiceNumber}
+            onChange={(event) => updateForm('invoiceNumber', event.target.value)}
+          />
+          <Input
+            label="Titre"
+            value={formState.title}
+            onChange={(event) => updateForm('title', event.target.value)}
+          />
+          <Select
+            label="Statut"
+            value={formState.status}
+            onChange={(event) => updateForm('status', event.target.value)}
+            options={invoiceStatusOptions}
+          />
+          <Input
+            label="Date d'émission"
+            type="date"
+            value={formState.issuedAt}
+            onChange={(event) => updateForm('issuedAt', event.target.value)}
+          />
+          <Input
+            label="Date limite"
+            type="date"
+            value={formState.dueDate}
+            onChange={(event) => updateForm('dueDate', event.target.value)}
+          />
+          <Select
+            label="Méthode de paiement"
+            value={formState.paymentMethod}
+            onChange={(event) => updateForm('paymentMethod', event.target.value)}
+            options={paymentMethodOptions}
+          />
+          <Input
+            label="Email client"
+            value={formState.clientEmail}
+            onChange={(event) => updateForm('clientEmail', event.target.value)}
+          />
+        </div>
+
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-white">Lignes de facture</h3>
+            <Button variant="secondary" onClick={addLineItem}>Ajouter une ligne</Button>
+          </div>
+          {formState.lineItems.map((item, index) => (
+            <div key={item.id} className="grid gap-3 md:grid-cols-4 items-end bg-surface-alt rounded-xl p-4">
+              <Input
+                label="Description"
+                value={item.description}
+                onChange={(event) => updateLineItem(index, 'description', event.target.value)}
+              />
+              <Input
+                label="Quantité"
+                type="number"
+                value={item.quantity}
+                min={1}
+                onChange={(event) => updateLineItem(index, 'quantity', Number(event.target.value))}
+              />
+              <Input
+                label="Prix unitaire"
+                type="number"
+                value={item.unitPrice}
+                min={0}
+                step={1}
+                onChange={(event) => updateLineItem(index, 'unitPrice', Number(event.target.value))}
+              />
+              <div className="space-y-2">
+                <p className="text-xs text-text-muted">Sous-total</p>
+                <p className="text-sm font-semibold text-white">{formatCurrency(item.quantity * item.unitPrice, formState.status === 'PAID' ? 'EUR' : 'EUR')}</p>
+                <Button variant="ghost" onClick={() => removeLineItem(index)}>
+                  Supprimer
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Textarea
+          label="Notes"
+          value={formState.notes}
+          onChange={(event) => updateForm('notes', event.target.value)}
+        />
+
+        <div className="flex flex-wrap gap-3 justify-end mt-6">
+          <Button variant="secondary" onClick={() => { resetForm(); setShowForm(false); }}>Annuler</Button>
+          <Button variant="primary" onClick={saveInvoice} isLoading={isSubmitting}>
+            Enregistrer la facture
+          </Button>
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <div className="p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Factures</h1>
-          <p className="text-text-muted">{invoices.length} factures au total</p>
+          <p className="text-text-muted">{invoices.length} factures au total, dont {outstandingInvoices.length} impayées</p>
         </div>
-        <Button variant="primary" onClick={() => appStore.addToast({ type: 'info', title: 'Nouvelle facture', message: 'Ouverture de l\'éditeur de facture…' })}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvelle facture
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="secondary" onClick={() => setShowForm(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nouvelle facture
+          </Button>
+          <Select
+            label="Créer depuis un devis accepté"
+            value={sourceQuoteId}
+            onChange={(event) => fillFromQuote(event.target.value)}
+            options={[{ value: '', label: 'Sélectionner un devis' }, ...acceptedQuotes.map((quote) => ({ value: quote.id, label: `${quote.quoteNumber} — ${quote.clientName}` }))]}
+          />
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {invoices.map((invoice) => {
-          const status = getStatusConfig(invoice.status);
-          return (
-            <Link key={invoice.id} to={`/admin/factures/${invoice.id}`}>
-              <Card hover>
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs text-text-muted mb-1">{invoice.invoiceNumber}</p>
-                    <h3 className="font-semibold text-white">{invoice.title}</h3>
-                    <p className="text-sm text-text-muted">Client: {invoice.clientName}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-white">{formatCurrency(invoice.total, invoice.currency)}</p>
-                    <Badge variant={status.variant}>{status.label}</Badge>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
+      {showForm && renderInvoiceForm()}
+
+      <div className="overflow-x-auto rounded-3xl border border-border-dark bg-surface-alt p-4">
+        <table className="min-w-full border-collapse text-left text-sm">
+          <thead>
+            <tr className="text-text-muted uppercase text-xs tracking-[0.12em]">
+              <th className="py-4 px-3">Numéro</th>
+              <th className="py-4 px-3">Client</th>
+              <th className="py-4 px-3">Montant</th>
+              <th className="py-4 px-3">Statut</th>
+              <th className="py-4 px-3">Émise</th>
+              <th className="py-4 px-3">Échéance</th>
+              <th className="py-4 px-3">Paiement</th>
+              <th className="py-4 px-3">Devis associé</th>
+              <th className="py-4 px-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoices.map((invoice) => {
+              const status = getStatusConfig(invoice.status);
+              return (
+                <tr key={invoice.id} className="border-t border-border-dark hover:bg-surface-dark transition-colors">
+                  <td className="py-4 px-3 align-top text-white font-medium">{invoice.invoiceNumber}</td>
+                  <td className="py-4 px-3 align-top text-text-muted">{invoice.clientName}</td>
+                  <td className="py-4 px-3 align-top text-white font-semibold">{formatCurrency(invoice.total, invoice.currency)}</td>
+                  <td className="py-4 px-3 align-top"><Badge variant={status.variant}>{status.label}</Badge></td>
+                  <td className="py-4 px-3 align-top text-text-muted">{formatDate(invoice.issuedAt)}</td>
+                  <td className="py-4 px-3 align-top text-text-muted">{formatDate(invoice.dueDate)}</td>
+                  <td className="py-4 px-3 align-top text-text-muted">{invoice.paymentMethod || '—'}</td>
+                  <td className="py-4 px-3 align-top text-text-muted">{invoice.quoteNumber || '—'}</td>
+                  <td className="py-4 px-3 align-top space-y-2">
+                    <Button variant="ghost" onClick={() => handleEditInvoice(invoice.id)}>Modifier</Button>
+                    <Button variant="ghost" onClick={() => downloadInvoicePdf(invoice)}>PDF</Button>
+                    <Button variant="outline" onClick={() => handleSendInvoice(invoice.id)}>Envoyer</Button>
+                    {invoice.amountDue > 0 && invoice.status !== 'PAID' && (
+                      <Button variant="success" onClick={() => handleMarkPaid(invoice.id)}>Marquer payé</Button>
+                    )}
+                    <Button variant="danger" onClick={() => handleDeleteInvoice(invoice.id)}>Supprimer</Button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -3151,6 +3560,7 @@ export function AdminQuoteDetail() {
 
 export function AdminInvoiceDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [invoices, setInvoices] = useState(dashboardStore.getInvoices());
 
   useEffect(() => {
@@ -3163,6 +3573,53 @@ export function AdminInvoiceDetail() {
   if (!invoice) {
     return <div className="p-6 text-center text-text-muted">Facture non trouvée</div>;
   }
+
+  const handleMarkPaid = () => {
+    dashboardStore.updateInvoice(invoice.id, { status: 'PAID', amountPaid: invoice.total, amountDue: 0 });
+    notificationStore.add({
+      userId: invoice.clientId,
+      type: 'invoice',
+      title: 'Facture payée',
+      description: `La facture ${invoice.invoiceNumber} a été réglée.`,
+      link: '/client/factures',
+    });
+    appStore.addToast({ type: 'success', title: 'Facture payée', message: 'La facture a été marquée comme payée.' });
+  };
+
+  const handleSend = () => {
+    if (!user) return;
+    const subject = `Facture ${invoice.invoiceNumber}`;
+    const content = `Bonjour ${invoice.clientName},\n\nVotre facture ${invoice.invoiceNumber} est prête. Montant dû : ${formatCurrency(invoice.amountDue, invoice.currency)}.`;
+    const existingConv = messageStore.getUserConversations(user.id).find((conversation) => conversation.participantIds.includes(invoice.clientId));
+    if (existingConv) {
+      messageStore.sendMessage({
+        conversationId: existingConv.id,
+        senderId: user.id,
+        senderName: `${user.firstName} ${user.lastName}`,
+        content,
+      });
+    } else {
+      messageStore.createConversation({
+        subject,
+        participants: [
+          { id: user.id, name: `${user.firstName} ${user.lastName}`, email: user.email },
+          { id: invoice.clientId, name: invoice.clientName, email: invoice.clientEmail || '' },
+        ],
+        firstMessage: content,
+        senderId: user.id,
+        senderName: `${user.firstName} ${user.lastName}`,
+      });
+    }
+    dashboardStore.updateInvoice(invoice.id, { status: 'SENT' });
+    notificationStore.add({
+      userId: invoice.clientId,
+      type: 'invoice',
+      title: 'Facture envoyée',
+      description: `Votre facture ${invoice.invoiceNumber} a été envoyée dans le système de messagerie interne.`,
+      link: '/client/factures',
+    });
+    appStore.addToast({ type: 'success', title: 'Envoyé au client', message: 'La facture a bien été envoyée.' });
+  };
 
   return (
     <div className="p-6 lg:p-8">
@@ -3189,18 +3646,18 @@ export function AdminInvoiceDetail() {
 
       <div className="flex flex-wrap gap-3">
         {invoice.amountDue > 0 && (
-          <Button variant="primary" onClick={() => appStore.addToast({ type: 'success', title: 'Facture payée', message: 'La facture a été marquée comme payée.' })}>
+          <Button variant="primary" onClick={handleMarkPaid}>
             <CheckCircle className="w-4 h-4 mr-2" />
             Marquer comme payée
           </Button>
         )}
-        <Button variant="outline" onClick={() => appStore.addToast({ type: 'success', title: 'Facture envoyée', message: 'Le client a été notifié par email.' })}>
+        <Button variant="outline" onClick={handleSend}>
           <Send className="w-4 h-4 mr-2" />
           Envoyer au client
         </Button>
-        <Button variant="outline" onClick={() => { appStore.addToast({ type: 'info', title: 'PDF généré', message: 'Téléchargement de la facture.' }); window.print(); }}>
+        <Button variant="outline" onClick={() => downloadInvoicePdf(invoice)}>
           <FileText className="w-4 h-4 mr-2" />
-          Générer PDF
+          Télécharger PDF
         </Button>
       </div>
     </div>
