@@ -2466,13 +2466,18 @@ export function AdminQuoteCreate() {
             <p className="text-text-muted">Lignes, taxes et conditions.</p>
           </div>
           <Input label="Titre du devis" value={quoteTitle} onChange={(event) => setQuoteTitle(event.target.value)} />
-          <Select label="Statut" value={status} onChange={(event) => setStatus(event.target.value)}>
-            <option value="DRAFT">Brouillon</option>
-            <option value="SENT">Envoyé</option>
-            <option value="VIEWED">Consulté</option>
-            <option value="ACCEPTED">Accepté</option>
-            <option value="REFUSED">Refusé</option>
-          </Select>
+          <Select
+            label="Statut"
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+            options={[
+              { value: 'DRAFT', label: 'Brouillon' },
+              { value: 'SENT', label: 'Envoyé' },
+              { value: 'VIEWED', label: 'Consulté' },
+              { value: 'ACCEPTED', label: 'Accepté' },
+              { value: 'REFUSED', label: 'Refusé' },
+            ]}
+          />
           <Input label="Valide jusqu'au" type="date" value={validUntil} onChange={(event) => setValidUntil(event.target.value)} />
           <div>
             <label className="block text-sm font-medium text-text-muted">Lignes de devis</label>
