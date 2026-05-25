@@ -557,11 +557,7 @@ export function Chatbot() {
       {/* Bouton flottant */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-card transition-all ${
-          isOpen
-            ? 'bg-surface-alt border border-border'
-            : 'bg-gradient-to-r from-brand to-accent hover:shadow-accent/30 hover:shadow-xl'
-        }`}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center bg-blue-primary text-white shadow-card transition-all hover:bg-blue-hover hover:shadow-xl"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -589,13 +585,13 @@ export function Chatbot() {
             className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-surface-alt rounded-3xl border border-border shadow-2xl overflow-hidden"
           >
             {/* En-tête */}
-            <div className="bg-gradient-to-r from-brand to-accent p-4">
+            <div className="bg-blue-primary p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-white text-sm">Myms Assistant</h3>
+                  <h3 className="font-semibold text-white text-sm chatbot-title">Myms Assistant</h3>
                   <p className="text-xs text-white/80 flex items-center gap-1">
                     <span className="w-2 h-2 bg-success rounded-full" />
                     En ligne · Répond instantanément
@@ -735,7 +731,7 @@ export function Chatbot() {
                 <button
                   onClick={handleSend}
                   disabled={!inputValue.trim()}
-                  className="w-10 h-10 rounded-full bg-gradient-to-r from-brand to-accent flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-brand/30 transition-all"
+                  className="w-10 h-10 rounded-full bg-blue-primary flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-hover hover:shadow-lg hover:shadow-blue-primary/30 transition-all"
                 >
                   <Send className="w-4 h-4" />
                 </button>

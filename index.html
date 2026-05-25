@@ -9,6 +9,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('myms_theme');
+          if (theme === 'light') {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+          } else {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+          }
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <style>html{background:#0A0A0A}body{margin:0;background:#0A0A0A;color:#FFFFFF;min-height:100vh;}</style>
   </head>
   <body>

@@ -120,7 +120,7 @@ export function Footer() {
 
         {/* Bottom */}
         <div className="mt-16 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-text-muted text-sm">
+          <p className="text-text-secondary text-sm">
             © {new Date().getFullYear()} Myms Studio. Tous droits réservés.
           </p>
 

@@ -84,7 +84,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden text-white"
+            className="lg:hidden p-2 rounded-lg text-menu-icon bg-menu-icon hover:bg-menu-icon transition-colors"
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -426,7 +426,7 @@ export function ClientProjects() {
     const updateProjects = () => setProjects(dashboardStore.getProjects());
     const unsubscribe = dashboardStore.subscribe(updateProjects);
     updateProjects();
-    return unsubscribe;
+    return () => { unsubscribe(); };
   }, []);
 
   const userProjects = projects.filter((project) => project.clientId === user?.id);
@@ -546,7 +546,7 @@ export function ClientProjectDetail() {
     const updateProjects = () => setProjects(dashboardStore.getProjects());
     const unsubscribe = dashboardStore.subscribe(updateProjects);
     updateProjects();
-    return unsubscribe;
+    return () => { unsubscribe(); };
   }, []);
 
   const project = projects.find((p) => p.id === id && p.clientId === user?.id);
@@ -663,7 +663,7 @@ export function ClientQuotes() {
     const updateQuotes = () => setQuotes(dashboardStore.getQuotes());
     const unsubscribe = dashboardStore.subscribe(updateQuotes);
     updateQuotes();
-    return unsubscribe;
+    return () => { unsubscribe(); };
   }, []);
 
   const userQuotes = quotes.filter((quote) => quote.clientId === user?.id);
@@ -710,7 +710,7 @@ export function ClientQuoteDetail() {
     const updateQuotes = () => setQuotes(dashboardStore.getQuotes());
     const unsubscribe = dashboardStore.subscribe(updateQuotes);
     updateQuotes();
-    return unsubscribe;
+    return () => { unsubscribe(); };
   }, []);
 
   const quote = quotes.find((q) => q.id === id && q.clientId === user?.id);
@@ -914,7 +914,7 @@ export function ClientInvoices() {
     const updateInvoices = () => setInvoices(dashboardStore.getInvoices());
     const unsubscribe = dashboardStore.subscribe(updateInvoices);
     updateInvoices();
-    return unsubscribe;
+    return () => { unsubscribe(); };
   }, []);
 
   const userInvoices = invoices.filter((invoice) => invoice.clientId === user?.id);
@@ -967,7 +967,7 @@ export function ClientInvoiceDetail() {
     const updateInvoices = () => setInvoices(dashboardStore.getInvoices());
     const unsubscribe = dashboardStore.subscribe(updateInvoices);
     updateInvoices();
-    return unsubscribe;
+    return () => { unsubscribe(); };
   }, []);
 
   const invoice = invoices.find((i) => i.id === id && i.clientId === user?.id);
@@ -1564,7 +1564,7 @@ export function ClientMessages() {
                     <p className="text-xs text-text-muted">{(attachment.size / 1024).toFixed(1)} KB</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => removeAttachment(attachment.id)} className="text-text-muted hover:text-white">Supprimer</button>
+                <button type="button" onClick={() => removeAttachment(attachment.id)} className="rounded-lg bg-error text-white px-3 py-2 text-sm font-medium hover:bg-error/90 transition-colors">Supprimer</button>
               </div>
             ))}
           </div>
@@ -1639,7 +1639,7 @@ export function ClientMessages() {
         </div>
       </div>
       <div className="p-4 border-t border-border-dark flex gap-2">
-        <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="flex-1">Annuler</Button>
+        <Button variant="danger" onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="flex-1">Annuler</Button>
         <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId} className="flex-1">
           <Send className="w-4 h-4 mr-2" />Envoyer
         </Button>
@@ -1717,7 +1717,7 @@ export function ClientMessages() {
                 <label className="block text-sm font-medium text-text-muted mb-2">Message <span className="text-error-light">*</span></label>
                 <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-surface-dark border border-border-dark rounded-lg text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand resize-none mb-4" />
                 <div className="flex gap-2 justify-end">
-                  <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }}>Annuler</Button>
+                  <Button variant="danger" onClick={() => { setShowNew(false); setNewRecipientId(''); }}>Annuler</Button>
                   <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId}>
                     <Send className="w-4 h-4 mr-2" />Envoyer
                   </Button>
@@ -1767,7 +1767,7 @@ export function ClientMessages() {
                             <p className="text-xs text-text-muted">{(attachment.size / 1024).toFixed(1)} KB</p>
                           </div>
                         </div>
-                        <button type="button" onClick={() => removeAttachment(attachment.id)} className="text-text-muted hover:text-white">Supprimer</button>
+                        <button type="button" onClick={() => removeAttachment(attachment.id)} className="rounded-lg bg-error text-white px-3 py-2 text-sm font-medium hover:bg-error/90 transition-colors">Supprimer</button>
                       </div>
                     ))}
                   </div>
@@ -1866,7 +1866,7 @@ export function ClientProfile() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
         <Card className="lg:col-span-1 text-center">
-          <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-3xl font-bold mb-4">
+          <div className="w-24 h-24 mx-auto rounded-full bg-brand flex items-center justify-center text-white text-3xl font-bold mb-4">
             {user.firstName?.[0]}{user.lastName?.[0]}
           </div>
           <h2 className="text-xl font-semibold text-white mb-1">

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, LogOut, LayoutDashboard, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
 import { Logo } from '../Logo';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from '../../utils/cn';
 
 const navLinks = [
@@ -24,6 +25,7 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,13 +81,26 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+              className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface-alt text-text-primary transition-all duration-200 hover:border-brand hover:text-brand"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </button>
+
             {isAuthenticated ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alt transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-sm font-semibold">
+                  <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-sm font-semibold">
                     {user?.firstName?.[0]}{user?.lastName?.[0]}
                   </div>
                   <span className="text-sm text-text-primary">{user?.firstName}</span>
@@ -178,6 +193,15 @@ export function Header() {
                 </Link>
               ))}
               <div className="pt-4 border-t border-border space-y-3">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface-alt px-4 py-3 text-sm font-medium text-text-primary transition-all duration-200 hover:border-brand hover:text-brand"
+                >
+                  {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  {theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+                </button>
                 {isAuthenticated ? (
                   <>
                     <Link to={dashboardLink} className="block py-2 text-lg font-medium text-text-secondary hover:text-brand">

@@ -49,8 +49,9 @@ export function Home() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-20">
         {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-surface-alt via-[#111111] to-surface-alt">
+        <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzLTItMi0yLTQgMi00IDItNCAyIDIgMiA0LTIgNC0yIDQtMi0yLTItNCAyLTQgMi00IDIgMiAyIDQtMiA0LTIgNHoiIHN0cm9rZT0iIzJBMkEyQSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjwvZz48L3N2Zz4=')] opacity-30"></div>
+          <div className="absolute inset-0 bg-white/65 hero-overlay"></div>
           <div className="absolute top-10 md:top-1/4 right-0 md:right-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-brand/10 rounded-full blur-[128px] pointer-events-none"></div>
           <div className="absolute bottom-10 md:bottom-1/4 left-0 md:left-1/4 w-56 sm:w-72 md:w-96 h-56 sm:h-72 md:h-96 bg-warning/10 rounded-full blur-[128px] pointer-events-none"></div>
         </div>
@@ -71,10 +72,10 @@ export function Home() {
             
             <motion.h1 
               variants={fadeInUp}
-              className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight mb-6"
+              className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-950 leading-tight mb-6 hero-title"
             >
               Créons des{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-warning">
+              <span className="text-brand">
                 identités visuelles
               </span>{' '}
               qui marquent les esprits
@@ -82,7 +83,7 @@ export function Home() {
             
             <motion.p 
               variants={fadeInUp}
-              className="text-xl text-text-muted mb-10 max-w-2xl"
+              className="text-xl text-text-muted mb-10 max-w-2xl hero-copy"
             >
               Myms est un studio créatif spécialisé en design graphique, infographie et community management. 
               Nous transformons vos idées en visuels percutants qui font la différence.
@@ -99,7 +100,7 @@ export function Home() {
                 </Button>
               </Link>
               <Link to="/portfolio">
-                <Button variant="outline" size="lg">
+                <Button variant="outline" size="lg" className="text-brand border-brand hover:bg-brand/10 hover:text-brand">
                   Voir nos réalisations
                 </Button>
               </Link>
@@ -393,7 +394,7 @@ export function Home() {
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
               Un projet en tête ? Parlons-en.
             </h2>
-            <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
+            <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto cta-light-text">
               Demandez votre devis gratuit et recevez une réponse sous 24 à 48h. 
               Transformons votre vision en réalité.
             </p>
@@ -415,7 +416,7 @@ export function Home() {
               </Link>
             </div>
             
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-white/80">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-white/80 cta-light-text">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <span>Devis gratuit</span>

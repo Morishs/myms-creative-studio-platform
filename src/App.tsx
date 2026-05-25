@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { Chatbot } from './components/Chatbot';
@@ -64,11 +65,12 @@ function AuthLayout({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastContainer />
-      <Router>
-        <ScrollToTop />
-        <Routes>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastContainer />
+        <Router>
+          <ScrollToTop />
+          <Routes>
           {/* Auth routes (no header/footer) */}
           <Route path="/auth/connexion" element={<AuthLayout><Login /></AuthLayout>} />
           <Route path="/auth/inscription" element={<AuthLayout><Register /></AuthLayout>} />
@@ -138,6 +140,7 @@ export default function App() {
         </Routes>
       </Router>
     </AuthProvider>
+  </ThemeProvider>
   );
 }
 

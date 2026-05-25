@@ -134,7 +134,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden text-white"
+            className="lg:hidden p-2 rounded-lg text-menu-icon bg-menu-icon hover:bg-menu-icon transition-colors"
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -1195,7 +1195,7 @@ export function AdminInvoices() {
               <div className="space-y-2">
                 <p className="text-xs text-text-muted">Sous-total</p>
                 <p className="text-sm font-semibold text-white">{formatCurrency(item.quantity * item.unitPrice, formState.status === 'PAID' ? 'EUR' : 'EUR')}</p>
-                <Button variant="ghost" onClick={() => removeLineItem(index)}>
+                <Button variant="danger" onClick={() => removeLineItem(index)}>
                   Supprimer
                 </Button>
               </div>
@@ -1210,7 +1210,7 @@ export function AdminInvoices() {
         />
 
         <div className="flex flex-wrap gap-3 justify-end mt-6">
-          <Button variant="primary" onClick={() => { resetForm(); setShowForm(false); }}>Annuler</Button>
+          <Button variant="danger" onClick={() => { resetForm(); setShowForm(false); }}>Annuler</Button>
           <Button variant="primary" onClick={saveInvoice} isLoading={isSubmitting}>
             Enregistrer la facture
           </Button>
@@ -2213,7 +2213,7 @@ export function AdminMessages() {
         </div>
       </div>
       <div className="p-4 border-t border-border-dark flex gap-2">
-        <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="flex-1">Annuler</Button>
+        <Button variant="danger" onClick={() => { setShowNew(false); setNewRecipientId(''); }} className="flex-1">Annuler</Button>
         <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId} className="flex-1">
           <Send className="w-4 h-4 mr-2" />Envoyer
         </Button>
@@ -2300,7 +2300,7 @@ export function AdminMessages() {
               <label className="block text-sm font-medium text-text-muted mb-2">Message <span className="text-error-light">*</span></label>
               <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Écrivez votre message…" rows={4} className="w-full px-4 py-3 bg-surface-dark border border-border-dark rounded-lg text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand resize-none mb-4" />
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => { setShowNew(false); setNewRecipientId(''); }}>Annuler</Button>
+                <Button variant="danger" onClick={() => { setShowNew(false); setNewRecipientId(''); }}>Annuler</Button>
                 <Button variant="primary" onClick={handleNewConversation} disabled={!newSubject.trim() || !input.trim() || !newRecipientId}>
                   <Send className="w-4 h-4 mr-2" />Envoyer
                 </Button>
@@ -2753,7 +2753,7 @@ export function AdminQuoteRequestDetail() {
               {emailError && <p className="text-sm text-error-light">{emailError}</p>}
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3 px-6 py-4 border-t border-border-dark">
-              <Button variant="outline" onClick={() => setIsEmailModalOpen(false)}>Annuler</Button>
+              <Button variant="danger" onClick={() => setIsEmailModalOpen(false)}>Annuler</Button>
               <Button variant="primary" onClick={handleSendEmail} disabled={isSendingEmail}>
                 {isSendingEmail ? 'Préparation...' : 'Envoyer par email'}
               </Button>
@@ -2961,7 +2961,7 @@ export function AdminQuoteCreate() {
                   </div>
                   <div className="mt-3 flex items-center justify-between text-sm text-text-muted">
                     <span>Sous-total : {formatCurrency(item.quantity * item.unitPrice)}</span>
-                    <Button variant="ghost" onClick={() => handleRemoveLine(item.id)}>
+                    <Button variant="danger" onClick={() => handleRemoveLine(item.id)}>
                       Supprimer
                     </Button>
                   </div>
@@ -2991,7 +2991,7 @@ export function AdminQuoteCreate() {
       {errorMessage && <p className="mt-4 text-sm text-error-light">{errorMessage}</p>}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Button variant="outline" onClick={() => navigate('/admin/devis')}>Annuler</Button>
+        <Button variant="danger" onClick={() => navigate('/admin/devis')}>Annuler</Button>
         <Button variant="primary" onClick={handleSubmit} disabled={isSaving}>
           {isSaving ? 'Enregistrement en cours...' : 'Enregistrer le devis'}
         </Button>
@@ -3427,14 +3427,14 @@ export function AdminQuoteDetail() {
           {isEditing ? 'Annuler' : 'Modifier'}
         </Button>
         <Button
-          variant="outline"
+          variant="danger"
           onClick={() => {
             if (!window.confirm('Confirmer la suppression de ce devis ?')) return;
             dashboardStore.deleteQuote(quote.id);
             appStore.addToast({ type: 'success', title: 'Devis supprimé', message: 'Le devis a bien été supprimé.' });
             navigate('/admin/devis');
           }}
-          className="text-error-light border-error-light hover:bg-error-light/10 hover:text-white"
+          className="inline-flex items-center gap-2"
         >
           <Trash2 className="w-4 h-4 mr-2" />
           Supprimer
@@ -3535,7 +3535,7 @@ export function AdminQuoteDetail() {
                           value={item.unitPrice}
                           onChange={(event) => handleEditLineItemChange(item.id, 'unitPrice', Number(event.target.value))}
                         />
-                        <Button variant="ghost" onClick={() => handleRemoveEditLine(item.id)}>
+                        <Button variant="danger" onClick={() => handleRemoveEditLine(item.id)}>
                           Supprimer
                         </Button>
                       </div>
@@ -3548,7 +3548,7 @@ export function AdminQuoteDetail() {
 
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="primary" onClick={handleSaveQuote}>Enregistrer les modifications</Button>
-                <Button variant="outline" onClick={handleToggleEdit}>Annuler</Button>
+                <Button variant="danger" onClick={handleToggleEdit}>Annuler</Button>
               </div>
             </div>
           </Card>
