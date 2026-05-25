@@ -69,11 +69,12 @@ const adminNavItems = [
 
 const projectStatusOptions = [
   { value: 'PENDING', label: 'En attente' },
+  { value: 'PLANNED', label: 'Planifié' },
   { value: 'IN_PROGRESS', label: 'En cours' },
   { value: 'REVISION', label: 'En révision' },
   { value: 'DELIVERED', label: 'Livré' },
   { value: 'COMPLETED', label: 'Terminé' },
-  { value: 'CANCELLED', label: 'Annulé' },
+  { value: 'SUSPENDED', label: 'Suspendu' },
 ];
 
 interface QuoteLineItem {
@@ -1303,11 +1304,31 @@ export function AdminInvoices() {
 export function AdminProjects() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState(dashboardStore.getProjects());
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
     const unsubscribe = dashboardStore.subscribe(() => setProjects(dashboardStore.getProjects()));
     return unsubscribe;
   }, []);
+
+  const acceptedQuotes = dashboardStore.getQuotes().filter((quote) => quote.status === 'ACCEPTED');
+
+  const filteredProjects = projects
+    .filter((project) => {
+      const searchValue = search.toLowerCase();
+      return (
+        (project.name.toLowerCase().includes(searchValue) || project.clientName.toLowerCase().includes(searchValue) || project.serviceType.toLowerCase().includes(searchValue))
+        && (!statusFilter || project.status === statusFilter)
+      );
+    })
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+  const handleDeleteProject = (projectId: string) => {
+    if (!window.confirm('Supprimer ce projet ? Cette action est irréversible.')) return;
+    dashboardStore.deleteProject(projectId);
+    appStore.addToast({ type: 'success', title: 'Projet supprimé', message: 'Le projet a été supprimé du tableau de bord.' });
+  };
 
   return (
     <div className="p-6 lg:p-8">
@@ -1316,45 +1337,95 @@ export function AdminProjects() {
           <h1 className="text-3xl font-bold text-white mb-2">Projets</h1>
           <p className="text-text-muted">{projects.length} projet(s) au total</p>
         </div>
-        <Button variant="primary" onClick={() => navigate('/admin/projets/nouveau')}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nouveau projet
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="primary" onClick={() => navigate('/admin/projets/nouveau')}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nouveau projet
+          </Button>
+          {acceptedQuotes.length > 0 && (
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/admin/projets/nouveau', { state: { quoteId: acceptedQuotes[0].id } })}
+            >
+              Convertir un devis accepté
+            </Button>
+          )}
+        </div>
       </div>
 
-      {projects.length === 0 ? (
+      <div className="grid gap-4 md:grid-cols-[2fr_1fr] mb-6">
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher un projet, client ou service"
+        />
+        <Select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          options={[{ value: '', label: 'Tous les statuts' }, ...projectStatusOptions]}
+          placeholder="Filtrer par statut"
+        />
+      </div>
+
+      {filteredProjects.length === 0 ? (
         <Card className="p-6">
-          <p className="text-text-muted">Aucun projet enregistré pour le moment. Créez-en un pour démarrer la gestion.</p>
+          <p className="text-text-muted">Aucun projet ne correspond à vos filtres. Ajustez la recherche ou créez un nouveau projet.</p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map((project) => {
-            const status = getStatusConfig(project.status);
-            return (
-              <Link key={project.id} to={`/admin/projets/${project.id}`}>
-                <Card hover className="h-full">
-                  <div className="flex items-start justify-between mb-3">
-                    <Badge variant={status.variant}>{status.label}</Badge>
-                    <span className="text-xs text-text-muted">{project.progress}%</span>
-                  </div>
-                  <h3 className="font-semibold text-white mb-2">{project.name}</h3>
-                  <p className="text-sm text-text-muted mb-4 line-clamp-2">{project.description}</p>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 h-2 bg-border-dark rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-brand to-accent"
-                        style={{ width: `${project.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-text-muted">
-                    <span>{project.clientName}</span>
-                    <span>{project.serviceType}</span>
-                  </div>
-                </Card>
-              </Link>
-            );
-          })}
+        <div className="overflow-x-auto rounded-3xl border border-border-dark bg-surface-alt">
+          <table className="min-w-full text-left text-sm text-text-muted">
+            <thead className="border-b border-border-dark bg-surface-dark text-text-muted">
+              <tr>
+                <th className="px-4 py-4">Projet</th>
+                <th className="px-4 py-4">Client</th>
+                <th className="px-4 py-4">Statut</th>
+                <th className="px-4 py-4">Progression</th>
+                <th className="px-4 py-4">Créé</th>
+                <th className="px-4 py-4">Deadline</th>
+                <th className="px-4 py-4">Priorité</th>
+                <th className="px-4 py-4">Montant</th>
+                <th className="px-4 py-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProjects.map((project) => {
+                const status = getStatusConfig(project.status);
+                const priorityLabel = project.priority ? {
+                  LOW: 'Basse',
+                  MEDIUM: 'Moyenne',
+                  HIGH: 'Haute',
+                  URGENT: 'Urgente',
+                }[project.priority] : 'Non définie';
+                return (
+                  <tr key={project.id} className="border-b border-border-dark hover:bg-surface-dark transition-colors">
+                    <td className="px-4 py-4 align-top">
+                      <div className="font-semibold text-white">{project.name}</div>
+                      <div className="text-xs text-text-muted line-clamp-2">{project.serviceType}</div>
+                    </td>
+                    <td className="px-4 py-4 align-top text-white">{project.clientName}</td>
+                    <td className="px-4 py-4 align-top"><Badge variant={status.variant}>{status.label}</Badge></td>
+                    <td className="px-4 py-4 align-top w-40">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2 rounded-full bg-border-dark overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-brand to-accent" style={{ width: `${project.progress}%` }} />
+                        </div>
+                        <span className="text-xs text-text-muted">{project.progress}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 align-top text-text-muted">{formatDate(project.createdAt)}</td>
+                    <td className="px-4 py-4 align-top text-text-muted">{formatDate(project.estimatedEndDate)}</td>
+                    <td className="px-4 py-4 align-top text-white">{priorityLabel}</td>
+                    <td className="px-4 py-4 align-top text-white">{project.amount ? formatCurrency(project.amount) : '—'}</td>
+                    <td className="px-4 py-4 align-top space-y-2">
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/admin/projets/${project.id}`)}>Voir</Button>
+                      <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/projets/${project.id}`)}>Modifier</Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteProject(project.id)}>Supprimer</Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
@@ -1363,6 +1434,11 @@ export function AdminProjects() {
 
 export function AdminProjectCreate() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const clients = getClients();
+  const quotes = dashboardStore.getQuotes();
+  const teamMembers = dashboardStore.getTeamMembers();
+  const noClients = clients.length === 0;
   const [name, setName] = useState('');
   const [clientId, setClientId] = useState('');
   const [serviceType, setServiceType] = useState('');
@@ -1372,8 +1448,61 @@ export function AdminProjectCreate() {
   const [progress, setProgress] = useState(10);
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
   const [estimatedEndDate, setEstimatedEndDate] = useState(new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
-  const clients = getClients();
-  const noClients = clients.length === 0;
+  const [amount, setAmount] = useState(0);
+  const [assignedTo, setAssignedTo] = useState('');
+  const [notes, setNotes] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
+  const [files, setFiles] = useState<import('../../stores/dashboardStore').DashboardProjectFile[]>([]);
+  const [selectedQuoteId, setSelectedQuoteId] = useState((location.state as { quoteId?: string } | null)?.quoteId || '');
+
+  const acceptedQuotes = quotes.filter((quote) => quote.status === 'ACCEPTED');
+
+  useEffect(() => {
+    if (!selectedQuoteId) return;
+    const quote = quotes.find((item) => item.id === selectedQuoteId);
+    if (!quote) return;
+
+    setName(quote.title);
+    setClientId(quote.clientId);
+    setServiceType(quote.title);
+    setAmount(quote.total);
+    setDescription(quote.notes || 'Projet issu d’un devis accepté.');
+  }, [selectedQuoteId, quotes]);
+
+  const readFileAsDataUrl = (file: File) => new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.readAsDataURL(file);
+  });
+
+  const handleFilesChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+    const nextFiles = await Promise.all(
+      Array.from(event.target.files).map(async (file) => ({
+        id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: 'Admin',
+        url: await readFileAsDataUrl(file),
+      }))
+    );
+    setFiles((current) => [...current, ...nextFiles]);
+  };
+
+  const handleAddTag = () => {
+    const value = tagInput.trim();
+    if (value && !tags.includes(value)) {
+      setTags((current) => [...current, value]);
+    }
+    setTagInput('');
+  };
+
+  const handleRemoveTag = (value: string) => {
+    setTags((current) => current.filter((tag) => tag !== value));
+  };
 
   const handleCreateProject = () => {
     if (noClients) {
@@ -1387,9 +1516,10 @@ export function AdminProjectCreate() {
 
     const client = clients.find((item) => item.id === clientId);
     const clientName = client ? `${client.firstName} ${client.lastName}` : 'Client inconnu';
+    const projectId = `p${Date.now()}`;
 
     dashboardStore.addProject({
-      id: `p${Date.now()}`,
+      id: projectId,
       clientId,
       clientName,
       name: name.trim(),
@@ -1397,12 +1527,57 @@ export function AdminProjectCreate() {
       status,
       progress,
       priority,
+      assignedTo,
+      amount: amount || undefined,
       startDate,
       estimatedEndDate,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       description: description.trim() || 'Aucun détail supplémentaire fourni.',
+      notes: notes.trim(),
+      tags,
+      files,
+      comments: [],
+      activities: [
+        {
+          id: `activity-${Date.now()}`,
+          type: 'general',
+          createdAt: new Date().toISOString(),
+          details: `Projet créé par l’administrateur avec statut ${getStatusConfig(status).label}.`,
+        },
+      ],
     });
+
+    if (selectedQuoteId) {
+      dashboardStore.updateQuote(selectedQuoteId, { status: 'CONVERTED', history: [
+        ...(quotes.find((quote) => quote.id === selectedQuoteId)?.history || []),
+        {
+          id: `history-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          type: 'converted',
+          label: 'Devis converti en projet',
+          details: 'Le devis accepté a été transformé en projet.',
+        },
+      ] });
+    }
+
+    notificationStore.add({
+      userId: 'admin-1',
+      type: 'project',
+      title: 'Nouveau projet créé',
+      description: `${name.trim()} a été créé pour ${clientName}.`,
+      link: '/admin/projets',
+    });
+
+    if (clientId) {
+      notificationStore.add({
+        userId: clientId,
+        type: 'project',
+        title: 'Votre projet a été lancé',
+        description: `Le projet ${name.trim()} est maintenant suivi par l'équipe Myms.`,
+        link: '/client/projets',
+      });
+    }
 
     appStore.addToast({ type: 'success', title: 'Projet créé', message: 'Le projet a été ajouté au tableau de bord.' });
     navigate('/admin/projets');
@@ -1415,9 +1590,9 @@ export function AdminProjectCreate() {
         Retour aux projets
       </Link>
 
-      <div className="max-w-3xl">
+      <div className="max-w-4xl">
         <h1 className="text-3xl font-bold text-white mb-4">Nouveau projet</h1>
-        <p className="text-text-muted mb-6">Créez un nouveau projet et assignez-le à un client existant.</p>
+        <p className="text-text-muted mb-6">Créez un projet professionnel, connecté aux clients, devis et suivi.</p>
         {noClients ? (
           <Card className="p-6 bg-surface-alt border border-border-dark">
             <div className="text-text-muted space-y-4">
@@ -1437,61 +1612,90 @@ export function AdminProjectCreate() {
             </div>
           </Card>
         ) : (
-          <Card className="p-6">
-            <div className="grid gap-4">
+          <Card className="p-6 space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom du projet" />
               <Select
                 label="Client"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                options={clients.map((client) => ({
-                  value: client.id,
-                  label: `${client.firstName} ${client.lastName}`,
-                }))}
+                options={clients.map((client) => ({ value: client.id, label: `${client.firstName} ${client.lastName}` }))}
                 placeholder="Sélectionner un client"
               />
-              <Input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Type de service" />
-              <div className="grid gap-4 md:grid-cols-2">
-                <Select
-                  label="Statut"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  options={projectStatusOptions}
-                  placeholder="Choisir un statut"
-                />
-                <Select
-                  label="Priorité"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  options={projectPriorityOptions}
-                  placeholder="Choisir une priorité"
-                />
+              <Select
+                label="Devis accepté"
+                value={selectedQuoteId}
+                onChange={(e) => setSelectedQuoteId(e.target.value)}
+                options={[{ value: '', label: 'Aucun' }, ...acceptedQuotes.map((quote) => ({ value: quote.id, label: `${quote.quoteNumber} — ${quote.title}` }))]}
+                placeholder="Convertir un devis"
+              />
+              <Select
+                label="Responsable"
+                value={assignedTo}
+                onChange={(e) => setAssignedTo(e.target.value)}
+                options={[{ value: '', label: 'Non assigné' }, ...teamMembers.map((member) => ({ value: member.id, label: `${member.firstName} ${member.lastName}` }))]}
+                placeholder="Assigner un responsable"
+              />
+            </div>
+
+            <Input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Type de service" />
+            <div className="grid gap-4 md:grid-cols-3">
+              <Select label="Statut" value={status} onChange={(e) => setStatus(e.target.value)} options={projectStatusOptions} placeholder="Choisir un statut" />
+              <Select label="Priorité" value={priority} onChange={(e) => setPriority(e.target.value)} options={projectPriorityOptions} placeholder="Choisir une priorité" />
+              <Input label="Budget estimé" type="number" min="0" value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="Montant du projet" />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Input type="date" value={estimatedEndDate} onChange={(e) => setEstimatedEndDate(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-muted mb-2">Progression (%)</label>
+              <input type="range" min="0" max="100" value={progress} onChange={(e) => setProgress(Number(e.target.value))} className="w-full accent-brand" />
+              <div className="text-sm text-text-muted">{progress}%</div>
+            </div>
+            <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={5} placeholder="Description du projet" />
+            <Textarea label="Notes internes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} placeholder="Notes privées pour l'équipe" />
+            <div>
+              <label className="block text-sm font-medium text-text-muted mb-2">Tags / Catégories</label>
+              <div className="flex gap-2">
+                <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Ajouter un tag" />
+                <Button variant="outline" onClick={handleAddTag}>Ajouter</Button>
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                <Input type="date" value={estimatedEndDate} onChange={(e) => setEstimatedEndDate(e.target.value)} />
+              <div className="mt-3 flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => handleRemoveTag(tag)}>
+                    {tag} ×
+                  </Badge>
+                ))}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-text-muted mb-2">Progression (%)</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={(e) => setProgress(Number(e.target.value))}
-                  className="w-full accent-brand"
-                />
-                <div className="text-sm text-text-muted">{progress}%</div>
-              </div>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description du projet" rows={5} />
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button variant="primary" onClick={handleCreateProject} disabled={noClients}>
-                  Créer le projet
-                </Button>
-                <Link to="/admin/projets" className="inline-flex items-center justify-center px-4 py-3 border border-border-dark text-text-muted rounded-lg hover:border-brand">
-                  Annuler
-                </Link>
-              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-muted mb-2">Fichiers / livrables</label>
+              <input type="file" multiple onChange={handleFilesChange} className="w-full text-text-muted" />
+              {files.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {files.map((file) => (
+                    <div key={file.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border-dark bg-surface p-3">
+                      <div className="min-w-0">
+                        <p className="text-sm text-white truncate">{file.name}</p>
+                        <p className="text-xs text-text-muted">{(file.size / 1024).toFixed(1)} KB • {formatDate(file.uploadedAt)}</p>
+                      </div>
+                      <Button variant="ghost" className="text-error-light" onClick={() => setFiles((current) => current.filter((item) => item.id !== file.id))}>
+                        Supprimer
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Button variant="primary" onClick={handleCreateProject} disabled={noClients}>
+                Créer le projet
+              </Button>
+              <Link to="/admin/projets" className="inline-flex items-center justify-center px-4 py-3 border border-border-dark text-text-muted rounded-lg hover:border-brand">
+                Annuler
+              </Link>
             </div>
           </Card>
         )}
@@ -3015,7 +3219,10 @@ export function AdminProjectDetail() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState(dashboardStore.getProjects());
   const [isSaving, setIsSaving] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [fileLoading, setFileLoading] = useState(false);
   const clients = getClients();
+  const teamMembers = dashboardStore.getTeamMembers();
 
   useEffect(() => {
     const unsubscribe = dashboardStore.subscribe(() => setProjects(dashboardStore.getProjects()));
@@ -3033,6 +3240,10 @@ export function AdminProjectDetail() {
   const [progress, setProgress] = useState(0);
   const [startDate, setStartDate] = useState('');
   const [estimatedEndDate, setEstimatedEndDate] = useState('');
+  const [amount, setAmount] = useState(0);
+  const [assignedTo, setAssignedTo] = useState('');
+  const [notes, setNotes] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
 
   useEffect(() => {
     if (!project) return;
@@ -3045,14 +3256,27 @@ export function AdminProjectDetail() {
     setProgress(project.progress);
     setStartDate(project.startDate);
     setEstimatedEndDate(project.estimatedEndDate);
+    setAmount(project.amount ?? 0);
+    setAssignedTo(project.assignedTo ?? '');
+    setNotes(project.notes ?? '');
+    setTags(project.tags ?? []);
   }, [project]);
 
   if (!project) {
     return <div className="p-6 text-center text-text-muted">Projet non trouvé</div>;
   }
 
-  const statusConfig = getStatusConfig(status);
+  const statusConfig = getStatusConfig(project.status);
   const assignedClient = clients.find((client) => client.id === clientId);
+  const projectFiles = project.files || [];
+  const comments = project.comments || [];
+  const activities = project.activities || [];
+
+  const readFileAsDataUrl = (file: File) => new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.readAsDataURL(file);
+  });
 
   const handleSave = () => {
     if (!name.trim() || !serviceType.trim() || !clientId) {
@@ -3072,9 +3296,20 @@ export function AdminProjectDetail() {
       progress,
       startDate,
       estimatedEndDate,
+      amount: amount || undefined,
+      assignedTo: assignedTo || undefined,
+      notes: notes.trim(),
+      tags,
       updatedAt: new Date().toISOString(),
     });
     setIsSaving(false);
+    notificationStore.add({
+      userId: 'admin-1',
+      type: 'project',
+      title: 'Projet mis à jour',
+      description: `Le projet ${project.name} a été mis à jour.`,
+      link: `/admin/projets/${project.id}`,
+    });
     appStore.addToast({ type: 'success', title: 'Projet mis à jour', message: 'Les modifications ont bien été enregistrées.' });
   };
 
@@ -3083,6 +3318,59 @@ export function AdminProjectDetail() {
     dashboardStore.deleteProject(project.id);
     appStore.addToast({ type: 'success', title: 'Projet supprimé', message: 'Le projet a été supprimé du tableau de bord.' });
     navigate('/admin/projets');
+  };
+
+  const handleFilesChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+    setFileLoading(true);
+    const nextFiles = await Promise.all(
+      Array.from(event.target.files).map(async (file) => ({
+        id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: 'Admin',
+        url: await readFileAsDataUrl(file),
+      }))
+    );
+    nextFiles.forEach((file) => dashboardStore.addProjectFile(project.id, file));
+    setFileLoading(false);
+    notificationStore.add({
+      userId: 'admin-1',
+      type: 'project',
+      title: 'Fichiers ajoutés',
+      description: `${nextFiles.length} fichier(s) ajoutés au projet ${project.name}.`,
+      link: `/admin/projets/${project.id}`,
+    });
+  };
+
+  const handleRemoveFile = (fileId: string) => {
+    dashboardStore.removeProjectFile(project.id, fileId);
+    appStore.addToast({ type: 'success', title: 'Fichier supprimé', message: 'Le fichier a été retiré du projet.' });
+  };
+
+  const handleAddComment = () => {
+    const text = commentText.trim();
+    if (!text) return;
+    const comment = {
+      id: `comment-${Date.now()}`,
+      authorId: 'admin-1',
+      authorName: 'Admin Myms',
+      role: 'ADMIN',
+      content: text,
+      createdAt: new Date().toISOString(),
+    };
+    dashboardStore.addProjectComment(project.id, comment);
+    notificationStore.add({
+      userId: project.clientId,
+      type: 'project',
+      title: 'Nouveau commentaire',
+      description: `Un nouveau commentaire a été ajouté au projet ${project.name}.`,
+      link: `/client/projets/${project.id}`,
+    });
+    setCommentText('');
+    appStore.addToast({ type: 'success', title: 'Commentaire ajouté', message: 'Le commentaire a bien été enregistré.' });
   };
 
   return (
@@ -3103,52 +3391,49 @@ export function AdminProjectDetail() {
       <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
         <div className="space-y-6">
           <Card className="p-6">
-            <h2 className="text-xl font-semibold text-white mb-5">Modifier le projet</h2>
+            <h2 className="text-xl font-semibold text-white mb-5">Détails du projet</h2>
             <div className="grid gap-4">
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom du projet" />
               <Select
                 label="Client associé"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                options={clients.map((client) => ({
-                  value: client.id,
-                  label: `${client.firstName} ${client.lastName}`,
-                }))}
+                options={clients.map((client) => ({ value: client.id, label: `${client.firstName} ${client.lastName}` }))}
                 placeholder="Sélectionner un client"
               />
               <Input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Type de service" />
               <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description du projet" rows={5} />
               <div className="grid gap-4 md:grid-cols-2">
-                <Select
-                  label="Statut"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  options={projectStatusOptions}
-                  placeholder="Choisir un statut"
-                />
-                <Select
-                  label="Priorité"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  options={projectPriorityOptions}
-                  placeholder="Choisir une priorité"
-                />
+                <Select label="Statut" value={status} onChange={(e) => setStatus(e.target.value)} options={projectStatusOptions} placeholder="Choisir un statut" />
+                <Select label="Priorité" value={priority} onChange={(e) => setPriority(e.target.value)} options={projectPriorityOptions} placeholder="Choisir une priorité" />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                <Input type="date" value={estimatedEndDate} onChange={(e) => setEstimatedEndDate(e.target.value)} />
+                <Input label="Début" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <Input label="Deadline" type="date" value={estimatedEndDate} onChange={(e) => setEstimatedEndDate(e.target.value)} />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Input label="Montant estimé" type="number" min="0" value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="Montant" />
+                <Select
+                  label="Responsable"
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                  options={[{ value: '', label: 'Non assigné' }, ...teamMembers.map((member) => ({ value: member.id, label: `${member.firstName} ${member.lastName}` }))]}
+                  placeholder="Assigner un responsable"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-text-muted mb-2">Progression</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={(e) => setProgress(Number(e.target.value))}
-                  className="w-full accent-brand"
-                />
+                <input type="range" min="0" max="100" value={progress} onChange={(e) => setProgress(Number(e.target.value))} className="w-full accent-brand" />
                 <div className="text-sm text-text-muted">{progress}%</div>
+              </div>
+              <Textarea label="Notes internes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} placeholder="Notes privées pour l'équipe" />
+              <div>
+                <label className="block text-sm font-medium text-text-muted mb-2">Tags</label>
+                <div className="flex flex-wrap gap-2">
+                  {(tags || []).map((tag) => (
+                    <Badge key={tag} variant="secondary">{tag}</Badge>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3 mt-6">
@@ -3158,6 +3443,39 @@ export function AdminProjectDetail() {
               <Button variant="outline" onClick={handleDelete} className="text-error-light">
                 Supprimer le projet
               </Button>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold text-white mb-5">Commentaires et activité</h2>
+            <div className="space-y-4">
+              <Textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                rows={4}
+                placeholder="Ajouter une note ou un commentaire de suivi"
+              />
+              <Button variant="primary" onClick={handleAddComment} disabled={!commentText.trim()}>
+                Ajouter un commentaire
+              </Button>
+              <div className="space-y-3">
+                {comments.length === 0 ? (
+                  <p className="text-text-muted">Aucun commentaire enregistré.</p>
+                ) : (
+                  comments.slice().reverse().map((comment) => (
+                    <div key={comment.id} className="rounded-2xl border border-border-dark bg-surface p-4">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div>
+                          <p className="text-sm text-white font-semibold">{comment.authorName}</p>
+                          <p className="text-xs text-text-muted">{formatDateTime(comment.createdAt)}</p>
+                        </div>
+                        <Badge variant="secondary">{comment.role}</Badge>
+                      </div>
+                      <p className="text-text-muted">{comment.content}</p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </Card>
         </div>
@@ -3183,13 +3501,75 @@ export function AdminProjectDetail() {
                 <span>{progress}%</span>
               </div>
               <div className="flex justify-between">
+                <span>Budget</span>
+                <span>{amount ? formatCurrency(amount) : 'Non renseigné'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Responsable</span>
+                <span>{assignedTo ? teamMembers.find((member) => member.id === assignedTo)?.firstName ?? assignedTo : 'Non assigné'}</span>
+              </div>
+              <div className="flex justify-between">
                 <span>Début</span>
                 <span>{formatDate(startDate)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Fin estimée</span>
+                <span>Deadline</span>
                 <span>{formatDate(estimatedEndDate)}</span>
               </div>
+              <div className="flex flex-wrap gap-2">
+                {(tags || []).map((tag) => (
+                  <Badge key={tag} variant="secondary">{tag}</Badge>
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Fichiers et livrables</h3>
+              <span className="text-xs text-text-muted">{projectFiles.length} fichier(s)</span>
+            </div>
+            <input type="file" multiple onChange={handleFilesChange} className="w-full text-text-muted mb-4" disabled={fileLoading} />
+            {projectFiles.length === 0 ? (
+              <p className="text-text-muted">Aucun fichier ajouté pour ce projet.</p>
+            ) : (
+              <div className="space-y-3">
+                {projectFiles.map((file) => (
+                  <div key={file.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border-dark bg-surface p-3">
+                    <div className="min-w-0">
+                      <p className="text-sm text-white truncate">{file.name}</p>
+                      <p className="text-xs text-text-muted">{(file.size / 1024).toFixed(1)} KB • {formatDate(file.uploadedAt)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {file.url ? (
+                        <a href={file.url} download={file.name} className="text-brand hover:text-brand-light text-sm">Télécharger</a>
+                      ) : null}
+                      <Button variant="ghost" className="text-error-light" onClick={() => handleRemoveFile(file.id)}>
+                        Supprimer
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Historique du projet</h3>
+            <div className="space-y-4">
+              {activities.length === 0 ? (
+                <p className="text-text-muted">Aucune activité enregistrée.</p>
+              ) : (
+                activities.slice().reverse().map((activity) => (
+                  <div key={activity.id} className="rounded-2xl border border-border-dark bg-surface p-4">
+                    <div className="flex items-center justify-between gap-3 mb-2 text-xs text-text-muted">
+                      <span>{formatDateTime(activity.createdAt)}</span>
+                      <Badge variant="secondary">{activity.type}</Badge>
+                    </div>
+                    <p className="text-sm text-text-muted">{activity.details}</p>
+                  </div>
+                ))
+              )}
             </div>
           </Card>
         </div>

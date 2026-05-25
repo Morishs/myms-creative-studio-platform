@@ -47,14 +47,12 @@ export const getStatusConfig = (status: string): { label: string; variant: 'defa
     CANCELLED: { label: 'Annulée', variant: 'default' },
     // Projects
     PENDING: { label: 'En attente', variant: 'default' },
-    BRIEFING: { label: 'Brief en cours', variant: 'primary' },
-    IN_PROGRESS: { label: 'En production', variant: 'primary' },
+    PLANNED: { label: 'Planifié', variant: 'secondary' },
+    IN_PROGRESS: { label: 'En cours', variant: 'primary' },
     REVISION: { label: 'En révision', variant: 'warning' },
-    AWAITING_APPROVAL: { label: 'En attente validation', variant: 'secondary' },
-    APPROVED: { label: 'Validé', variant: 'success' },
     DELIVERED: { label: 'Livré', variant: 'success' },
     COMPLETED: { label: 'Terminé', variant: 'success' },
-    PAUSED: { label: 'En pause', variant: 'default' },
+    SUSPENDED: { label: 'Suspendu', variant: 'error' },
     // Quote requests
     NEW: { label: 'Nouvelle', variant: 'primary' },
     READ: { label: 'Lue', variant: 'secondary' },

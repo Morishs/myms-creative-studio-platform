@@ -34,6 +34,55 @@ export interface DashboardProject {
   description: string;
 }
 
+export interface DashboardProjectFile {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url?: string;
+  uploadedAt: string;
+  uploadedBy?: string;
+}
+
+export interface DashboardProjectComment {
+  id: string;
+  authorId: string;
+  authorName: string;
+  role: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface DashboardProjectActivity {
+  id: string;
+  type: 'status' | 'progress' | 'file' | 'comment' | 'general';
+  createdAt: string;
+  details: string;
+}
+
+export interface DashboardProject {
+  id: string;
+  clientId: string;
+  clientName: string;
+  name: string;
+  serviceType: string;
+  status: string;
+  progress: number;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  assignedTo?: string;
+  amount?: number;
+  startDate: string;
+  estimatedEndDate: string;
+  createdAt: string;
+  updatedAt: string;
+  description: string;
+  notes?: string;
+  tags?: string[];
+  files?: DashboardProjectFile[];
+  comments?: DashboardProjectComment[];
+  activities?: DashboardProjectActivity[];
+}
+
 export interface DashboardQuote {
   id: string;
   clientId: string;
@@ -148,14 +197,53 @@ export const dashboardStore = {
 
   addProject: (project: DashboardProject) => {
     const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
-    saveState(PROJECTS_KEY, [...projects, project]);
+    const normalizedProject: DashboardProject = {
+      ...project,
+      createdAt: project.createdAt || new Date().toISOString(),
+      updatedAt: project.updatedAt || new Date().toISOString(),
+      notes: project.notes || '',
+      tags: project.tags || [],
+      files: project.files || [],
+      comments: project.comments || [],
+      activities: project.activities || [
+        {
+          id: `activity-${Date.now()}`,
+          type: 'general',
+          createdAt: new Date().toISOString(),
+          details: 'Projet créé.',
+        },
+      ],
+    };
+    saveState(PROJECTS_KEY, [...projects, normalizedProject]);
     notify();
-    apiCreateProject(project).catch(() => undefined);
+    apiCreateProject(normalizedProject).catch(() => undefined);
   },
 
   updateProject: (id: string, updates: Partial<DashboardProject>) => {
     const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
-    const updatedProjects = projects.map((project) => project.id === id ? { ...project, ...updates } : project);
+    const updatedProjects = projects.map((project) => {
+      if (project.id !== id) return project;
+      const updatedProject = { ...project, ...updates, updatedAt: new Date().toISOString() };
+      const activityDetails: string[] = [];
+      if (updates.status && updates.status !== project.status) {
+        activityDetails.push(`Statut mis à jour : ${project.status} → ${updates.status}`);
+      }
+      if (typeof updates.progress === 'number' && updates.progress !== project.progress) {
+        activityDetails.push(`Progression mise à jour : ${updates.progress}%`);
+      }
+      if (activityDetails.length > 0) {
+        updatedProject.activities = [
+          ...(project.activities || []),
+          {
+            id: `activity-${Date.now()}`,
+            type: updates.status && updates.status !== project.status ? 'status' : 'progress',
+            createdAt: new Date().toISOString(),
+            details: activityDetails.join(' / '),
+          },
+        ];
+      }
+      return updatedProject;
+    });
     saveState(PROJECTS_KEY, updatedProjects);
     notify();
     apiGetProjects().catch(() => undefined);
@@ -166,6 +254,73 @@ export const dashboardStore = {
     const remainingProjects = projects.filter((project) => project.id !== id);
     saveState(PROJECTS_KEY, remainingProjects);
     notify();
+  },
+
+  addProjectFile: (projectId: string, file: DashboardProjectFile) => {
+    const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
+    const updatedProjects = projects.map((project) => project.id === projectId
+      ? { ...project, files: [...(project.files || []), file], updatedAt: new Date().toISOString() }
+      : project
+    );
+    saveState(PROJECTS_KEY, updatedProjects);
+    notify();
+  },
+
+  removeProjectFile: (projectId: string, fileId: string) => {
+    const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
+    const updatedProjects = projects.map((project) => project.id === projectId
+      ? { ...project, files: (project.files || []).filter((file) => file.id !== fileId), updatedAt: new Date().toISOString() }
+      : project
+    );
+    saveState(PROJECTS_KEY, updatedProjects);
+    notify();
+  },
+
+  addProjectComment: (projectId: string, comment: DashboardProjectComment) => {
+    const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
+    const updatedProjects = projects.map((project) => project.id === projectId
+      ? {
+        ...project,
+        comments: [...(project.comments || []), comment],
+        activities: [
+          ...(project.activities || []),
+          {
+            id: `activity-${Date.now()}`,
+            type: 'comment',
+            createdAt: new Date().toISOString(),
+            details: `${comment.authorName} a ajouté un commentaire.`,
+          },
+        ],
+        updatedAt: new Date().toISOString(),
+      }
+      : project
+    );
+    saveState(PROJECTS_KEY, updatedProjects);
+    notify();
+  },
+
+  addProjectActivity: (projectId: string, activity: DashboardProjectActivity) => {
+    const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
+    const updatedProjects = projects.map((project) => project.id === projectId
+      ? {
+        ...project,
+        activities: [...(project.activities || []), activity],
+        updatedAt: new Date().toISOString(),
+      }
+      : project
+    );
+    saveState(PROJECTS_KEY, updatedProjects);
+    notify();
+  },
+
+  getProjectById: (id: string) => {
+    const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
+    return projects.find((project) => project.id === id);
+  },
+
+  getClientProjects: (clientId: string) => {
+    const projects = loadState<DashboardProject[]>(PROJECTS_KEY);
+    return projects.filter((project) => project.clientId === clientId);
   },
 
   addQuote: (quote: DashboardQuote) => {
