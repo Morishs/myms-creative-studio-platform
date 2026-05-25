@@ -91,7 +91,7 @@ export function NotificationBell({ userId }: { userId: string }) {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="absolute right-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-surface-alt border border-border rounded-3xl shadow-2xl overflow-hidden z-50"
+            className="fixed left-1/2 top-20 z-50 mt-2 w-[calc(100vw-2rem)] max-w-[24rem] -translate-x-1/2 bg-surface-alt border border-border rounded-3xl shadow-2xl overflow-hidden md:absolute md:top-full md:right-0 md:left-auto md:mt-2 md:w-96 md:max-w-[calc(100vw-2rem)] md:translate-x-0"
           >
             {/* Header */}
             <div className="p-4 border-b border-border flex items-center justify-between">
