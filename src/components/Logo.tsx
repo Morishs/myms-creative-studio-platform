@@ -16,7 +16,7 @@ export function Logo({
   alt = 'Logo Myms',
 }: LogoProps) {
   const { theme } = useTheme();
-  const logoSrc = theme === 'light' ? '/Logo_pdf.svg' : '/logo.svg';
+  const logoSrc = theme === 'light' ? '/Logo_pdf.svg' : '/Logos_myms.svg';
 
   return (
     <Link to={to} className={cn('inline-flex items-center', containerClassName)}>
