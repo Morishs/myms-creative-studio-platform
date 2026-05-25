@@ -59,7 +59,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6">
         <nav className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Logo containerClassName="flex items-center" logoClassName="h-10 w-auto sm:h-12" />
+          <Logo containerClassName="flex items-center" logoClassName="h-8 w-auto sm:h-10" />
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">

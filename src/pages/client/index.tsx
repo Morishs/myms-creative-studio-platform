@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, FolderKanban, FileText, Receipt, Download as DownloadIcon, 
   ShoppingBag, MessageSquare, User, LogOut, Menu, X, Home,
-  TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Send, Smile, Paperclip, File
+  TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Send, Smile, Paperclip, File,
+  Moon, Sun
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -12,6 +13,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { Logo } from '../../components/Logo';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { appStore } from '../../stores/appStore';
 import { dashboardStore } from '../../stores/dashboardStore';
 import { notificationStore } from '../../stores/notificationStore';
@@ -75,6 +77,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth/connexion" replace state={{ from: location.pathname }} />;
   }
 
+  const { theme, toggleTheme } = useTheme();
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
@@ -93,9 +96,17 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           <span className="hidden sm:inline text-text-muted text-sm">Espace Client</span>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface-alt text-text-primary transition-all duration-200 hover:border-brand hover:text-brand"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
           <NotificationBell userId={user?.id || ''} />
           <div className="hidden md:flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-accent flex items-center justify-center text-white text-sm font-semibold">
+            <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-sm font-semibold">
               {user?.firstName?.[0]}{user?.lastName?.[0]}
             </div>
             <span className="text-sm text-white">{user?.firstName} {user?.lastName}</span>
